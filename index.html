@@ -13,7 +13,7 @@
     <style>
         :root {
             --bg-dark: #0f172a;
-            --bg-panel: rgba(30, 41, 59, 0.7);
+            --bg-panel: rgba(30, 41, 59, 0.85);
             --accent: #10b981; /* Emerald Green */
             --accent-glow: rgba(16, 185, 129, 0.3);
             --danger: #ef4444;
@@ -21,15 +21,14 @@
             --text-main: #f1f5f9;
             --text-muted: #94a3b8;
             --border: rgba(255,255,255,0.1);
-            --chart-line: #3b82f6;
-            --chart-grid: rgba(255,255,255,0.05);
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         body {
             background-color: var(--bg-dark);
-            background-image: radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.1) 0%, transparent 20%);
+            /* Dark gradient background */
+            background-image: radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 20%);
             color: var(--text-main);
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             margin: 0; padding: 0;
@@ -39,7 +38,7 @@
 
         /* Header */
         header {
-            background: rgba(15, 23, 42, 0.9);
+            background: rgba(15, 23, 42, 0.95);
             backdrop-filter: blur(10px);
             padding: 15px 20px;
             position: sticky; top: 0; z-index: 50;
@@ -59,7 +58,7 @@
             border-radius: 16px;
             padding: 20px;
             margin-bottom: 15px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
 
         /* Inputs */
@@ -67,7 +66,7 @@
         .row-group { display: flex; gap: 10px; }
         label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 6px; display: block; }
         select, input {
-            width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border);
+            width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--border);
             color: white; padding: 12px; border-radius: 8px; font-size: 1rem; outline: none; transition: border 0.2s;
         }
         select:focus, input:focus { border-color: var(--accent); }
@@ -84,7 +83,6 @@
         .poker-card.empty { background: rgba(255,255,255,0.05); border: 2px dashed var(--text-muted); color: var(--text-muted); box-shadow: none; }
         .poker-card.selected { border: 2px solid var(--accent); background: white; }
         
-        /* Suit Colors */
         .suit-s { color: #1e293b; }
         .suit-h { color: #ef4444; }
         .suit-c { color: #10b981; }
@@ -93,7 +91,7 @@
         /* Bottom Nav */
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; width: 100%;
-            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px);
+            background: rgba(15, 23, 42, 0.98); backdrop-filter: blur(10px);
             border-top: 1px solid var(--border);
             display: flex; justify-content: space-around;
             padding: 10px 0; z-index: 100;
@@ -136,7 +134,7 @@
             border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer;
             box-shadow: 0 4px 15px var(--accent-glow); margin-top: 10px;
         }
-        .btn-delete { background: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; }
+        .btn-delete { background: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; cursor:pointer; }
 
         /* Modal */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 200; justify-content: center; align-items: center; }
@@ -156,7 +154,7 @@
 
 <header>
     <h1>Poker God <span style="font-size:0.5em; opacity:0.8; color:white; background:none;">PRO</span></h1>
-    <div style="font-size:0.8rem; color:var(--text-muted);">v2.0</div>
+    <div style="font-size:0.8rem; color:var(--text-muted);">v2.1</div>
 </header>
 
 <div class="container">
@@ -165,6 +163,7 @@
         <div class="card-panel">
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                 <select id="gameMode" onchange="updateRanges()"><option value="MTT">錦標賽 (MTT)</option><option value="Cash">現金桌 (Cash)</option></select>
+                
                 <select id="playerCount" onchange="updateRanges()">
                     <option value="10">10人 (Full Ring+)</option>
                     <option value="9" selected>9人 (Full Ring)</option>
@@ -176,6 +175,7 @@
                     <option value="3">3人 Table</option>
                     <option value="2">2人 (Heads Up)</option>
                 </select>
+
                 <select id="heroPosition" onchange="updateRanges()">
                     <option value="BTN">BTN</option><option value="CO">CO</option><option value="MP">MP</option><option value="EP">EP/UTG</option><option value="SB">SB</option><option value="BB">BB</option>
                 </select>
@@ -320,6 +320,7 @@
     const state = { h1: null, h2: null, b1:null, b2:null, b3:null, b4:null };
     let curSel = null;
     const ranks = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
+    // 讀取本地儲存的記帳資料
     let bankrollData = JSON.parse(localStorage.getItem('pokerGodBankroll') || '[]');
 
     // --- INITIALIZATION ---
@@ -328,10 +329,10 @@
         genSelUI();
         updateRanges();
         
-        // Init Date Input
+        // 初始化日期選單為今天
         document.getElementById('brDate').valueAsDate = new Date();
         
-        // Render Bankroll
+        // 渲染記帳介面
         renderBankrollUI();
 
         // SW Register
@@ -368,17 +369,19 @@
     function updateRanges() {
         const pos = document.getElementById('heroPosition').value;
         const stack = parseInt(document.getElementById('stackDepth').value);
-        const players = parseInt(document.getElementById('playerCount').value); // 2-10
+        const players = parseInt(document.getElementById('playerCount').value); // 讀取 2-10 人
         
+        // 基礎鬆緊度演算法
         let score = 0; 
         if(pos==='BTN') score=5; else if(pos==='CO') score=3; else if(pos==='MP') score=1;
         if(document.getElementById('gameMode').value === 'MTT') score += 1;
         
-        // Player Count Logic Adjustments
-        if(players <= 3) score += 2; // Looser in Short Handed
-        else if(players <= 6) score += 1;
+        // 人數影響 (Player Count Adjustments)
+        if(players <= 3) score += 2; // 少人桌非常鬆
+        else if(players <= 6) score += 1; // 6人桌偏鬆
+        // 9-10 人桌則維持標準
 
-        if(stack < 15) score = -10; // Push Fold
+        if(stack < 15) score = -10; // Push Fold Mode
 
         const cells = document.querySelectorAll('.chart-cell');
         cells.forEach(cell => {
@@ -442,10 +445,11 @@
         
         if(!date || isNaN(amt)) { alert("請輸入日期與金額"); return; }
         
+        // 儲存至本地
         bankrollData.push({ id: Date.now(), date, type, amount: amt });
         localStorage.setItem('pokerGodBankroll', JSON.stringify(bankrollData));
         
-        document.getElementById('brAmount').value = ''; // clear
+        document.getElementById('brAmount').value = ''; // 清空輸入
         renderBankrollUI();
     }
 
@@ -461,13 +465,10 @@
         list.innerHTML = '';
         
         let total = 0;
-        let cumulativeData = []; // for chart [ {x:0, y:0}, {x:1, y:500} ... ]
-        cumulativeData.push({x:0, y:0}); // start at 0
+        let cumulativeData = []; // 用於繪圖 [ {x:0, y:0}, {x:1, y:500} ... ]
+        cumulativeData.push({x:0, y:0}); // 起始點
 
-        // Sort by date (optional, strictly speaking input order might be better for chronological chart if user inputs backlog)
-        // Let's assume input order for now or sort by ID/Date
-        // bankrollData.sort((a,b) => new Date(a.date) - new Date(b.date));
-
+        // 這裡可以加入排序邏輯，目前依照輸入順序
         bankrollData.forEach((item, index) => {
             total += item.amount;
             cumulativeData.push({ x: index+1, y: total });
@@ -483,7 +484,7 @@
                     <button class="btn-delete" onclick="deleteRecord(${item.id})">✕</button>
                 </div>
             `;
-            list.prepend(el); // Newest top
+            list.prepend(el); // 最新的顯示在上面
         });
 
         document.getElementById('totalProfit').innerText = (total>=0?'+':'') + total;
@@ -496,7 +497,7 @@
     function drawChart(data) {
         const canvas = document.getElementById('bankrollCanvas');
         const ctx = canvas.getContext('2d');
-        // Fit canvas to container
+        // RWD 自適應寬度
         const rect = canvas.parentElement.getBoundingClientRect();
         canvas.width = rect.width; 
         canvas.height = 220;
@@ -505,7 +506,7 @@
         const h = canvas.height;
         const padding = 20;
 
-        // Clear
+        // 清空畫布
         ctx.clearRect(0, 0, w, h);
         
         if(data.length < 2) {
@@ -514,25 +515,25 @@
             return;
         }
 
-        // Find Scale
+        // 找出最大最小值以設定比例
         let maxY = -Infinity, minY = Infinity;
         data.forEach(p => { if(p.y > maxY) maxY = p.y; if(p.y < minY) minY = p.y; });
-        // Add padding to Y
+        // 上下留白
         let range = maxY - minY;
-        if(range === 0) range = 100; // prevent zero division
+        if(range === 0) range = 100; 
         maxY += range * 0.1; minY -= range * 0.1;
 
         const mapX = (i) => padding + (i / (data.length - 1)) * (w - padding * 2);
         const mapY = (val) => h - (padding + ((val - minY) / (maxY - minY)) * (h - padding * 2));
 
-        // Draw Zero Line
+        // 畫零軸 (Zero Line)
         if(minY < 0 && maxY > 0) {
             let zeroY = mapY(0);
             ctx.beginPath(); ctx.strokeStyle = "rgba(255,255,255,0.2)"; ctx.setLineDash([5, 5]);
             ctx.moveTo(padding, zeroY); ctx.lineTo(w-padding, zeroY); ctx.stroke(); ctx.setLineDash([]);
         }
 
-        // Draw Line
+        // 畫曲線
         ctx.beginPath();
         ctx.strokeStyle = "#3b82f6"; ctx.lineWidth = 3;
         ctx.moveTo(mapX(0), mapY(data[0].y));
@@ -542,7 +543,7 @@
         }
         ctx.stroke();
 
-        // Draw Gradient Area
+        // 畫漸層填充
         ctx.lineTo(mapX(data.length-1), h);
         ctx.lineTo(mapX(0), h);
         ctx.closePath();
@@ -552,7 +553,7 @@
         ctx.fillStyle = grad;
         ctx.fill();
 
-        // Draw Points
+        // 畫點
         data.forEach((p, i) => {
             let px = mapX(i); let py = mapY(p.y);
             ctx.beginPath(); ctx.fillStyle = "#fff";
