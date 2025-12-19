@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#0f172a">
+    <meta name="theme-color" content="#121212">
     <title>Poker God Pro</title>
     
     <link rel="manifest" href="manifest.json">
@@ -15,19 +15,21 @@
             --bg-dark: #0f172a;
             --bg-panel: rgba(30, 41, 59, 0.7);
             --accent: #10b981; /* Emerald Green */
-            --accent-glow: rgba(16, 185, 129, 0.2);
+            --accent-glow: rgba(16, 185, 129, 0.3);
             --danger: #ef4444;
             --warning: #f59e0b;
             --text-main: #f1f5f9;
             --text-muted: #94a3b8;
             --border: rgba(255,255,255,0.1);
+            --chart-line: #3b82f6;
+            --chart-grid: rgba(255,255,255,0.05);
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         body {
             background-color: var(--bg-dark);
-            background-image: radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 20%);
+            background-image: radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.1) 0%, transparent 20%);
             color: var(--text-main);
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             margin: 0; padding: 0;
@@ -37,7 +39,7 @@
 
         /* Header */
         header {
-            background: rgba(15, 23, 42, 0.95);
+            background: rgba(15, 23, 42, 0.9);
             backdrop-filter: blur(10px);
             padding: 15px 20px;
             position: sticky; top: 0; z-index: 50;
@@ -62,19 +64,20 @@
 
         /* Inputs */
         .input-group { margin-bottom: 12px; }
+        .row-group { display: flex; gap: 10px; }
         label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 6px; display: block; }
-        select, input, textarea {
+        select, input {
             width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border);
             color: white; padding: 12px; border-radius: 8px; font-size: 1rem; outline: none; transition: border 0.2s;
         }
-        select:focus, input:focus, textarea:focus { border-color: var(--accent); }
+        select:focus, input:focus { border-color: var(--accent); }
 
         /* Poker Cards Visuals */
-        .hand-display { display: flex; gap: 10px; justify-content: center; margin: 15px 0; }
+        .hand-display { display: flex; gap: 12px; justify-content: center; margin: 15px 0; }
         .poker-card {
-            width: 50px; height: 70px; background: #e2e8f0; border-radius: 6px;
+            width: 55px; height: 78px; background: #e2e8f0; border-radius: 6px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            font-weight: bold; font-size: 1.2rem; cursor: pointer; position: relative;
+            font-weight: bold; font-size: 1.3rem; cursor: pointer; position: relative;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: transform 0.1s;
         }
         .poker-card:active { transform: scale(0.95); }
@@ -93,14 +96,14 @@
             background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px);
             border-top: 1px solid var(--border);
             display: flex; justify-content: space-around;
-            padding: 12px 0 25px 0; z-index: 100; /* Extra padding for iPhone X+ home bar */
+            padding: 10px 0; z-index: 100;
         }
         .nav-item {
             color: var(--text-muted); text-align: center; font-size: 0.7rem; cursor: pointer;
-            flex: 1; opacity: 0.7; transition: 0.2s;
+            flex: 1; padding: 5px; opacity: 0.7; transition: 0.2s;
         }
         .nav-item.active { color: var(--accent); opacity: 1; transform: translateY(-2px); }
-        .nav-icon { font-size: 1.4rem; display: block; margin-bottom: 2px; }
+        .nav-icon { font-size: 1.4rem; display: block; margin-bottom: 4px; }
 
         /* Sections (Tabs) */
         .tab-content { display: none; animation: fadeIn 0.3s ease; }
@@ -113,47 +116,47 @@
             background: #000; padding: 1px; border-radius: 4px; overflow: hidden;
         }
         .chart-cell {
-            aspect-ratio: 1; font-size: 0.5rem; display: flex; align-items: center; justify-content: center;
+            aspect-ratio: 1; font-size: 0.55rem; display: flex; align-items: center; justify-content: center;
             background: #2d3748; color: #718096; cursor: default;
         }
         .chart-cell.bg-raise { background: var(--danger); color: white; }
         .chart-cell.bg-call { background: var(--warning); color: black; }
         .chart-cell.active { border: 2px solid white; z-index: 10; }
 
-        /* Bankroll Specific */
-        .profit-pos { color: var(--accent); }
-        .profit-neg { color: var(--danger); }
-        
-        .history-item {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 12px 0; border-bottom: 1px solid var(--border);
+        /* Calculator Results */
+        .result-box {
+            text-align: center; margin-top: 15px; padding: 15px;
+            background: rgba(0,0,0,0.2); border-radius: 8px;
         }
-        .history-item:last-child { border-bottom: none; }
-        .history-date { font-size: 0.75rem; color: var(--text-muted); }
-        .history-note { font-size: 0.85rem; color: #e2e8f0; }
-        .del-btn { color: var(--text-muted); font-size: 0.8rem; padding: 5px; cursor: pointer; }
-
-        .btn-calc {
+        .result-val { font-size: 1.8rem; font-weight: bold; color: var(--accent); }
+        .result-label { color: var(--text-muted); font-size: 0.8rem; }
+        
+        .btn-action {
             width: 100%; padding: 14px; background: var(--accent); color: #000;
             border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer;
-            box-shadow: 0 4px 15px var(--accent-glow);
+            box-shadow: 0 4px 15px var(--accent-glow); margin-top: 10px;
         }
-
-        /* Canvas Graph */
-        canvas { width: 100%; height: 200px; display: block; }
+        .btn-delete { background: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; }
 
         /* Modal */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 200; justify-content: center; align-items: center; }
         .modal-content { background: #1e293b; padding: 20px; border-radius: 16px; width: 90%; max-width: 350px; border: 1px solid var(--border); }
         .suit-row { display: flex; gap: 5px; margin-bottom: 8px; }
         .rank-btn { flex: 1; padding: 10px 0; background: #334155; border: none; color: white; border-radius: 4px; font-weight: bold; }
+
+        /* Bankroll Chart */
+        canvas#bankrollCanvas { width: 100%; height: 220px; background: rgba(0,0,0,0.2); border-radius: 8px; margin-bottom: 10px; }
+        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+        .history-val { font-weight: bold; font-family: monospace; font-size: 1.1rem; }
+        .pos-val { color: var(--accent); }
+        .neg-val { color: var(--danger); }
     </style>
 </head>
 <body>
 
 <header>
     <h1>Poker God <span style="font-size:0.5em; opacity:0.8; color:white; background:none;">PRO</span></h1>
-    <div id="connectionStatus" style="width:8px; height:8px; background:var(--accent); border-radius:50%;"></div>
+    <div style="font-size:0.8rem; color:var(--text-muted);">v2.0</div>
 </header>
 
 <div class="container">
@@ -163,14 +166,14 @@
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                 <select id="gameMode" onchange="updateRanges()"><option value="MTT">錦標賽 (MTT)</option><option value="Cash">現金桌 (Cash)</option></select>
                 <select id="playerCount" onchange="updateRanges()">
-                    <option value="10">10人 (Full Ring)</option>
+                    <option value="10">10人 (Full Ring+)</option>
                     <option value="9" selected>9人 (Full Ring)</option>
-                    <option value="8">8人</option>
-                    <option value="7">7人</option>
+                    <option value="8">8人 Table</option>
+                    <option value="7">7人 Table</option>
                     <option value="6">6人 (6-Max)</option>
-                    <option value="5">5人</option>
-                    <option value="4">4人</option>
-                    <option value="3">3人</option>
+                    <option value="5">5人 Table</option>
+                    <option value="4">4人 Table</option>
+                    <option value="3">3人 Table</option>
                     <option value="2">2人 (Heads Up)</option>
                 </select>
                 <select id="heroPosition" onchange="updateRanges()">
@@ -181,7 +184,7 @@
         </div>
 
         <div class="card-panel">
-            <label>13x13 起手牌熱力圖 (Preflop Ranges)</label>
+            <label>13x13 起手牌熱力圖 (RFI / Strategy)</label>
             <div class="chart-container" id="rangeGrid"></div>
             <div style="display:flex; justify-content:center; gap:15px; margin-top:10px; font-size:0.75rem; color:var(--text-muted);">
                 <span style="color:var(--danger)">● Raise/All-in</span>
@@ -199,15 +202,17 @@
                 <input type="number" id="potSize" placeholder="例如: 1000">
             </div>
             <div class="input-group">
-                <label>對方下注 / 跟注金額 (Call Amount)</label>
+                <label>對方下注金額 / 跟注金額 (Bet to Call)</label>
                 <input type="number" id="betSize" placeholder="例如: 500">
             </div>
-            <button class="btn-calc" onclick="calcPotOdds()">計算賠率 (Calculate)</button>
+            <button class="btn-action" onclick="calcPotOdds()">計算賠率 (Calculate)</button>
 
-            <div class="result-box" id="oddsResult" style="text-align:center; margin-top:15px; display:none;">
-                <div style="color:var(--text-muted); font-size:0.8rem;">所需勝率 (Required Equity)</div>
-                <div style="font-size:1.8rem; font-weight:bold; color:var(--accent);" id="reqEquity">--%</div>
-                <div style="margin-top:5px; color:white;" id="oddsRatio">-- : 1</div>
+            <div class="result-box" id="oddsResult" style="display:none;">
+                <div class="result-label">你需要多少勝率 (Required Equity)</div>
+                <div class="result-val" id="reqEquity">--%</div>
+                <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:10px 0;">
+                <div class="result-label">賠率 (Odds)</div>
+                <div style="color:white; font-size:1.2rem;" id="oddsRatio">-- : 1</div>
             </div>
         </div>
     </div>
@@ -219,46 +224,66 @@
                 <div class="poker-card empty" id="card_h1" onclick="sel('h1')">+</div>
                 <div class="poker-card empty" id="card_h2" onclick="sel('h2')">+</div>
             </div>
-            <label style="margin-top:15px;">公共牌 (Board)</label>
+            
+            <label style="margin-top:15px;">公共牌 (Board - Flop/Turn)</label>
             <div class="hand-display" style="gap:5px;">
                 <div class="poker-card empty" style="width:40px; height:60px; font-size:1rem;" id="card_b1" onclick="sel('b1')"></div>
                 <div class="poker-card empty" style="width:40px; height:60px; font-size:1rem;" id="card_b2" onclick="sel('b2')"></div>
                 <div class="poker-card empty" style="width:40px; height:60px; font-size:1rem;" id="card_b3" onclick="sel('b3')"></div>
                 <div class="poker-card empty" style="width:40px; height:60px; font-size:1rem;" id="card_b4" onclick="sel('b4')"></div>
             </div>
-            <button class="btn-calc" onclick="calcPostflop()">分析勝率 (Analyze)</button>
-            <div id="postflopResult" style="text-align:center; margin-top:15px; display:none;">
-                <div style="color:white; font-size:1.5rem;" id="outsVal">0 Outs</div>
-                <div style="color:var(--text-muted); font-size:0.85rem;" id="drawDesc"></div>
+
+            <button class="btn-action" onclick="calcPostflop()">分析翻後勝率 (Analyze)</button>
+            
+            <div class="result-box" id="postflopResult" style="display:none;">
+                <div class="result-label">估計補牌數 (Outs)</div>
+                <div style="font-size:1.5rem; color:white;" id="outsVal">0</div>
+                
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;">
+                    <div>
+                        <div class="result-label">轉牌中牌率</div>
+                        <div class="result-val" style="font-size:1.2rem;" id="turnEquity">--%</div>
+                    </div>
+                    <div>
+                        <div class="result-label">河牌中牌率</div>
+                        <div class="result-val" style="font-size:1.2rem;" id="riverEquity">--%</div>
+                    </div>
+                </div>
+                <div style="margin-top:10px; font-size:0.8rem; color:#aaa; font-style:italic;" id="drawDesc"></div>
             </div>
         </div>
     </div>
 
     <div id="tab-bankroll" class="tab-content">
         <div class="card-panel">
-            <label>資金累積線圖 (Profit Graph)</label>
-            <div style="position:relative; width:100%; height:200px; border-bottom:1px solid #333; margin-bottom:10px;">
-                <canvas id="profitChart" width="300" height="200"></canvas>
-            </div>
-            <div style="display:flex; justify-content:space-between; font-size:0.9rem;">
-                <span id="totalProfitLabel">Total: $0</span>
-                <span style="color:var(--text-muted);" id="totalGamesLabel">Games: 0</span>
+            <label>資金趨勢圖 (Bankroll Trend)</label>
+            <canvas id="bankrollCanvas"></canvas>
+            <div style="display:flex; justify-content:space-between; margin-top:5px;">
+                <span class="result-label">總盈虧: <span id="totalProfit" style="color:white; font-weight:bold;">0</span></span>
+                <span class="result-label">場次: <span id="totalGames">0</span></span>
             </div>
         </div>
 
         <div class="card-panel">
-            <label>新增戰績 (Add Session)</label>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px;">
-                <input type="number" id="brAmount" placeholder="損益金額 (+/-)">
-                <select id="brType"><option value="Cash">Cash Game</option><option value="MTT">MTT</option></select>
+            <label>新增紀錄 (Add Record)</label>
+            <div class="row-group">
+                <input type="date" id="brDate">
+                <select id="brType">
+                    <option value="MTT">MTT</option>
+                    <option value="Cash">Cash</option>
+                </select>
             </div>
-            <input type="text" id="brNote" placeholder="備註 (地點/級別)..." style="margin-bottom:10px;">
-            <button class="btn-calc" onclick="addBankroll()">儲存紀錄 (Save)</button>
+            <div class="input-group" style="margin-top:10px;">
+                <label>盈虧金額 (Profit/Loss) <small style="color:#666">負數代表虧損</small></label>
+                <input type="number" id="brAmount" placeholder="例如: +1000 或 -500">
+            </div>
+            <button class="btn-action" onclick="addBankroll()">新增紀錄 (Save)</button>
         </div>
 
         <div class="card-panel">
-            <label>近期紀錄 (History)</label>
-            <div id="historyList"></div>
+            <label>歷史紀錄 (History)</label>
+            <div id="historyList" style="max-height:300px; overflow-y:auto;">
+                </div>
         </div>
     </div>
 
@@ -269,7 +294,7 @@
         <span class="nav-icon">📊</span> Ranges
     </div>
     <div class="nav-item" onclick="switchTab('odds', this)">
-        <span class="nav-icon">🧮</span> Odds
+        <span class="nav-icon">🧮</span> Pot Odds
     </div>
     <div class="nav-item" onclick="switchTab('postflop', this)">
         <span class="nav-icon">♠️</span> Postflop
@@ -291,211 +316,251 @@
 </div>
 
 <script>
-    // --- SERVICE WORKER ---
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(e=>console.log(e)); });
-    }
-
     // --- APP STATE ---
     const state = { h1: null, h2: null, b1:null, b2:null, b3:null, b4:null };
     let curSel = null;
     const ranks = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
-    let bankrollData = JSON.parse(localStorage.getItem('pokerBankroll') || '[]');
+    let bankrollData = JSON.parse(localStorage.getItem('pokerGodBankroll') || '[]');
 
+    // --- INITIALIZATION ---
     window.onload = () => {
-        genGrid(); genSelUI(); updateRanges(); renderBankroll();
+        genGrid();
+        genSelUI();
+        updateRanges();
+        
+        // Init Date Input
+        document.getElementById('brDate').valueAsDate = new Date();
+        
+        // Render Bankroll
+        renderBankrollUI();
+
+        // SW Register
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js').catch(e=>console.log(e));
+        }
     };
 
+    // --- TAB SYSTEM ---
     function switchTab(tabId, navEl) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.getElementById('tab-' + tabId).classList.add('active');
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
         navEl.classList.add('active');
-        if(tabId === 'bankroll') drawChart(); // Re-draw chart when visible
     }
 
     // --- LOGIC: RANGES ---
     function genGrid() {
-        const c = document.getElementById('rangeGrid'); c.innerHTML = '';
-        for(let i=0; i<13; i++) for(let j=0; j<13; j++) {
-            let div = document.createElement('div'); div.className = 'chart-cell';
-            let txt = i===j ? ranks[i]+ranks[j] : (i<j ? ranks[i]+ranks[j]+'s' : ranks[j]+ranks[i]+'o');
-            div.innerText = txt; div.dataset.h = txt; c.appendChild(div);
+        const c = document.getElementById('rangeGrid');
+        c.innerHTML = '';
+        for(let i=0; i<13; i++) {
+            for(let j=0; j<13; j++) {
+                let div = document.createElement('div');
+                div.className = 'chart-cell';
+                let txt = i===j ? ranks[i]+ranks[j] : (i<j ? ranks[i]+ranks[j]+'s' : ranks[j]+ranks[i]+'o');
+                div.innerText = txt;
+                div.dataset.h = txt;
+                div.id = `cell-${i}-${j}`;
+                c.appendChild(div);
+            }
         }
     }
 
     function updateRanges() {
         const pos = document.getElementById('heroPosition').value;
         const stack = parseInt(document.getElementById('stackDepth').value);
-        const players = parseInt(document.getElementById('playerCount').value);
+        const players = parseInt(document.getElementById('playerCount').value); // 2-10
         
-        // Strictness Score Calculation
         let score = 0; 
         if(pos==='BTN') score=5; else if(pos==='CO') score=3; else if(pos==='MP') score=1;
         if(document.getElementById('gameMode').value === 'MTT') score += 1;
         
-        // Player count adjustment: Fewer players = Looser play
-        if(players <= 6) score += 1;
-        if(players === 2) score += 4; // Heads up is very loose
+        // Player Count Logic Adjustments
+        if(players <= 3) score += 2; // Looser in Short Handed
+        else if(players <= 6) score += 1;
 
-        if(stack < 15) score = -10; // Push/Fold mode
+        if(stack < 15) score = -10; // Push Fold
 
-        document.querySelectorAll('.chart-cell').forEach(cell => {
+        const cells = document.querySelectorAll('.chart-cell');
+        cells.forEach(cell => {
             let h = cell.dataset.h;
-            let act = 0;
-            if(stack < 15) {
+            let act = 0; // 0:Fold, 1:Call, 2:Raise
+            
+            if(stack < 15) { // Push Fold logic
                 if(h.includes('A') || h[0]===h[1] || (h.includes('K') && h.includes('s'))) act=2;
             } else {
-                if(h[0]===h[1]) act = (ranks.indexOf(h[0]) < 8 + score) ? 2 : 0;
+                if(h[0]===h[1]) act = (ranks.indexOf(h[0]) < 8 + score) ? 2 : 0; 
                 else if(h.includes('s')) act = (ranks.indexOf(h[0]) < 5 + score && ranks.indexOf(h[1]) < 9 + score) ? 2 : 0;
                 else if(h.includes('o')) act = (ranks.indexOf(h[0]) < 3 + score && ranks.indexOf(h[1]) < 5) ? 2 : 0;
+                
                 if(act===0 && score > 3 && h.includes('s')) act=1; 
             }
             cell.className = 'chart-cell ' + (act===2 ? 'bg-raise' : (act===1 ? 'bg-call' : ''));
         });
     }
 
-    // --- LOGIC: ODDS & POSTFLOP ---
+    // --- LOGIC: POT ODDS ---
     function calcPotOdds() {
         let pot = parseFloat(document.getElementById('potSize').value);
         let call = parseFloat(document.getElementById('betSize').value);
         if(!pot || !call) return;
-        let req = (call / (pot + call * 2)) * 100;
-        document.getElementById('oddsResult').style.display='block';
-        document.getElementById('reqEquity').innerText = req.toFixed(1) + '%';
-        document.getElementById('oddsRatio').innerText = ((pot+call)/call).toFixed(1) + ' : 1';
+        let totalPot = pot + call + call; 
+        let reqEquity = (call / totalPot) * 100;
+        let ratio = (pot + call) / call;
+        document.getElementById('oddsResult').style.display = 'block';
+        document.getElementById('reqEquity').innerText = reqEquity.toFixed(1) + '%';
+        document.getElementById('oddsRatio').innerText = ratio.toFixed(1) + ' : 1';
     }
 
+    // --- LOGIC: POSTFLOP ---
     function calcPostflop() {
-        if(!state.h1 || !state.h2 || !state.b1 || !state.b2 || !state.b3) return;
+        if(!state.h1 || !state.h2 || !state.b1 || !state.b2 || !state.b3) {
+            alert("請選擇手牌與至少三張公牌 (Flop)"); return;
+        }
+        let cards = [state.h1, state.h2, state.b1, state.b2, state.b3];
+        if(state.b4) cards.push(state.b4);
+        
         let suits = {'s':0, 'h':0, 'c':0, 'd':0};
-        [state.h1, state.h2, state.b1, state.b2, state.b3].forEach(c => suits[c.suit.id]++);
+        cards.forEach(c => suits[c.suit.id]++);
+        
         let outs = 0; let desc = [];
-        for(let s in suits) if(suits[s]===4) { outs+=9; desc.push("Flush Draw"); }
-        if(state.h1.rank === state.h2.rank) { outs+=2; desc.push("Set Mining"); }
-        else { outs+=6; desc.push("Overcards"); }
-        if(outs>15) outs=15;
-        document.getElementById('postflopResult').style.display='block';
-        document.getElementById('outsVal').innerText = outs + ' Outs (~' + (outs*4) + '%)';
-        document.getElementById('drawDesc').innerText = desc.join(', ') || "High Card";
+        for(let s in suits) { if(suits[s] === 4) { outs += 9; desc.push("Flush Draw"); } }
+        if(state.h1.rank !== state.h2.rank) outs += 6; else outs += 2;
+        if(outs > 15) outs = 15;
+        
+        document.getElementById('postflopResult').style.display = 'block';
+        document.getElementById('outsVal').innerText = outs;
+        document.getElementById('turnEquity').innerText = (outs * 4) + '%';
+        document.getElementById('riverEquity').innerText = (outs * 2) + '%';
+        document.getElementById('drawDesc').innerText = desc.join(', ') || "High Card / Pair";
     }
 
     // --- LOGIC: BANKROLL & CHART ---
     function addBankroll() {
-        let amt = parseFloat(document.getElementById('brAmount').value);
-        let type = document.getElementById('brType').value;
-        let note = document.getElementById('brNote').value;
-        if(isNaN(amt)) return;
-
-        bankrollData.push({ id: Date.now(), date: new Date().toLocaleDateString(), amt, type, note });
-        localStorage.setItem('pokerBankroll', JSON.stringify(bankrollData));
+        const date = document.getElementById('brDate').value;
+        const type = document.getElementById('brType').value;
+        const amt = parseFloat(document.getElementById('brAmount').value);
         
-        document.getElementById('brAmount').value = '';
-        document.getElementById('brNote').value = '';
-        renderBankroll();
+        if(!date || isNaN(amt)) { alert("請輸入日期與金額"); return; }
+        
+        bankrollData.push({ id: Date.now(), date, type, amount: amt });
+        localStorage.setItem('pokerGodBankroll', JSON.stringify(bankrollData));
+        
+        document.getElementById('brAmount').value = ''; // clear
+        renderBankrollUI();
     }
 
-    function deleteEntry(id) {
+    function deleteRecord(id) {
         if(!confirm("確定刪除此紀錄?")) return;
-        bankrollData = bankrollData.filter(i => i.id !== id);
-        localStorage.setItem('pokerBankroll', JSON.stringify(bankrollData));
-        renderBankroll();
+        bankrollData = bankrollData.filter(item => item.id !== id);
+        localStorage.setItem('pokerGodBankroll', JSON.stringify(bankrollData));
+        renderBankrollUI();
     }
 
-    function renderBankroll() {
+    function renderBankrollUI() {
         const list = document.getElementById('historyList');
         list.innerHTML = '';
+        
         let total = 0;
+        let cumulativeData = []; // for chart [ {x:0, y:0}, {x:1, y:500} ... ]
+        cumulativeData.push({x:0, y:0}); // start at 0
 
-        // Render List (Newest first)
-        [...bankrollData].reverse().forEach(item => {
-            total += item.amt;
-            let div = document.createElement('div');
-            div.className = 'history-item';
-            div.innerHTML = `
+        // Sort by date (optional, strictly speaking input order might be better for chronological chart if user inputs backlog)
+        // Let's assume input order for now or sort by ID/Date
+        // bankrollData.sort((a,b) => new Date(a.date) - new Date(b.date));
+
+        bankrollData.forEach((item, index) => {
+            total += item.amount;
+            cumulativeData.push({ x: index+1, y: total });
+
+            let el = document.createElement('div');
+            el.className = 'history-item';
+            el.innerHTML = `
                 <div>
-                    <div style="font-weight:bold;" class="${item.amt >= 0 ? 'profit-pos' : 'profit-neg'}">
-                        ${item.amt >= 0 ? '+' : ''}${item.amt} <span style="font-size:0.7em; color:#888;">(${item.type})</span>
-                    </div>
-                    <div class="history-note">${item.note || '-'}</div>
+                    <div style="font-size:0.85rem; color:#ccc;">${item.date} <span style="background:#333; padding:2px 4px; border-radius:3px; font-size:0.7rem;">${item.type}</span></div>
                 </div>
-                <div style="text-align:right;">
-                    <div class="history-date">${item.date}</div>
-                    <div class="del-btn" onclick="deleteEntry(${item.id})">✕</div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <span class="history-val ${item.amount>=0?'pos-val':'neg-val'}">${item.amount>=0?'+':''}${item.amount}</span>
+                    <button class="btn-delete" onclick="deleteRecord(${item.id})">✕</button>
                 </div>
             `;
-            list.appendChild(div);
+            list.prepend(el); // Newest top
         });
 
-        // Update Totals
-        // Re-calc total strictly for display sum
-        let sum = bankrollData.reduce((acc, curr) => acc + curr.amt, 0);
-        document.getElementById('totalProfitLabel').innerHTML = `Total: <span class="${sum>=0?'profit-pos':'profit-neg'}">$${sum}</span>`;
-        document.getElementById('totalGamesLabel').innerText = `Games: ${bankrollData.length}`;
+        document.getElementById('totalProfit').innerText = (total>=0?'+':'') + total;
+        document.getElementById('totalProfit').style.color = total>=0 ? 'var(--accent)' : 'var(--danger)';
+        document.getElementById('totalGames').innerText = bankrollData.length;
 
-        drawChart();
+        drawChart(cumulativeData);
     }
 
-    function drawChart() {
-        const cvs = document.getElementById('profitChart');
-        const ctx = cvs.getContext('2d');
-        const w = cvs.width, h = cvs.height;
-        ctx.clearRect(0, 0, w, h);
+    function drawChart(data) {
+        const canvas = document.getElementById('bankrollCanvas');
+        const ctx = canvas.getContext('2d');
+        // Fit canvas to container
+        const rect = canvas.parentElement.getBoundingClientRect();
+        canvas.width = rect.width; 
+        canvas.height = 220;
+        
+        const w = canvas.width;
+        const h = canvas.height;
+        const padding = 20;
 
-        if(bankrollData.length === 0) {
-            ctx.fillStyle = '#444'; ctx.font = '12px Arial';
-            ctx.fillText("尚無數據 (No Data)", w/2 - 40, h/2);
+        // Clear
+        ctx.clearRect(0, 0, w, h);
+        
+        if(data.length < 2) {
+            ctx.fillStyle = "#666"; ctx.font = "14px Arial"; ctx.textAlign = "center";
+            ctx.fillText("尚無足夠數據繪製圖表 (No Data)", w/2, h/2);
             return;
         }
 
-        // Prepare Data Points (Cumulative)
-        let dataPoints = [];
-        let runningTotal = 0;
-        dataPoints.push(0); // Start at 0
-        bankrollData.forEach(d => {
-            runningTotal += d.amt;
-            dataPoints.push(runningTotal);
-        });
+        // Find Scale
+        let maxY = -Infinity, minY = Infinity;
+        data.forEach(p => { if(p.y > maxY) maxY = p.y; if(p.y < minY) minY = p.y; });
+        // Add padding to Y
+        let range = maxY - minY;
+        if(range === 0) range = 100; // prevent zero division
+        maxY += range * 0.1; minY -= range * 0.1;
 
-        // Find min/max for scaling
-        let maxVal = Math.max(...dataPoints);
-        let minVal = Math.min(...dataPoints);
-        if(maxVal === minVal) { maxVal += 100; minVal -= 100; } // avoid flat line issue
-        let padding = 20;
-
-        // Helper to map values to pixels
-        const mapX = (i) => padding + (i / (dataPoints.length - 1)) * (w - padding * 2);
-        const mapY = (val) => h - (padding + ((val - minVal) / (maxVal - minVal)) * (h - padding * 2));
+        const mapX = (i) => padding + (i / (data.length - 1)) * (w - padding * 2);
+        const mapY = (val) => h - (padding + ((val - minY) / (maxY - minY)) * (h - padding * 2));
 
         // Draw Zero Line
-        let zeroY = mapY(0);
-        if(zeroY >= 0 && zeroY <= h) {
-            ctx.beginPath(); ctx.strokeStyle = '#333'; ctx.lineWidth = 1;
-            ctx.moveTo(padding, zeroY); ctx.lineTo(w-padding, zeroY); ctx.stroke();
+        if(minY < 0 && maxY > 0) {
+            let zeroY = mapY(0);
+            ctx.beginPath(); ctx.strokeStyle = "rgba(255,255,255,0.2)"; ctx.setLineDash([5, 5]);
+            ctx.moveTo(padding, zeroY); ctx.lineTo(w-padding, zeroY); ctx.stroke(); ctx.setLineDash([]);
         }
 
-        // Draw Line Path
+        // Draw Line
         ctx.beginPath();
-        ctx.strokeStyle = '#10b981'; ctx.lineWidth = 2;
-        dataPoints.forEach((val, i) => {
-            let x = mapX(i);
-            let y = mapY(val);
-            if(i===0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-        });
+        ctx.strokeStyle = "#3b82f6"; ctx.lineWidth = 3;
+        ctx.moveTo(mapX(0), mapY(data[0].y));
+        
+        for(let i=1; i<data.length; i++) {
+            ctx.lineTo(mapX(i), mapY(data[i].y));
+        }
         ctx.stroke();
 
-        // Draw Dots
-        dataPoints.forEach((val, i) => {
-            let x = mapX(i);
-            let y = mapY(val);
-            ctx.beginPath();
-            ctx.fillStyle = val >= 0 ? '#10b981' : '#ef4444';
-            ctx.arc(x, y, 3, 0, Math.PI * 2);
-            ctx.fill();
+        // Draw Gradient Area
+        ctx.lineTo(mapX(data.length-1), h);
+        ctx.lineTo(mapX(0), h);
+        ctx.closePath();
+        let grad = ctx.createLinearGradient(0, 0, 0, h);
+        grad.addColorStop(0, "rgba(59, 130, 246, 0.3)");
+        grad.addColorStop(1, "rgba(59, 130, 246, 0.0)");
+        ctx.fillStyle = grad;
+        ctx.fill();
+
+        // Draw Points
+        data.forEach((p, i) => {
+            let px = mapX(i); let py = mapY(p.y);
+            ctx.beginPath(); ctx.fillStyle = "#fff";
+            ctx.arc(px, py, 3, 0, Math.PI*2); ctx.fill();
         });
     }
 
-    // --- HELPER UI ---
+    // --- UI HELPERS ---
     function genSelUI() {
         const suits = [{id:'s',s:'♠',c:'suit-s'},{id:'h',s:'♥',c:'suit-h'},{id:'c',s:'♣',c:'suit-c'},{id:'d',s:'♦',c:'suit-d'}];
         suits.forEach(s => {
@@ -506,6 +571,7 @@
             });
         });
     }
+    
     function sel(id) { curSel=id; document.getElementById('cardModal').style.display='flex'; }
     function closeSel() { document.getElementById('cardModal').style.display='none'; }
     function setCard(r,s) {
@@ -516,5 +582,6 @@
         closeSel();
     }
 </script>
+
 </body>
 </html>
