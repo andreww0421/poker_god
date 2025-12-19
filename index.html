@@ -14,21 +14,18 @@
         :root {
             --bg-dark: #0f172a;
             --bg-panel: rgba(30, 41, 59, 0.85);
-            --accent: #10b981; /* Emerald Green - Raise/Win */
+            --accent: #10b981; 
             --accent-glow: rgba(16, 185, 129, 0.3);
-            --danger: #ef4444; /* All-in/Loss */
-            --warning: #f59e0b; /* Call */
-            --info: #3b82f6;
-            --nuts: #8b5cf6;
+            --danger: #ef4444; 
             --text-main: #f1f5f9;
             --text-muted: #94a3b8;
             --border: rgba(255,255,255,0.1);
             
-            /* Chart Colors */
-            --c-raise: #10b981; /* Green */
-            --c-call: #f59e0b;  /* Yellow/Orange */
-            --c-allin: #ef4444; /* Red */
-            --c-fold: #1e293b;  /* Dark Blue/Gray */
+            /* GTO Chart Colors (Modern Solver Style) */
+            --c-raise: #10b981; /* Green: Raise */
+            --c-call: #eab308;  /* Yellow: Call */
+            --c-allin: #ef4444; /* Red: All-in */
+            --c-fold: #334155;  /* Dark Blue-Grey: Fold */
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -68,7 +65,7 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
 
-        /* Inputs & Buttons */
+        /* Inputs */
         .input-group { margin-bottom: 12px; }
         .row-group { display: flex; gap: 10px; }
         label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 6px; display: block; }
@@ -91,28 +88,30 @@
             padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid var(--border);
             color: var(--text-muted); border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: 0.2s;
         }
-        .btn-opp.active { background: var(--info); color: white; border-color: var(--info); box-shadow: 0 0 10px rgba(59, 130, 246, 0.4); }
+        .btn-opp.active { background: #3b82f6; color: white; border-color: #3b82f6; box-shadow: 0 0 10px rgba(59, 130, 246, 0.4); }
 
         /* Strength Meter */
         .meter-bg { width: 100%; height: 10px; background: #334155; border-radius: 5px; overflow: hidden; margin: 15px 0 5px 0; }
         .meter-fill { height: 100%; width: 0%; transition: width 0.5s ease, background-color 0.5s ease; }
         
-        /* Poker Cards */
+        /* Poker Cards - FIX: BLACK TEXT */
         .hand-display { display: flex; gap: 12px; justify-content: center; margin: 15px 0; }
         .poker-card {
             width: 55px; height: 78px; background: #e2e8f0; border-radius: 6px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            font-weight: bold; font-size: 1.3rem; cursor: pointer; position: relative;
+            font-weight: 800; font-size: 1.4rem; cursor: pointer; position: relative;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: transform 0.1s;
+            color: #000 !important; /* Force Black Text */
         }
         .poker-card:active { transform: scale(0.95); }
-        .poker-card.empty { background: rgba(255,255,255,0.05); border: 2px dashed var(--text-muted); color: var(--text-muted); box-shadow: none; }
+        .poker-card.empty { background: rgba(255,255,255,0.05); border: 2px dashed var(--text-muted); color: var(--text-muted) !important; box-shadow: none; font-weight: normal; }
         .poker-card.selected { border: 2px solid var(--accent); background: white; }
         
-        .suit-s { color: #1e293b; }
-        .suit-h { color: #ef4444; }
-        .suit-c { color: #10b981; }
-        .suit-d { color: #3b82f6; }
+        /* Suit Colors */
+        .suit-s { color: #000; } 
+        .suit-h { color: #dc2626; } 
+        .suit-c { color: #16a34a; } 
+        .suit-d { color: #2563eb; } 
 
         /* Navigation */
         .bottom-nav {
@@ -133,17 +132,23 @@
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Grid & Result */
+        /* 13x13 Grid - GRADIENT STYLE */
         .chart-container { display: grid; grid-template-columns: repeat(13, 1fr); gap: 1px; background: #000; padding: 1px; border-radius: 4px; overflow: hidden; }
-        .chart-cell { aspect-ratio: 1; font-size: 0.55rem; display: flex; align-items: center; justify-content: center; background: var(--c-fold); color: #64748b; font-weight:500; }
-        
-        /* Dynamic Range Colors */
-        .chart-cell.bg-raise { background: var(--c-raise); color: #000; font-weight:bold; }
-        .chart-cell.bg-call { background: var(--c-call); color: #000; font-weight:bold; }
-        .chart-cell.bg-allin { background: var(--c-allin); color: #fff; font-weight:bold; }
-        
+        .chart-cell { 
+            aspect-ratio: 1; font-size: 0.5rem; display: flex; align-items: center; justify-content: center; 
+            background-color: var(--c-fold); color: #fff; font-weight:500; text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+            position: relative;
+        }
+        .legend-dot { width:10px; height:10px; margin-right:4px; border-radius:2px; }
+
         .result-box { text-align: center; margin-top: 15px; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 8px; }
-        .ai-advice-text { text-align: left; margin-top: 15px; line-height: 1.6; font-size: 0.95rem; color: #e2e8f0; border-left: 3px solid var(--accent); padding-left: 12px; }
+        /* Improved AI Text */
+        .ai-advice-text { 
+            text-align: left; margin-top: 15px; line-height: 1.6; font-size: 0.95rem; color: #e2e8f0; 
+            border-left: 3px solid var(--accent); padding-left: 15px; background: rgba(255,255,255,0.03); border-radius: 0 8px 8px 0; padding: 15px;
+        }
+        .ai-list { margin: 5px 0 0 0; padding-left: 20px; color: #cbd5e1; font-size: 0.9rem; }
+        .ai-list li { margin-bottom: 4px; }
         .category-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; background: #334155; font-size: 0.8rem; margin-bottom: 5px; }
 
         /* Modal & Canvas */
@@ -153,7 +158,6 @@
         .rank-btn { flex: 1; padding: 10px 0; background: #334155; border: none; color: white; border-radius: 4px; font-weight: bold; }
         canvas#bankrollCanvas { width: 100%; height: 220px; background: rgba(0,0,0,0.2); border-radius: 8px; margin-bottom: 10px; }
         
-        /* Updated History Item */
         .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
         .history-val { font-weight: bold; font-family: monospace; font-size: 1.1rem; }
         .pos-val { color: var(--accent); } .neg-val { color: var(--danger); }
@@ -163,7 +167,7 @@
 
 <header>
     <h1>Poker God <span style="font-size:0.5em; opacity:0.8; color:white; background:none;">PRO</span></h1>
-    <div style="font-size:0.8rem; color:var(--text-muted);">v2.5</div>
+    <div style="font-size:0.8rem; color:var(--text-muted);">v3.0 GTO</div>
 </header>
 
 <div class="container">
@@ -175,14 +179,14 @@
                 
                 <select id="playerCount" onchange="updateRanges()">
                     <option value="2">2人 (Heads Up)</option>
-                    <option value="3">3人 Table</option>
-                    <option value="4">4人 Table</option>
-                    <option value="5">5人 Table</option>
+                    <option value="3">3人</option>
+                    <option value="4">4人</option>
+                    <option value="5">5人</option>
                     <option value="6">6人 (6-Max)</option>
-                    <option value="7">7人 Table</option>
-                    <option value="8">8人 Table</option>
+                    <option value="7">7人</option>
+                    <option value="8">8人</option>
                     <option value="9" selected>9人 (Full Ring)</option>
-                    <option value="10">10人 Table</option>
+                    <option value="10">10人</option>
                 </select>
 
                 <select id="heroPosition" onchange="updateRanges()">
@@ -193,13 +197,13 @@
             <div style="margin-top:10px; font-size:0.8rem; color:var(--text-muted); font-style:italic;" id="rangeInfoText"></div>
         </div>
         <div class="card-panel">
-            <label>13x13 翻前範圍圖 (Preflop Grid)</label>
+            <label>13x13 混合頻率圖 (Mixed Frequencies)</label>
             <div class="chart-container" id="rangeGrid"></div>
             <div style="display:flex; justify-content:center; gap:10px; margin-top:10px; font-size:0.75rem; color:#fff; flex-wrap:wrap;">
-                <span style="display:flex; align-items:center;"><div style="width:10px;height:10px;background:var(--c-raise);margin-right:4px;"></div> Raise (RFI)</span>
-                <span style="display:flex; align-items:center;"><div style="width:10px;height:10px;background:var(--c-call);margin-right:4px;"></div> Call</span>
-                <span style="display:flex; align-items:center;"><div style="width:10px;height:10px;background:var(--c-allin);margin-right:4px;"></div> All-in</span>
-                <span style="display:flex; align-items:center;"><div style="width:10px;height:10px;background:var(--c-fold);margin-right:4px;"></div> Fold</span>
+                <span style="display:flex; align-items:center;"><div class="legend-dot" style="background:var(--c-allin)"></div> All-in</span>
+                <span style="display:flex; align-items:center;"><div class="legend-dot" style="background:var(--c-raise)"></div> Raise</span>
+                <span style="display:flex; align-items:center;"><div class="legend-dot" style="background:var(--c-call)"></div> Call</span>
+                <span style="display:flex; align-items:center;"><div class="legend-dot" style="background:var(--c-fold)"></div> Fold</span>
             </div>
         </div>
     </div>
@@ -316,6 +320,7 @@
     const state = { h1: null, h2: null, b1:null, b2:null, b3:null, b4:null, b5:null, oppAction: null };
     let curSel = null;
     const ranks = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
+    const ranksMap = {'A':14,'K':13,'Q':12,'J':11,'T':10,'9':9,'8':8,'7':7,'6':6,'5':5,'4':4,'3':3,'2':2};
     let bankrollData = JSON.parse(localStorage.getItem('pokerGodBankroll') || '[]');
 
     window.onload = () => {
@@ -332,102 +337,107 @@
         el.classList.add('active');
     }
 
-    // --- ADVANCED RANGES LOGIC (GTO) ---
+    // --- MIXED STRATEGY ENGINE ---
     function genGrid() {
         const c = document.getElementById('rangeGrid'); c.innerHTML='';
         for(let i=0; i<13; i++) for(let j=0; j<13; j++) {
             let d=document.createElement('div'); d.className='chart-cell';
-            let r1 = 14-i; let r2 = 14-j;
-            let type = i===j ? 'pair' : (i<j ? 'suited' : 'offsuit');
-            let t = i===j ? ranks[i]+ranks[j] : (i<j ? ranks[i]+ranks[j]+'s' : ranks[j]+ranks[i]+'o');
-            d.innerText=t; d.dataset.h=t; 
-            d.dataset.r1=r1; d.dataset.r2=r2; d.dataset.type=type;
+            let t=i===j?ranks[i]+ranks[j]:(i<j?ranks[i]+ranks[j]+'s':ranks[j]+ranks[i]+'o');
+            d.innerText=t; d.dataset.h=t; d.dataset.r1=14-i; d.dataset.r2=14-j; 
+            d.dataset.type = i===j?'pair':(i<j?'suited':'offsuit');
             c.appendChild(d);
         }
     }
 
     function updateRanges() {
-        const stack = parseInt(document.getElementById('stackDepth').value);
-        const pos = document.getElementById('heroPosition').value;
-        const pCount = parseInt(document.getElementById('playerCount').value);
-        const mode = document.getElementById('gameMode').value;
+        const stack=parseInt(document.getElementById('stackDepth').value);
+        const pos=document.getElementById('heroPosition').value;
+        const pCount=parseInt(document.getElementById('playerCount').value);
         const info = document.getElementById('rangeInfoText');
 
-        let actType = 'raise'; // default
-        let title = `Standard Open (RFI) - ${pos}`;
+        let mode = "RFI";
+        if(stack < 15) mode = "PushFold";
+        else if (pos === 'BB') mode = "BBDef";
+        else if (pos === 'SB' && pCount > 2) mode = "SB";
 
-        if(stack < 15) {
-            title = `Push / Fold (Nash) - ${stack}BB`;
-            actType = 'push';
-        } else if (pos === 'BB') {
-            title = "BB Defense vs Open (Call/3Bet)";
-            actType = 'defense';
-        } else if (pos === 'SB' && pCount > 2) {
-            title = "SB Strategy (Raise/Limp)";
-            actType = 'sb_mix';
-        }
-
-        info.innerText = `${title} | ${mode} ${pCount}-Max`;
+        info.innerText = `Strategy: ${mode} (${stack}BB) - ${pos}`;
 
         document.querySelectorAll('.chart-cell').forEach(c => {
             let r1 = parseInt(c.dataset.r1), r2 = parseInt(c.dataset.r2), type = c.dataset.type;
-            let action = 0; // 0:Fold, 1:Call, 2:Raise, 3:Allin
-
-            if(actType === 'push') action = getPushFoldAction(r1, r2, type, pos, stack);
-            else if(actType === 'defense') action = getBBDefenseAction(r1, r2, type, stack);
-            else if(actType === 'sb_mix') action = getSBAction(r1, r2, type, stack);
-            else action = getRFIAction(r1, r2, type, pos, pCount);
-
-            c.className = 'chart-cell';
-            if(action===3) c.classList.add('bg-allin');
-            else if(action===2) c.classList.add('bg-raise');
-            else if(action===1) c.classList.add('bg-call');
+            
+            // Calculate Frequencies {a: allin, r: raise, c: call, f: fold}
+            let freqs = getFrequencies(r1, r2, type, pos, stack, mode);
+            
+            // Build Gradient from Percentages
+            let stop1 = freqs.a;
+            let stop2 = stop1 + freqs.r;
+            let stop3 = stop2 + freqs.c;
+            
+            // Linear Gradient to simulate mixed strategy visual
+            let grad = `linear-gradient(135deg, 
+                var(--c-allin) 0% ${stop1}%, 
+                var(--c-raise) ${stop1}% ${stop2}%, 
+                var(--c-call) ${stop2}% ${stop3}%, 
+                var(--c-fold) ${stop3}% 100%)`;
+            
+            c.style.background = grad;
         });
     }
 
-    // --- LOGIC FUNCTIONS ---
-    function getPushFoldAction(r1, r2, type, pos, stack) {
-        let score = r1 + r2 + (type==='pair'?12:0) + (type==='suited'?4:0);
-        let minScore = 24; 
-        if(pos==='BTN' || pos==='SB') minScore -= 10; else if(pos==='CO') minScore -= 6; else if(pos==='MP') minScore -= 3;
-        minScore += (stack - 10) * 0.8; 
-        if(type==='pair') { if(r1 >= 7) return 3; if(stack < 8 && r1 >= 2) return 3; }
-        if(type==='suited' && r1===14) return 3; 
-        return score >= minScore ? 3 : 0;
-    }
-    function getBBDefenseAction(r1, r2, type, stack) {
-        let is3Bet = false;
-        if(type==='pair' && r1>=10) is3Bet = true;
-        if(type==='offsuit' && r1===14 && r2>=11) is3Bet = true;
-        if(type==='suited' && ( (r1===14 && r2>=10) || (r1===14 && r2<=5) )) is3Bet = true; 
-        if(is3Bet) return 2; 
-        if(type==='pair') return 1; 
-        if(type==='suited') { if(r1 >= 9) return 1; if(r1+r2 >= 12 && r1-r2 <= 2) return 1; if(r1-r2 === 2 && r1 >= 8) return 1; return 0; }
-        if(type==='offsuit') { if(r1===14) return 1; if(r1+r2 >= 20) return 1; if(r1+r2 >= 18 && r1-r2<=1) return 1; return 0; }
-        return 0;
-    }
-    function getSBAction(r1, r2, type, stack) {
-        if(type==='pair' && r1>=8) return 2; if(type==='offsuit' && r1>=13 && r2>=10) return 2; if(type==='suited' && r1>=10) return 2;
-        if(type==='pair') return 1; if(type==='suited') return 1; if(type==='offsuit' && r1+r2 >= 16) return 1; 
-        return 0;
-    }
-    function getRFIAction(r1, r2, type, pos, pCount) {
-        let tightness = 0; 
-        if(pos==='MP') tightness = 1; if(pos==='CO') tightness = 3; if(pos==='BTN') tightness = 5; if(pos==='SB') tightness = 4; 
-        if(pCount <= 6 && pos==='EP') tightness = 1;
-        let pairLimit = 7 - tightness; 
-        if(type==='pair') { if(r1 >= pairLimit) return 2; if(pos==='BTN' || pos==='SB') return 2; }
-        if(type==='suited') {
-            if(r1 >= 14 - (tightness*0.8)) return 2; if(r1 === 13 && r2 >= 10 - tightness) return 2; 
-            let minSum = 22 - (tightness * 2.5); if(r1+r2 >= minSum && r1-r2 <= 2) return 2;
-            if(tightness >= 5) { if(r1 >= 10) return 2; if(r1 >= 8 && r1-r2<=2) return 2; }
+    // --- FREQUENCY CALCULATOR (Simulated Solver Logic) ---
+    function getFrequencies(r1, r2, type, pos, stack, mode) {
+        let f = {a:0, r:0, c:0, f:100}; // Default Fold
+        let score = r1*2 + r2 + (type==='pair'?20:0) + (type==='suited'?6:0);
+        
+        // 1. PUSH / FOLD (<15BB)
+        if(mode === "PushFold") {
+            let threshold = 35 - (stack - 5); 
+            if(pos==='BTN'||pos==='SB') threshold -= 12; else if(pos==='CO') threshold -= 6;
+            
+            if(type==='pair') {
+                if(r1>=7) { f.a=100; f.f=0; return f; } 
+                if(r1>=2 && r1<7) { 
+                   // Low pairs mix Push/Fold based on stack
+                   let pushProb = (8-r1)*10 + (15-stack)*5; 
+                   if(pos==='BTN'||pos==='SB') pushProb += 30;
+                   pushProb = Math.min(100, Math.max(0, pushProb));
+                   f.a = pushProb; f.f = 100-pushProb; return f;
+                }
+            }
+            if(score >= threshold + 5) { f.a=100; f.f=0; }
+            else if(score >= threshold) { f.a=50; f.f=50; } // Mix
+            return f;
         }
-        if(type==='offsuit') {
-            if(r1===14 && r2 >= 10 - (tightness*1.2)) return 2; if(r1===13 && r2 >= 11 - tightness) return 2; 
-            if(tightness >= 3) { if(r1===12 && r2 >= 9) return 2; if(r1===11 && r2 >= 9) return 2; }
+
+        // 2. BB DEFENSE
+        if(mode === "BBDef") {
+            // 3Bet Region (Top)
+            if((type==='pair'&&r1>=10) || (type==='offsuit'&&r1===14&&r2>=12) || (type==='suited'&&r1===14&&r2>=11)) {
+                f.r = 80; f.c = 20; f.f = 0; return f; // Mix 3Bet/Call
+            }
+            // Call Region
+            let callThresh = 25;
+            if(score >= callThresh) { f.c=100; f.f=0; return f; }
+            if(score >= callThresh - 5) { f.c=40; f.f=60; return f; } // Marginal defense
+            return f;
         }
-        return 0;
+
+        // 3. RFI (Standard Open)
+        // Adjust tightness
+        let t = 0; 
+        if(pos==='MP') t=5; if(pos==='CO') t=12; if(pos==='BTN') t=20; if(pos==='SB') t=18;
+        
+        let openThresh = 45 - t;
+        
+        // Pure Raise
+        if(score >= openThresh + 5) { f.r=100; f.f=0; return f; }
+        
+        // Mixed Bottom Range
+        if(score >= openThresh) { f.r=50; f.f=50; return f; }
+        
+        return f;
     }
+
 
     // --- ODDS ---
     function calcPotOdds() {
@@ -455,27 +465,45 @@
         let rCounts = {}; ranksAll.forEach(r => rCounts[r] = (rCounts[r]||0)+1);
         let pairs = Object.values(rCounts).filter(v => v===2).length;
         let sets = Object.values(rCounts).filter(v => v===3).length;
-        let quads = Object.values(rCounts).filter(v => v===4).length;
-
         let score=0, catText="High Card", barColor="#ef4444";
-        if (isFlush||quads>0||(sets>0&&pairs>0)) { score=95; catText="Monster/Nuts"; barColor="#8b5cf6"; }
-        else if (sets>0) { score=80; catText="Set"; barColor="#10b981"; }
-        else if (pairs>=2) { score=65; catText="Two Pair"; barColor="#10b981"; }
-        else if (pairs===1) { score=45; catText="One Pair"; barColor="#f59e0b"; }
-        else if (isDraw) { score=35; catText="Flush Draw"; barColor="#f59e0b"; }
-        else { score=15; catText="Air/Weak"; barColor="#ef4444"; }
+        
+        if (isFlush || sets>0&&pairs>0) { score=95; catText="Monster/Nuts"; barColor="#8b5cf6"; }
+        else if (sets>0) { score=80; catText="Set (三條)"; barColor="#10b981"; }
+        else if (pairs>=2) { score=65; catText="Two Pair (兩對)"; barColor="#10b981"; }
+        else if (pairs===1) { score=45; catText="One Pair (一對)"; barColor="#f59e0b"; }
+        else if (isDraw) { score=35; catText="Draw (聽牌)"; barColor="#f59e0b"; }
+        else { score=15; catText="Air (空氣)"; barColor="#ef4444"; }
 
-        let advice = ""; const act = state.oppAction;
-        if (act==='check') advice = score>60 ? "價值下注 (Value Bet)" : (score>30 ? "過牌控池 (Check Back)" : "詐唬或放棄 (Bluff/Give up)");
-        else if (act==='bet') advice = score>70 ? "加注 (Raise)" : (score>40 ? "跟注 (Call)" : "棄牌 (Fold)");
-        else if (act==='raise') advice = score>80 ? "再加注 (3-Bet)" : (score>50 ? "痛苦跟注 (Call)" : "果斷棄牌 (Fold)");
-        else if (act==='3bet') advice = score>85 ? "全下 (Shove)" : "棄牌 (Fold)";
-        else if (act==='allin') advice = score>70 ? "跟注 (Call)" : (score>30&&isDraw ? "計算賠率" : "棄牌 (Fold)");
+        // --- DETAILED AI ADVICE GENERATION ---
+        let adviceHtml = "";
+        const act = state.oppAction;
+        
+        adviceHtml += `<strong>當前局勢分析:</strong> 對手行動為 <span style="color:var(--accent)">${act.toUpperCase()}</span>，你的牌力定義為 <strong>${catText}</strong>。<br>`;
+        
+        adviceHtml += `<ul class="ai-list">`;
+        
+        if (act === 'check') {
+            if(score > 60) adviceHtml += `<li><strong>價值下注 (Value Bet):</strong> 對手示弱。建議下注底池的 66%-75% 來獲取價值。</li><li><strong>保護手牌:</strong> 若牌面潮濕 (Wet Board)，更應該下注以拒絕底池權益。</li>`;
+            else if(score > 30) adviceHtml += `<li><strong>過牌控池 (Pot Control):</strong> 你的牌力中等或有聽牌。過牌可以免費看轉牌，實現權益 (Realize Equity)。</li><li><strong>避免被加注:</strong> 下注可能導致被 Check-Raise，過牌是安全的 GTO 選項。</li>`;
+            else adviceHtml += `<li><strong>放棄/微詐唬:</strong> 若你有位置優勢 (IP)，可嘗試小注偷底，但大部分時候建議過牌放棄。</li>`;
+        } 
+        else if (act === 'bet') {
+            adviceHtml += `<li><strong>底池賠率:</strong> 請使用上方計算機確認賠率是否合適。</li>`;
+            if(score > 70) adviceHtml += `<li><strong>加注 (Raise):</strong> 這是強牌。如果是堅果，可以慢打 (Call)；如果是怕被反超的牌，建議加注 (x3)。</li>`;
+            else if(score > 40) adviceHtml += `<li><strong>跟注 (Call):</strong> 你的牌力足以抓詐唬，或你有聽牌賠率。不要加注打跑對手的詐唬範圍。</li>`;
+            else adviceHtml += `<li><strong>棄牌 (Fold):</strong> 對手下注代表有牌或強詐唬。你的空氣牌沒有勝算，長期來看棄牌是 +EV。</li>`;
+        }
+        else if (act === 'allin') {
+            if(score > 80) adviceHtml += `<li><strong>秒接 (Snap Call):</strong> 你的牌力在頂端範圍，輸了也無怨無悔 (Cooler)。</li>`;
+            else if(score > 40 && isDraw) adviceHtml += `<li><strong>數學計算:</strong> 計算你的補牌數 (Outs) x 2 (或4)。若勝率 > 底池賠率，則必須跟注。</li>`;
+            else adviceHtml += `<li><strong>棄牌 (Fold):</strong> 不要用邊緣牌接全下。保護你的資金 (Bankroll)。</li>`;
+        }
+        adviceHtml += `</ul>`;
 
         document.getElementById('postflopResult').style.display='block';
         let bar=document.getElementById('strengthBar'); bar.style.width=score+'%'; bar.style.backgroundColor=barColor;
-        let cat=document.getElementById('handCategory'); cat.innerText=catText; cat.style.color=barColor;
-        document.getElementById('aiAdvice').innerHTML = advice;
+        document.getElementById('handCategory').innerText=catText; document.getElementById('handCategory').style.color=barColor;
+        document.getElementById('aiAdvice').innerHTML = adviceHtml;
     }
 
     // --- BANKROLL ---
