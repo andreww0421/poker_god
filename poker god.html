@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poker God - Dynamic Ranges</title>
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --bg-panel: #1e1e1e;
+            --accent: #00e676;
+            --accent-hover: #00a854;
+            --text-main: #e0e0e0;
+            --text-muted: #a0a0a0;
+            --danger: #ff5252;   /* Raise/All-in */
+            --warning: #ffb74d;  /* Call/Mixed */
+            --fold: #2c2c2c;     /* Fold */
+            --border: #333;
+        }
+
+        * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            margin: 0;
+            padding: 10px;
+            padding-bottom: 80px;
+        }
+
+        .container { max-width: 900px; margin: 0 auto; }
+
+        header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px;
+        }
+        h1 { margin: 0; font-size: 1.4rem; color: var(--accent); }
+        
+        .card-panel {
+            background-color: var(--bg-panel);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        /* Input Grid */
+        .controls-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+        }
+        @media (min-width: 600px) { .controls-grid { grid-template-columns: repeat(4, 1fr); } }
+
+        label { font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px; }
+        select, input {
+            width: 100%; background: #2a2a2a; border: 1px solid #444; color: white;
+            padding: 8px; border-radius: 6px; font-size: 0.95rem;
+        }
+
+        /* Hand Selector */
+        .hand-display { display: flex; gap: 10px; justify-content: center; margin: 10px 0; }
+        .poker-card {
+            width: 45px; height: 65px; background: #eee; border-radius: 5px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 1.1rem; cursor: pointer; border: 2px solid transparent;
+        }
+        .poker-card.empty { background: #333; border: 2px dashed #555; color: #555; }
+        .poker-card.selected { border-color: var(--accent); background: white; }
+        
+        /* 13x13 Grid Chart */
+        .chart-container {
+            width: 100%;
+            max-width: 500px; /* Limit width on desktop */
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(13, 1fr);
+            gap: 2px;
+            background: #000;
+            padding: 2px;
+            border: 1px solid #444;
+        }
+        .chart-cell {
+            aspect-ratio: 1;
+            font-size: 0.6rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--fold);
+            color: #777;
+            cursor: default;
+            user-select: none;
+            position: relative;
+        }
+        .chart-cell.active { border: 2px solid #fff; z-index: 10; box-shadow: 0 0 5px white; color: black; font-weight: bold; }
+        
+        /* Action Colors */
+        .bg-raise { background-color: var(--danger); color: white; }
+        .bg-call { background-color: var(--warning); color: black; }
+        .bg-fold { background-color: var(--fold); }
+
+        /* Legend */
+        .legend { display: flex; gap: 15px; justify-content: center; margin-top: 10px; font-size: 0.8rem; }
+        .legend-item { display: flex; align-items: center; gap: 5px; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
+
+        /* Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100; justify-content: center; align-items: center; }
+        .modal-content { background: var(--bg-panel); padding: 20px; border-radius: 12px; width: 90%; max-width: 380px; }
+        .suit-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+        .rank-btn { width: 100%; padding: 8px 0; background: #333; border: none; color: white; border-radius: 4px; margin: 0 2px; }
+        .suit-s { color: #000; } .suit-h { color: var(--danger); } .suit-c { color: var(--accent); } .suit-d { color: #2979ff; }
+
+        .btn-analyze {
+            width: 100%; padding: 12px; background: var(--accent); border: none; border-radius: 8px; font-weight: bold; margin-top: 10px; cursor: pointer; color: black;
+        }
+        
+        .ai-text { margin-top: 10px; padding: 10px; background: #252525; border-left: 4px solid var(--accent); font-size: 0.9rem; line-height: 1.4; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Poker God <small style="font-size:0.5em; opacity:0.7;">Range Visualizer</small></h1>
+        <button onclick="resetApp()" style="background:transparent; border:1px solid #555; color:#888; padding:4px 8px; border-radius:4px;">Reset</button>
+    </header>
+
+    <div class="card-panel">
+        <div class="controls-grid">
+            <div>
+                <label>賽制 (Format)</label>
+                <select id="gameMode" onchange="updateAll()">
+                    <option value="MTT">錦標賽 (MTT)</option>
+                    <option value="Cash">現金桌 (Cash)</option>
+                </select>
+            </div>
+            <div>
+                <label>人數 (Players)</label>
+                <select id="playerCount" onchange="updateAll()">
+                    <option value="2">2 (Heads Up)</option>
+                    <option value="6">6 (6-Max)</option>
+                    <option value="9">9 (Full Ring)</option>
+                </select>
+            </div>
+            <div>
+                <label>位置 (Position)</label>
+                <select id="heroPosition" onchange="updateAll()">
+                    <option value="EP">EP (UTG/UTG+1)</option>
+                    <option value="MP">MP</option>
+                    <option value="CO">CO</option>
+                    <option value="BTN">BTN</option>
+                    <option value="SB">SB</option>
+                    <option value="BB">BB</option>
+                </select>
+            </div>
+            <div>
+                <label>籌碼深度 (BB)</label>
+                <input type="number" id="stackDepth" value="100" min="1" onchange="updateAll()">
+            </div>
+        </div>
+    </div>
+
+    <div class="card-panel">
+        <div style="text-align:center; color:var(--text-muted); font-size:0.8rem; margin-bottom:5px;">選擇手牌以定位 (Select Hand)</div>
+        <div class="hand-display">
+            <div class="poker-card empty" id="card_h1" onclick="openSelector('h1')">+</div>
+            <div class="poker-card empty" id="card_h2" onclick="openSelector('h2')">+</div>
+        </div>
+        <div id="aiAdvice" class="ai-text" style="display:none;"></div>
+    </div>
+
+    <div class="card-panel">
+        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+            <span style="font-size:0.9rem; font-weight:bold;">翻前行動線圖 (RFI / Strategy)</span>
+            <span id="chartInfo" style="font-size:0.8rem; color:var(--accent);">--</span>
+        </div>
+        
+        <div class="chart-container" id="rangeChart">
+            </div>
+
+        <div class="legend">
+            <div class="legend-item"><div class="dot" style="background:var(--danger)"></div> Raise/All-in</div>
+            <div class="legend-item"><div class="dot" style="background:var(--warning)"></div> Call/Mixed</div>
+            <div class="legend-item"><div class="dot" style="background:var(--fold)"></div> Fold</div>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="cardModal">
+    <div class="modal-content">
+        <h3 style="margin:0 0 15px 0; color:white;">Select Card</h3>
+        <div id="suit-spades" class="suit-row"></div>
+        <div id="suit-hearts" class="suit-row"></div>
+        <div id="suit-clubs" class="suit-row"></div>
+        <div id="suit-diamonds" class="suit-row"></div>
+        <button onclick="closeSelector()" style="width:100%; margin-top:10px; padding:10px; background:#444; border:none; color:white; border-radius:4px;">Cancel</button>
+    </div>
+</div>
+
+<script>
+    // --- State & Config ---
+    const state = { mode: 'MTT', players: 9, pos: 'BTN', stack: 100, h1: null, h2: null };
+    const ranks = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
+    
+    // --- Init ---
+    window.onload = () => {
+        generateSelectorUI();
+        generateGrid();
+        updateAll();
+    };
+
+    function updateAll() {
+        // 1. Update State
+        state.mode = document.getElementById('gameMode').value;
+        state.players = parseInt(document.getElementById('playerCount').value);
+        state.pos = document.getElementById('heroPosition').value;
+        state.stack = parseInt(document.getElementById('stackDepth').value);
+
+        // 2. Refresh UI
+        renderCards();
+        refreshGrid();
+        analyzeCurrentHand();
+        
+        // 3. Update Chart Info Text
+        let stratName = state.stack < 15 ? "Push/Fold (Nash)" : "Open Raise (RFI)";
+        document.getElementById('chartInfo').innerText = `${stratName} @ ${state.pos}`;
+    }
+
+    function resetApp() {
+        state.h1 = null; state.h2 = null;
+        updateAll();
+    }
+
+    // --- 13x13 Grid Logic ---
+    function generateGrid() {
+        const container = document.getElementById('rangeChart');
+        container.innerHTML = '';
+        
+        for (let i = 0; i < 13; i++) { // Rows
+            for (let j = 0; j < 13; j++) { // Cols
+                const cell = document.createElement('div');
+                cell.className = 'chart-cell';
+                cell.id = `cell-${i}-${j}`;
+                
+                // Notation
+                let r1 = ranks[i];
+                let r2 = ranks[j];
+                let text = "";
+                let type = ""; // pair, suited, offsuit
+
+                if (i === j) {
+                    text = r1 + r2; 
+                    type = "pair";
+                } else if (i < j) {
+                    text = r1 + r2 + "s";
+                    type = "suited";
+                } else {
+                    text = r2 + r1 + "o";
+                    type = "offsuit";
+                }
+                
+                cell.innerText = text;
+                cell.dataset.hand = text;
+                cell.dataset.type = type;
+                cell.dataset.r1Val = 14 - i; // A=14, 2=2
+                cell.dataset.r2Val = 14 - j;
+                
+                container.appendChild(cell);
+            }
+        }
+    }
+
+    function refreshGrid() {
+        const cells = document.querySelectorAll('.chart-cell');
+        
+        // Identify current hand notation to highlight
+        let currentHandStr = "";
+        if (state.h1 && state.h2) {
+            currentHandStr = getHandNotation(state.h1, state.h2);
+        }
+
+        cells.forEach(cell => {
+            const handStr = cell.dataset.hand;
+            const type = cell.dataset.type;
+            const r1 = parseInt(cell.dataset.r1Val); // High card logic val
+            const r2 = parseInt(cell.dataset.r2Val);
+            
+            // Get Action Color (0: Fold, 1: Call/Mix, 2: Raise)
+            const action = getGTOAction(type, r1, r2, handStr);
+            
+            // Reset Classes
+            cell.className = 'chart-cell';
+            if (action === 2) cell.classList.add('bg-raise');
+            else if (action === 1) cell.classList.add('bg-call');
+            else cell.classList.add('bg-fold'); // default gray
+            
+            // Highlight Selection
+            if (currentHandStr && handStr === currentHandStr) {
+                cell.classList.add('active');
+            }
+        });
+    }
+
+    // --- GTO ALGORITHM ENGINE (The Brain) ---
+    // Determines if a specific hand combo is a Fold, Call, or Raise based on inputs
+    function getGTOAction(type, v1, v2, str) { // v1 is row index converted to value, v2 is col
+        // Normalize values (A=14, K=13... 2=2)
+        // Note: The grid generation logic above: i=0 is 'A'. So dataset.r1Val needs to be correct.
+        // Let's rely on parsed Ranks: A=14, 2=2.
+        
+        const sum = v1 + v2;
+        const isPair = (type === 'pair');
+        const isSuited = (type === 'suited');
+        const isOff = (type === 'offsuit');
+        
+        // --- 1. Short Stack Logic (< 15BB) ---
+        if (state.stack < 15) {
+            // Push/Fold Nash
+            // Pairs
+            if (isPair) {
+                if (v1 >= 7) return 2; // 77+ always shove
+                if (state.pos === 'BTN' || state.pos === 'SB') return 2; // Any pair late
+                if (v1 >= 2 && state.stack < 10) return 2; // 22+ super short
+                return 0;
+            }
+            // Suited
+            if (isSuited) {
+                if (str.includes('A')) return 2; // Ax suited
+                if (str.includes('K') && v2 >= 9) return 2; // K9s+
+                if (sum > 20 && (state.pos === 'BTN' || state.pos === 'SB')) return 2; // Broadways late
+                return 0;
+            }
+            // Offsuit
+            if (isOff) {
+                if (str.includes('A') && v2 >= 10) return 2; // ATo+
+                if (str.includes('A') && (state.pos === 'BTN' || state.pos === 'SB')) return 2; // Any Ax late
+                if (sum > 24) return 2; // KQ, KJ
+                return 0;
+            }
+            return 0;
+        }
+
+        // --- 2. Deep Stack Logic (Standard RFI) ---
+        
+        // Define Position Strictness (High = Loose)
+        let posScore = 0; // EP
+        if (state.pos === 'MP') posScore = 1;
+        if (state.pos === 'CO') posScore = 3;
+        if (state.pos === 'BTN') posScore = 5;
+        if (state.pos === 'SB') posScore = 4; // SB RFI is wide
+        if (state.pos === 'BB') posScore = -1; // BB usually checks or 3-bets
+
+        // Adjust for Cash vs MTT
+        // Cash is tighter due to Rake
+        if (state.mode === 'Cash') posScore -= 1;
+        
+        // Adjust for Players
+        // 6-max EP is looser than 9-max EP
+        if (state.players === 6 && state.pos === 'EP') posScore += 1;
+        if (state.players === 2) posScore = 6; // Heads Up is super wide
+
+        // --- Pairs ---
+        if (isPair) {
+            if (v1 >= 8) return 2; // 88+ always open
+            if (v1 >= 6 && posScore >= 1) return 2; // 66+ in MP
+            if (v1 >= 2 && posScore >= 3) return 2; // 22+ in CO/BTN
+            return 0;
+        }
+
+        // --- Suited ---
+        if (isSuited) {
+            // Always open strong suited
+            if (str.includes('A') && v2 >= 10) return 2; // ATs+
+            if (v1 >= 13 && v2 >= 12) return 2; // KQs
+            
+            // Positional
+            if (posScore >= 0) { // EP
+                if (str.includes('A') && v2 >= 11) return 2; // AJs+
+                if (v1 === 13 && v2 >= 11) return 2; // KJs
+            }
+            if (posScore >= 3) { // CO
+                if (str.includes('A')) return 2; // Any Suited Ace
+                if (v1 >= 10 && v2 >= 9) return 2; // T9s+ (Connectors)
+                if (sum >= 22) return 2; // QJs, KTs
+            }
+            if (posScore >= 5) { // BTN
+                if (str.includes('K')) return 2; // Any Suited King
+                if (v1 - v2 <= 2 && v1 > 5) return 2; // Gappers 86s+
+                if (str.includes('Q') && v2 >= 5) return 2; // Q5s+
+                return 2; // Very wide
+            }
+            return 0;
+        }
+
+        // --- Offsuit ---
+        if (isOff) {
+            if (str === 'AKo' || str === 'AQo') return 2;
+            
+            if (posScore >= 1) { // MP
+                if (str === 'AJo' || str === 'KQo') return 2;
+            }
+            if (posScore >= 3) { // CO
+                if (str.includes('A') && v2 >= 10) return 2; // ATo+
+                if (str.includes('K') && v2 >= 11) return 2; // KJo+
+            }
+            if (posScore >= 5) { // BTN
+                if (str.includes('A')) return 2; // A2o+
+                if (str.includes('K') && v2 >= 8) return 2; // K8o+
+                if (sum >= 23) return 2; // QJo
+            }
+            return 0;
+        }
+
+        return 0;
+    }
+
+    // --- Hand Helper ---
+    function getHandNotation(c1, c2) {
+        const val = r => "23456789TJQKA".indexOf(r) + 2;
+        let r1 = val(c1.rank), r2 = val(c2.rank);
+        
+        let first = r1 >= r2 ? c1 : c2;
+        let second = r1 >= r2 ? c2 : c1;
+        
+        if (first.rank === second.rank) return first.rank + second.rank;
+        return first.rank + second.rank + (first.suit.id === second.suit.id ? 's' : 'o');
+    }
+
+    function analyzeCurrentHand() {
+        const div = document.getElementById('aiAdvice');
+        if (!state.h1 || !state.h2) { div.style.display='none'; return; }
+
+        const hStr = getHandNotation(state.h1, state.h2);
+        // We re-calculate action just for the text
+        // Need numeric values for calculator
+        const val = r => "23456789TJQKA".indexOf(r) + 2;
+        let v1 = val(state.h1.rank); let v2 = val(state.h2.rank);
+        if (v2 > v1) [v1, v2] = [v2, v1];
+        
+        let type = (v1 === v2) ? 'pair' : (state.h1.suit.id === state.h2.suit.id ? 'suited' : 'offsuit');
+        
+        const action = getGTOAction(type, v1, v2, hStr);
+        
+        div.style.display = 'block';
+        let actionText = action === 2 ? "Raise / All-in" : (action === 1 ? "Call / Mix" : "Fold");
+        let color = action === 2 ? "var(--danger)" : (action === 1 ? "var(--warning)" : "#888");
+        
+        div.innerHTML = `
+            <strong>手牌: ${hStr}</strong><br>
+            情境: ${state.mode}, ${state.players}人, ${state.pos}, ${state.stack}BB<br>
+            建議行動: <span style="color:${color}; font-size:1.2rem; font-weight:bold;">${actionText}</span>
+        `;
+    }
+
+    // --- Card Selector UI (Copied & Minimized) ---
+    let curSel = null;
+    const suits = [{id:'s',s:'♠',c:'suit-s'},{id:'h',s:'♥',c:'suit-h'},{id:'c',s:'♣',c:'suit-c'},{id:'d',s:'♦',c:'suit-d'}];
+    const rList = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
+    function generateSelectorUI(){
+        suits.forEach(s=>{
+            let cid=`suit-${s.id==='s'?'spades':s.id==='h'?'hearts':s.id==='c'?'clubs':'diamonds'}`;
+            rList.forEach(r=>{
+                let b=document.createElement('button'); b.className=`rank-btn ${s.c}`; b.innerText=r+s.s;
+                b.onclick=()=>{ selectCard(r, s); };
+                document.getElementById(cid).appendChild(b);
+            });
+        });
+    }
+    function selectCard(r,s){
+        if(curSel==='h1') state.h1={rank:r, suit:s}; else state.h2={rank:r, suit:s};
+        closeSelector(); updateAll();
+    }
+    function renderCards(){
+        ['h1','h2'].forEach(id=>{
+            let d=state[id]; let el=document.getElementById('card_'+id);
+            if(d){ el.className='poker-card selected'; el.innerHTML=`<span class="${d.suit.c}">${d.suit.s}</span><span>${d.rank}</span>`; el.style.background='#fff'; }
+            else { el.className='poker-card empty'; el.innerHTML='+'; el.style.background=''; }
+        });
+    }
+    function openSelector(id){ curSel=id; document.getElementById('cardModal').style.display='flex'; }
+    function closeSelector(){ document.getElementById('cardModal').style.display='none'; }
+</script>
+
+</body>
+</html>
