@@ -2,186 +2,249 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Poker God - Dynamic Ranges</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#121212">
+    <title>Poker God Pro</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/google/material-design-icons/master/png/action/account_balance_wallet/materialicons/48dp/2x/baseline_account_balance_wallet_black_48dp.png"> 
+    
     <style>
         :root {
-            --bg-dark: #121212;
-            --bg-panel: #1e1e1e;
-            --accent: #00e676;
-            --accent-hover: #00a854;
-            --text-main: #e0e0e0;
-            --text-muted: #a0a0a0;
-            --danger: #ff5252;   /* Raise/All-in */
-            --warning: #ffb74d;  /* Call/Mixed */
-            --fold: #2c2c2c;     /* Fold */
-            --border: #333;
+            --bg-dark: #0f172a;
+            --bg-panel: rgba(30, 41, 59, 0.7);
+            --accent: #10b981; /* Emerald Green */
+            --accent-glow: rgba(16, 185, 129, 0.3);
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border: rgba(255,255,255,0.1);
         }
 
-        * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         body {
             background-color: var(--bg-dark);
+            background-image: radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.1) 0%, transparent 20%);
             color: var(--text-main);
-            margin: 0;
-            padding: 10px;
-            padding-bottom: 80px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0; padding: 0;
+            padding-bottom: 80px; /* Space for bottom nav */
+            min-height: 100vh;
         }
 
-        .container { max-width: 900px; margin: 0 auto; }
-
+        /* Header */
         header {
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            position: sticky; top: 0; z-index: 50;
+            border-bottom: 1px solid var(--border);
             display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px;
         }
-        h1 { margin: 0; font-size: 1.4rem; color: var(--accent); }
+        h1 { margin: 0; font-size: 1.2rem; font-weight: 800; letter-spacing: 0.5px; background: linear-gradient(to right, #10b981, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        /* Container & Grid */
+        .container { max-width: 600px; margin: 0 auto; padding: 15px; }
         
+        /* Cards & Panels */
         .card-panel {
-            background-color: var(--bg-panel);
-            border-radius: 12px;
-            padding: 15px;
+            background: var(--bg-panel);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
             margin-bottom: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
         }
 
-        /* Input Grid */
-        .controls-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
-        }
-        @media (min-width: 600px) { .controls-grid { grid-template-columns: repeat(4, 1fr); } }
-
-        label { font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px; }
+        /* Inputs */
+        .input-group { margin-bottom: 12px; }
+        label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 6px; display: block; }
         select, input {
-            width: 100%; background: #2a2a2a; border: 1px solid #444; color: white;
-            padding: 8px; border-radius: 6px; font-size: 0.95rem;
+            width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border);
+            color: white; padding: 12px; border-radius: 8px; font-size: 1rem; outline: none; transition: border 0.2s;
         }
+        select:focus, input:focus { border-color: var(--accent); }
 
-        /* Hand Selector */
-        .hand-display { display: flex; gap: 10px; justify-content: center; margin: 10px 0; }
+        /* Poker Cards Visuals */
+        .hand-display { display: flex; gap: 12px; justify-content: center; margin: 15px 0; }
         .poker-card {
-            width: 45px; height: 65px; background: #eee; border-radius: 5px;
+            width: 55px; height: 78px; background: #e2e8f0; border-radius: 6px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            font-weight: bold; font-size: 1.1rem; cursor: pointer; border: 2px solid transparent;
+            font-weight: bold; font-size: 1.3rem; cursor: pointer; position: relative;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: transform 0.1s;
         }
-        .poker-card.empty { background: #333; border: 2px dashed #555; color: #555; }
-        .poker-card.selected { border-color: var(--accent); background: white; }
+        .poker-card:active { transform: scale(0.95); }
+        .poker-card.empty { background: rgba(255,255,255,0.05); border: 2px dashed var(--text-muted); color: var(--text-muted); box-shadow: none; }
+        .poker-card.selected { border: 2px solid var(--accent); background: white; }
         
-        /* 13x13 Grid Chart */
+        /* Suit Colors */
+        .suit-s { color: #1e293b; }
+        .suit-h { color: #ef4444; }
+        .suit-c { color: #10b981; }
+        .suit-d { color: #3b82f6; }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px);
+            border-top: 1px solid var(--border);
+            display: flex; justify-content: space-around;
+            padding: 10px 0; z-index: 100;
+        }
+        .nav-item {
+            color: var(--text-muted); text-align: center; font-size: 0.7rem; cursor: pointer;
+            flex: 1; padding: 5px; opacity: 0.7; transition: 0.2s;
+        }
+        .nav-item.active { color: var(--accent); opacity: 1; transform: translateY(-2px); }
+        .nav-icon { font-size: 1.5rem; display: block; margin-bottom: 2px; }
+
+        /* Sections (Tabs) */
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* 13x13 Grid */
         .chart-container {
-            width: 100%;
-            max-width: 500px; /* Limit width on desktop */
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(13, 1fr);
-            gap: 2px;
-            background: #000;
-            padding: 2px;
-            border: 1px solid #444;
+            display: grid; grid-template-columns: repeat(13, 1fr); gap: 1px;
+            background: #000; padding: 1px; border-radius: 4px; overflow: hidden;
         }
         .chart-cell {
-            aspect-ratio: 1;
-            font-size: 0.6rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: var(--fold);
-            color: #777;
-            cursor: default;
-            user-select: none;
-            position: relative;
+            aspect-ratio: 1; font-size: 0.55rem; display: flex; align-items: center; justify-content: center;
+            background: #2d3748; color: #718096; cursor: default;
         }
-        .chart-cell.active { border: 2px solid #fff; z-index: 10; box-shadow: 0 0 5px white; color: black; font-weight: bold; }
-        
-        /* Action Colors */
-        .bg-raise { background-color: var(--danger); color: white; }
-        .bg-call { background-color: var(--warning); color: black; }
-        .bg-fold { background-color: var(--fold); }
+        .chart-cell.bg-raise { background: var(--danger); color: white; }
+        .chart-cell.bg-call { background: var(--warning); color: black; }
+        .chart-cell.active { border: 2px solid white; z-index: 10; }
 
-        /* Legend */
-        .legend { display: flex; gap: 15px; justify-content: center; margin-top: 10px; font-size: 0.8rem; }
-        .legend-item { display: flex; align-items: center; gap: 5px; }
-        .dot { width: 10px; height: 10px; border-radius: 50%; }
+        /* Calculator Results */
+        .result-box {
+            text-align: center; margin-top: 15px; padding: 15px;
+            background: rgba(0,0,0,0.2); border-radius: 8px;
+        }
+        .result-val { font-size: 1.8rem; font-weight: bold; color: var(--accent); }
+        .result-label { color: var(--text-muted); font-size: 0.8rem; }
+        
+        .btn-calc {
+            width: 100%; padding: 14px; background: var(--accent); color: #000;
+            border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer;
+            box-shadow: 0 4px 15px var(--accent-glow);
+        }
 
         /* Modal */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100; justify-content: center; align-items: center; }
-        .modal-content { background: var(--bg-panel); padding: 20px; border-radius: 12px; width: 90%; max-width: 380px; }
-        .suit-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
-        .rank-btn { width: 100%; padding: 8px 0; background: #333; border: none; color: white; border-radius: 4px; margin: 0 2px; }
-        .suit-s { color: #000; } .suit-h { color: var(--danger); } .suit-c { color: var(--accent); } .suit-d { color: #2979ff; }
-
-        .btn-analyze {
-            width: 100%; padding: 12px; background: var(--accent); border: none; border-radius: 8px; font-weight: bold; margin-top: 10px; cursor: pointer; color: black;
-        }
-        
-        .ai-text { margin-top: 10px; padding: 10px; background: #252525; border-left: 4px solid var(--accent); font-size: 0.9rem; line-height: 1.4; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 200; justify-content: center; align-items: center; }
+        .modal-content { background: #1e293b; padding: 20px; border-radius: 16px; width: 90%; max-width: 350px; border: 1px solid var(--border); }
+        .suit-row { display: flex; gap: 5px; margin-bottom: 8px; }
+        .rank-btn { flex: 1; padding: 10px 0; background: #334155; border: none; color: white; border-radius: 4px; font-weight: bold; }
     </style>
 </head>
 <body>
 
+<header>
+    <h1>Poker God <span style="font-size:0.5em; opacity:0.8; color:white; background:none;">PRO</span></h1>
+    <div id="connectionStatus" style="width:8px; height:8px; background:var(--accent); border-radius:50%;"></div>
+</header>
+
 <div class="container">
-    <header>
-        <h1>Poker God <small style="font-size:0.5em; opacity:0.7;">Range Visualizer</small></h1>
-        <button onclick="resetApp()" style="background:transparent; border:1px solid #555; color:#888; padding:4px 8px; border-radius:4px;">Reset</button>
-    </header>
+    
+    <div id="tab-ranges" class="tab-content active">
+        <div class="card-panel">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <select id="gameMode" onchange="updateRanges()"><option value="MTT">錦標賽 (MTT)</option><option value="Cash">現金桌 (Cash)</option></select>
+                <select id="playerCount" onchange="updateRanges()">
+                    <option value="9">9人 (Full Ring)</option><option value="6">6人 (6-Max)</option><option value="2">2人 (Heads Up)</option>
+                </select>
+                <select id="heroPosition" onchange="updateRanges()">
+                    <option value="BTN">BTN</option><option value="CO">CO</option><option value="MP">MP</option><option value="EP">EP/UTG</option><option value="SB">SB</option><option value="BB">BB</option>
+                </select>
+                <input type="number" id="stackDepth" value="100" placeholder="BB" onchange="updateRanges()">
+            </div>
+        </div>
 
-    <div class="card-panel">
-        <div class="controls-grid">
-            <div>
-                <label>賽制 (Format)</label>
-                <select id="gameMode" onchange="updateAll()">
-                    <option value="MTT">錦標賽 (MTT)</option>
-                    <option value="Cash">現金桌 (Cash)</option>
-                </select>
-            </div>
-            <div>
-                <label>人數 (Players)</label>
-                <select id="playerCount" onchange="updateAll()">
-                    <option value="2">2 (Heads Up)</option>
-                    <option value="6">6 (6-Max)</option>
-                    <option value="9">9 (Full Ring)</option>
-                </select>
-            </div>
-            <div>
-                <label>位置 (Position)</label>
-                <select id="heroPosition" onchange="updateAll()">
-                    <option value="EP">EP (UTG/UTG+1)</option>
-                    <option value="MP">MP</option>
-                    <option value="CO">CO</option>
-                    <option value="BTN">BTN</option>
-                    <option value="SB">SB</option>
-                    <option value="BB">BB</option>
-                </select>
-            </div>
-            <div>
-                <label>籌碼深度 (BB)</label>
-                <input type="number" id="stackDepth" value="100" min="1" onchange="updateAll()">
+        <div class="card-panel">
+            <label>13x13 起手牌熱力圖 (RFI / Strategy)</label>
+            <div class="chart-container" id="rangeGrid"></div>
+            <div style="display:flex; justify-content:center; gap:15px; margin-top:10px; font-size:0.75rem; color:var(--text-muted);">
+                <span style="color:var(--danger)">● Raise/All-in</span>
+                <span style="color:var(--warning)">● Call/Mix</span>
+                <span style="color:#718096">● Fold</span>
             </div>
         </div>
     </div>
 
-    <div class="card-panel">
-        <div style="text-align:center; color:var(--text-muted); font-size:0.8rem; margin-bottom:5px;">選擇手牌以定位 (Select Hand)</div>
-        <div class="hand-display">
-            <div class="poker-card empty" id="card_h1" onclick="openSelector('h1')">+</div>
-            <div class="poker-card empty" id="card_h2" onclick="openSelector('h2')">+</div>
+    <div id="tab-odds" class="tab-content">
+        <div class="card-panel">
+            <label>底池賠率計算機 (Pot Odds)</label>
+            <div class="input-group">
+                <label>當前底池大小 (Current Pot)</label>
+                <input type="number" id="potSize" placeholder="例如: 1000">
+            </div>
+            <div class="input-group">
+                <label>對方下注金額 / 跟注金額 (Bet to Call)</label>
+                <input type="number" id="betSize" placeholder="例如: 500">
+            </div>
+            <button class="btn-calc" onclick="calcPotOdds()">計算賠率 (Calculate)</button>
+
+            <div class="result-box" id="oddsResult" style="display:none;">
+                <div class="result-label">你需要多少勝率 (Required Equity)</div>
+                <div class="result-val" id="reqEquity">--%</div>
+                <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:10px 0;">
+                <div class="result-label">賠率 (Odds)</div>
+                <div style="color:white; font-size:1.2rem;" id="oddsRatio">-- : 1</div>
+            </div>
         </div>
-        <div id="aiAdvice" class="ai-text" style="display:none;"></div>
     </div>
 
-    <div class="card-panel">
-        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-            <span style="font-size:0.9rem; font-weight:bold;">翻前行動線圖 (RFI / Strategy)</span>
-            <span id="chartInfo" style="font-size:0.8rem; color:var(--accent);">--</span>
-        </div>
-        
-        <div class="chart-container" id="rangeChart">
+    <div id="tab-postflop" class="tab-content">
+        <div class="card-panel">
+            <label>手牌 (My Hand)</label>
+            <div class="hand-display">
+                <div class="poker-card empty" id="card_h1" onclick="sel('h1')">+</div>
+                <div class="poker-card empty" id="card_h2" onclick="sel('h2')">+</div>
+            </div>
+            
+            <label style="margin-top:15px;">公共牌 (Board - Flop/Turn)</label>
+            <div class="hand-display" style="gap:5px;">
+                <div class="poker-card empty" style="width:40px; height:60px; font-size:1rem;" id="card_b1" onclick="sel('b1')"></div>
+                <div class="poker-card empty" style="width:40px; height:60px; font-size:1rem;" id="card_b2" onclick="sel('b2')"></div>
+                <div class="poker-card empty" style="width:40px; height:60px; font-size:1rem;" id="card_b3" onclick="sel('b3')"></div>
+                <div class="poker-card empty" style="width:40px; height:60px; font-size:1rem;" id="card_b4" onclick="sel('b4')"></div>
             </div>
 
-        <div class="legend">
-            <div class="legend-item"><div class="dot" style="background:var(--danger)"></div> Raise/All-in</div>
-            <div class="legend-item"><div class="dot" style="background:var(--warning)"></div> Call/Mixed</div>
-            <div class="legend-item"><div class="dot" style="background:var(--fold)"></div> Fold</div>
+            <button class="btn-calc" onclick="calcPostflop()">分析翻後勝率 (Analyze)</button>
+            
+            <div class="result-box" id="postflopResult" style="display:none;">
+                <div class="result-label">估計補牌數 (Outs)</div>
+                <div style="font-size:1.5rem; color:white;" id="outsVal">0</div>
+                
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px;">
+                    <div>
+                        <div class="result-label">轉牌中牌率</div>
+                        <div class="result-val" style="font-size:1.2rem;" id="turnEquity">--%</div>
+                    </div>
+                    <div>
+                        <div class="result-label">河牌中牌率</div>
+                        <div class="result-val" style="font-size:1.2rem;" id="riverEquity">--%</div>
+                    </div>
+                </div>
+                <div style="margin-top:10px; font-size:0.8rem; color:#aaa; font-style:italic;" id="drawDesc"></div>
+            </div>
         </div>
+    </div>
+
+</div>
+
+<div class="bottom-nav">
+    <div class="nav-item active" onclick="switchTab('ranges', this)">
+        <span class="nav-icon">📊</span> Ranges
+    </div>
+    <div class="nav-item" onclick="switchTab('odds', this)">
+        <span class="nav-icon">🧮</span> Pot Odds
+    </div>
+    <div class="nav-item" onclick="switchTab('postflop', this)">
+        <span class="nav-icon">♠️</span> Postflop
     </div>
 </div>
 
@@ -192,292 +255,171 @@
         <div id="suit-hearts" class="suit-row"></div>
         <div id="suit-clubs" class="suit-row"></div>
         <div id="suit-diamonds" class="suit-row"></div>
-        <button onclick="closeSelector()" style="width:100%; margin-top:10px; padding:10px; background:#444; border:none; color:white; border-radius:4px;">Cancel</button>
+        <button onclick="closeSel()" style="width:100%; margin-top:10px; padding:10px; background:rgba(255,255,255,0.1); border:none; color:white; border-radius:4px;">Cancel</button>
     </div>
 </div>
 
 <script>
-    // --- State & Config ---
-    const state = { mode: 'MTT', players: 9, pos: 'BTN', stack: 100, h1: null, h2: null };
-    const ranks = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
-    
-    // --- Init ---
-    window.onload = () => {
-        generateSelectorUI();
-        generateGrid();
-        updateAll();
-    };
-
-    function updateAll() {
-        // 1. Update State
-        state.mode = document.getElementById('gameMode').value;
-        state.players = parseInt(document.getElementById('playerCount').value);
-        state.pos = document.getElementById('heroPosition').value;
-        state.stack = parseInt(document.getElementById('stackDepth').value);
-
-        // 2. Refresh UI
-        renderCards();
-        refreshGrid();
-        analyzeCurrentHand();
-        
-        // 3. Update Chart Info Text
-        let stratName = state.stack < 15 ? "Push/Fold (Nash)" : "Open Raise (RFI)";
-        document.getElementById('chartInfo').innerText = `${stratName} @ ${state.pos}`;
-    }
-
-    function resetApp() {
-        state.h1 = null; state.h2 = null;
-        updateAll();
-    }
-
-    // --- 13x13 Grid Logic ---
-    function generateGrid() {
-        const container = document.getElementById('rangeChart');
-        container.innerHTML = '';
-        
-        for (let i = 0; i < 13; i++) { // Rows
-            for (let j = 0; j < 13; j++) { // Cols
-                const cell = document.createElement('div');
-                cell.className = 'chart-cell';
-                cell.id = `cell-${i}-${j}`;
-                
-                // Notation
-                let r1 = ranks[i];
-                let r2 = ranks[j];
-                let text = "";
-                let type = ""; // pair, suited, offsuit
-
-                if (i === j) {
-                    text = r1 + r2; 
-                    type = "pair";
-                } else if (i < j) {
-                    text = r1 + r2 + "s";
-                    type = "suited";
-                } else {
-                    text = r2 + r1 + "o";
-                    type = "offsuit";
-                }
-                
-                cell.innerText = text;
-                cell.dataset.hand = text;
-                cell.dataset.type = type;
-                cell.dataset.r1Val = 14 - i; // A=14, 2=2
-                cell.dataset.r2Val = 14 - j;
-                
-                container.appendChild(cell);
-            }
-        }
-    }
-
-    function refreshGrid() {
-        const cells = document.querySelectorAll('.chart-cell');
-        
-        // Identify current hand notation to highlight
-        let currentHandStr = "";
-        if (state.h1 && state.h2) {
-            currentHandStr = getHandNotation(state.h1, state.h2);
-        }
-
-        cells.forEach(cell => {
-            const handStr = cell.dataset.hand;
-            const type = cell.dataset.type;
-            const r1 = parseInt(cell.dataset.r1Val); // High card logic val
-            const r2 = parseInt(cell.dataset.r2Val);
-            
-            // Get Action Color (0: Fold, 1: Call/Mix, 2: Raise)
-            const action = getGTOAction(type, r1, r2, handStr);
-            
-            // Reset Classes
-            cell.className = 'chart-cell';
-            if (action === 2) cell.classList.add('bg-raise');
-            else if (action === 1) cell.classList.add('bg-call');
-            else cell.classList.add('bg-fold'); // default gray
-            
-            // Highlight Selection
-            if (currentHandStr && handStr === currentHandStr) {
-                cell.classList.add('active');
-            }
+    // --- SERVICE WORKER REGISTRATION (PWA) ---
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js')
+                .then(reg => console.log('SW registered'))
+                .catch(err => console.log('SW failed', err));
         });
     }
 
-    // --- GTO ALGORITHM ENGINE (The Brain) ---
-    // Determines if a specific hand combo is a Fold, Call, or Raise based on inputs
-    function getGTOAction(type, v1, v2, str) { // v1 is row index converted to value, v2 is col
-        // Normalize values (A=14, K=13... 2=2)
-        // Note: The grid generation logic above: i=0 is 'A'. So dataset.r1Val needs to be correct.
-        // Let's rely on parsed Ranks: A=14, 2=2.
-        
-        const sum = v1 + v2;
-        const isPair = (type === 'pair');
-        const isSuited = (type === 'suited');
-        const isOff = (type === 'offsuit');
-        
-        // --- 1. Short Stack Logic (< 15BB) ---
-        if (state.stack < 15) {
-            // Push/Fold Nash
-            // Pairs
-            if (isPair) {
-                if (v1 >= 7) return 2; // 77+ always shove
-                if (state.pos === 'BTN' || state.pos === 'SB') return 2; // Any pair late
-                if (v1 >= 2 && state.stack < 10) return 2; // 22+ super short
-                return 0;
-            }
-            // Suited
-            if (isSuited) {
-                if (str.includes('A')) return 2; // Ax suited
-                if (str.includes('K') && v2 >= 9) return 2; // K9s+
-                if (sum > 20 && (state.pos === 'BTN' || state.pos === 'SB')) return 2; // Broadways late
-                return 0;
-            }
-            // Offsuit
-            if (isOff) {
-                if (str.includes('A') && v2 >= 10) return 2; // ATo+
-                if (str.includes('A') && (state.pos === 'BTN' || state.pos === 'SB')) return 2; // Any Ax late
-                if (sum > 24) return 2; // KQ, KJ
-                return 0;
-            }
-            return 0;
-        }
-
-        // --- 2. Deep Stack Logic (Standard RFI) ---
-        
-        // Define Position Strictness (High = Loose)
-        let posScore = 0; // EP
-        if (state.pos === 'MP') posScore = 1;
-        if (state.pos === 'CO') posScore = 3;
-        if (state.pos === 'BTN') posScore = 5;
-        if (state.pos === 'SB') posScore = 4; // SB RFI is wide
-        if (state.pos === 'BB') posScore = -1; // BB usually checks or 3-bets
-
-        // Adjust for Cash vs MTT
-        // Cash is tighter due to Rake
-        if (state.mode === 'Cash') posScore -= 1;
-        
-        // Adjust for Players
-        // 6-max EP is looser than 9-max EP
-        if (state.players === 6 && state.pos === 'EP') posScore += 1;
-        if (state.players === 2) posScore = 6; // Heads Up is super wide
-
-        // --- Pairs ---
-        if (isPair) {
-            if (v1 >= 8) return 2; // 88+ always open
-            if (v1 >= 6 && posScore >= 1) return 2; // 66+ in MP
-            if (v1 >= 2 && posScore >= 3) return 2; // 22+ in CO/BTN
-            return 0;
-        }
-
-        // --- Suited ---
-        if (isSuited) {
-            // Always open strong suited
-            if (str.includes('A') && v2 >= 10) return 2; // ATs+
-            if (v1 >= 13 && v2 >= 12) return 2; // KQs
-            
-            // Positional
-            if (posScore >= 0) { // EP
-                if (str.includes('A') && v2 >= 11) return 2; // AJs+
-                if (v1 === 13 && v2 >= 11) return 2; // KJs
-            }
-            if (posScore >= 3) { // CO
-                if (str.includes('A')) return 2; // Any Suited Ace
-                if (v1 >= 10 && v2 >= 9) return 2; // T9s+ (Connectors)
-                if (sum >= 22) return 2; // QJs, KTs
-            }
-            if (posScore >= 5) { // BTN
-                if (str.includes('K')) return 2; // Any Suited King
-                if (v1 - v2 <= 2 && v1 > 5) return 2; // Gappers 86s+
-                if (str.includes('Q') && v2 >= 5) return 2; // Q5s+
-                return 2; // Very wide
-            }
-            return 0;
-        }
-
-        // --- Offsuit ---
-        if (isOff) {
-            if (str === 'AKo' || str === 'AQo') return 2;
-            
-            if (posScore >= 1) { // MP
-                if (str === 'AJo' || str === 'KQo') return 2;
-            }
-            if (posScore >= 3) { // CO
-                if (str.includes('A') && v2 >= 10) return 2; // ATo+
-                if (str.includes('K') && v2 >= 11) return 2; // KJo+
-            }
-            if (posScore >= 5) { // BTN
-                if (str.includes('A')) return 2; // A2o+
-                if (str.includes('K') && v2 >= 8) return 2; // K8o+
-                if (sum >= 23) return 2; // QJo
-            }
-            return 0;
-        }
-
-        return 0;
-    }
-
-    // --- Hand Helper ---
-    function getHandNotation(c1, c2) {
-        const val = r => "23456789TJQKA".indexOf(r) + 2;
-        let r1 = val(c1.rank), r2 = val(c2.rank);
-        
-        let first = r1 >= r2 ? c1 : c2;
-        let second = r1 >= r2 ? c2 : c1;
-        
-        if (first.rank === second.rank) return first.rank + second.rank;
-        return first.rank + second.rank + (first.suit.id === second.suit.id ? 's' : 'o');
-    }
-
-    function analyzeCurrentHand() {
-        const div = document.getElementById('aiAdvice');
-        if (!state.h1 || !state.h2) { div.style.display='none'; return; }
-
-        const hStr = getHandNotation(state.h1, state.h2);
-        // We re-calculate action just for the text
-        // Need numeric values for calculator
-        const val = r => "23456789TJQKA".indexOf(r) + 2;
-        let v1 = val(state.h1.rank); let v2 = val(state.h2.rank);
-        if (v2 > v1) [v1, v2] = [v2, v1];
-        
-        let type = (v1 === v2) ? 'pair' : (state.h1.suit.id === state.h2.suit.id ? 'suited' : 'offsuit');
-        
-        const action = getGTOAction(type, v1, v2, hStr);
-        
-        div.style.display = 'block';
-        let actionText = action === 2 ? "Raise / All-in" : (action === 1 ? "Call / Mix" : "Fold");
-        let color = action === 2 ? "var(--danger)" : (action === 1 ? "var(--warning)" : "#888");
-        
-        div.innerHTML = `
-            <strong>手牌: ${hStr}</strong><br>
-            情境: ${state.mode}, ${state.players}人, ${state.pos}, ${state.stack}BB<br>
-            建議行動: <span style="color:${color}; font-size:1.2rem; font-weight:bold;">${actionText}</span>
-        `;
-    }
-
-    // --- Card Selector UI (Copied & Minimized) ---
+    // --- APP STATE ---
+    const state = { h1: null, h2: null, b1:null, b2:null, b3:null, b4:null };
     let curSel = null;
-    const suits = [{id:'s',s:'♠',c:'suit-s'},{id:'h',s:'♥',c:'suit-h'},{id:'c',s:'♣',c:'suit-c'},{id:'d',s:'♦',c:'suit-d'}];
-    const rList = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
-    function generateSelectorUI(){
-        suits.forEach(s=>{
-            let cid=`suit-${s.id==='s'?'spades':s.id==='h'?'hearts':s.id==='c'?'clubs':'diamonds'}`;
-            rList.forEach(r=>{
-                let b=document.createElement('button'); b.className=`rank-btn ${s.c}`; b.innerText=r+s.s;
-                b.onclick=()=>{ selectCard(r, s); };
-                document.getElementById(cid).appendChild(b);
+    const ranks = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
+
+    // --- INITIALIZATION ---
+    window.onload = () => {
+        genGrid();
+        genSelUI();
+        updateRanges();
+    };
+
+    // --- TAB SYSTEM ---
+    function switchTab(tabId, navEl) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.getElementById('tab-' + tabId).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        navEl.classList.add('active');
+    }
+
+    // --- LOGIC: RANGES (Preflop Heatmap) ---
+    function genGrid() {
+        const c = document.getElementById('rangeGrid');
+        c.innerHTML = '';
+        for(let i=0; i<13; i++) {
+            for(let j=0; j<13; j++) {
+                let div = document.createElement('div');
+                div.className = 'chart-cell';
+                let txt = i===j ? ranks[i]+ranks[j] : (i<j ? ranks[i]+ranks[j]+'s' : ranks[j]+ranks[i]+'o');
+                div.innerText = txt;
+                div.dataset.h = txt;
+                div.id = `cell-${i}-${j}`;
+                c.appendChild(div);
+            }
+        }
+    }
+
+    function updateRanges() {
+        // Simplified Logic for Demo (Uses strictness score)
+        const pos = document.getElementById('heroPosition').value;
+        const stack = parseInt(document.getElementById('stackDepth').value);
+        
+        let score = 0; // Higher = looser
+        if(pos==='BTN') score=5; else if(pos==='CO') score=3; else if(pos==='MP') score=1;
+        if(document.getElementById('gameMode').value === 'MTT') score += 1;
+        if(stack < 15) score = -10; // Trigger push fold visuals
+
+        const cells = document.querySelectorAll('.chart-cell');
+        cells.forEach(cell => {
+            let h = cell.dataset.h;
+            let act = 0; // 0:Fold, 1:Call, 2:Raise
+            
+            // Logic Mocks
+            if(stack < 15) { // Push Fold
+                if(h.includes('A') || h[0]===h[1] || (h.includes('K') && h.includes('s'))) act=2;
+            } else {
+                if(h[0]===h[1]) act = (ranks.indexOf(h[0]) < 8 + score) ? 2 : 0; // Pairs
+                else if(h.includes('s')) act = (ranks.indexOf(h[0]) < 5 + score && ranks.indexOf(h[1]) < 9 + score) ? 2 : 0;
+                else if(h.includes('o')) act = (ranks.indexOf(h[0]) < 3 + score && ranks.indexOf(h[1]) < 5) ? 2 : 0;
+                
+                if(act===0 && score > 3 && h.includes('s')) act=1; // Mix
+            }
+            
+            cell.className = 'chart-cell ' + (act===2 ? 'bg-raise' : (act===1 ? 'bg-call' : ''));
+        });
+    }
+
+    // --- LOGIC: POT ODDS ---
+    function calcPotOdds() {
+        let pot = parseFloat(document.getElementById('potSize').value);
+        let call = parseFloat(document.getElementById('betSize').value);
+        
+        if(!pot || !call) return;
+        
+        let totalPot = pot + call + call; // Including our call
+        let reqEquity = (call / totalPot) * 100;
+        let ratio = (pot + call) / call;
+        
+        document.getElementById('oddsResult').style.display = 'block';
+        document.getElementById('reqEquity').innerText = reqEquity.toFixed(1) + '%';
+        document.getElementById('oddsRatio').innerText = ratio.toFixed(1) + ' : 1';
+    }
+
+    // --- LOGIC: POSTFLOP (Heuristic Outs Counter) ---
+    function calcPostflop() {
+        // Mock Outs Logic (Rule of 4 and 2)
+        // Needs proper cards selected
+        if(!state.h1 || !state.h2 || !state.b1 || !state.b2 || !state.b3) {
+            alert("請選擇手牌與至少三張公牌 (Flop)");
+            return;
+        }
+
+        // Combine cards
+        let cards = [state.h1, state.h2, state.b1, state.b2, state.b3];
+        if(state.b4) cards.push(state.b4);
+
+        // Simple Heuristic Check
+        let suits = {'s':0, 'h':0, 'c':0, 'd':0};
+        cards.forEach(c => suits[c.suit.id]++);
+        
+        let outs = 0;
+        let desc = [];
+
+        // Flush Draw?
+        for(let s in suits) {
+            if(suits[s] === 4) { outs += 9; desc.push("Flush Draw (9 outs)"); }
+        }
+
+        // Pair? to Set/Trips (Simplified)
+        if(state.h1.rank !== state.h2.rank) {
+            outs += 6; // Assume 2 overcards or hitting pair
+        } else {
+            outs += 2; // Set mining
+        }
+
+        // Cap at reasonable max for demo
+        if(outs > 15) outs = 15;
+
+        let turnEq = outs * 4;
+        let riverEq = outs * 2;
+        if(turnEq > 100) turnEq = 99;
+
+        document.getElementById('postflopResult').style.display = 'block';
+        document.getElementById('outsVal').innerText = outs;
+        document.getElementById('turnEquity').innerText = turnEq + '%';
+        document.getElementById('riverEquity').innerText = riverEq + '%';
+        document.getElementById('drawDesc').innerText = desc.join(', ') || "High Card / Weak Pair";
+    }
+
+    // --- UI HELPERS ---
+    function genSelUI() {
+        const suits = [{id:'s',s:'♠',c:'suit-s'},{id:'h',s:'♥',c:'suit-h'},{id:'c',s:'♣',c:'suit-c'},{id:'d',s:'♦',c:'suit-d'}];
+        suits.forEach(s => {
+            let row = document.getElementById('suit-'+(s.id==='s'?'spades':s.id==='h'?'hearts':s.id==='c'?'clubs':'diamonds'));
+            ['A','K','Q','J','T','9','8'].forEach(r => { // Shortened for UI space
+                let b = document.createElement('button'); b.className=`rank-btn ${s.c}`; b.innerText=r+s.s;
+                b.onclick=()=>{ setCard(r, s); }; row.appendChild(b);
             });
         });
     }
-    function selectCard(r,s){
-        if(curSel==='h1') state.h1={rank:r, suit:s}; else state.h2={rank:r, suit:s};
-        closeSelector(); updateAll();
+    
+    function sel(id) { curSel=id; document.getElementById('cardModal').style.display='flex'; }
+    function closeSel() { document.getElementById('cardModal').style.display='none'; }
+    
+    function setCard(r,s) {
+        state[curSel] = {rank:r, suit:s};
+        let el = document.getElementById('card_'+curSel);
+        el.className = 'poker-card selected';
+        el.innerHTML = `<span class="${s.c}">${s.s}</span><span>${r}</span>`;
+        closeSel();
     }
-    function renderCards(){
-        ['h1','h2'].forEach(id=>{
-            let d=state[id]; let el=document.getElementById('card_'+id);
-            if(d){ el.className='poker-card selected'; el.innerHTML=`<span class="${d.suit.c}">${d.suit.s}</span><span>${d.rank}</span>`; el.style.background='#fff'; }
-            else { el.className='poker-card empty'; el.innerHTML='+'; el.style.background=''; }
-        });
-    }
-    function openSelector(id){ curSel=id; document.getElementById('cardModal').style.display='flex'; }
-    function closeSelector(){ document.getElementById('cardModal').style.display='none'; }
 </script>
 
 </body>
