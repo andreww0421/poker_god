@@ -4,17 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#121212">
-    <title>Poker God</title>
+    <title>Poker God Pro</title>
     
     <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="icon.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icon.png?v=2">
+    <link rel="icon" type="image/png" sizes="32x32" href="icon.png?v=2">
+    <link rel="icon" type="image/png" sizes="16x16" href="icon.png?v=2">
     
     <style>
         :root {
             --bg-dark: #0f172a;
-            --bg-panel: rgba(30, 41, 59, 0.95); /* Slightly darker for better contrast */
+            --bg-panel: rgba(30, 41, 59, 0.95);
             --accent: #10b981; 
             --accent-glow: rgba(16, 185, 129, 0.3);
             --danger: #ef4444; 
@@ -22,11 +22,11 @@
             --text-muted: #94a3b8;
             --border: rgba(255,255,255,0.1);
             
-            /* GTO Chart Colors (Solver Style) */
-            --c-raise: #10b981; /* Green: Raise */
-            --c-call: #eab308;  /* Yellow: Call */
-            --c-allin: #ef4444; /* Red: All-in */
-            --c-fold: #334155;  /* Blue-Grey: Fold */
+            /* GTO Colors */
+            --c-raise: #10b981; /* Green */
+            --c-call: #eab308;  /* Yellow */
+            --c-allin: #ef4444; /* Red */
+            --c-fold: #334155;  /* Blue-Grey */
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -41,97 +41,63 @@
             min-height: 100vh;
         }
 
-        /* Header */
         header {
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 15px 20px;
-            position: sticky; top: 0; z-index: 50;
-            border-bottom: 1px solid var(--border);
+            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); padding: 15px 20px;
+            position: sticky; top: 0; z-index: 50; border-bottom: 1px solid var(--border);
             display: flex; justify-content: space-between; align-items: center;
         }
         h1 { margin: 0; font-size: 1.2rem; font-weight: 800; letter-spacing: 0.5px; background: linear-gradient(to right, #10b981, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-        /* Container */
         .container { max-width: 600px; margin: 0 auto; padding: 15px; }
         
-        /* Panels */
         .card-panel {
-            background: var(--bg-panel);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            background: var(--bg-panel); backdrop-filter: blur(12px); border: 1px solid var(--border);
+            border-radius: 16px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
 
-        /* Inputs */
         .input-group { margin-bottom: 12px; }
         .row-group { display: flex; gap: 10px; }
         label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 6px; display: block; }
         select, input {
-            width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--border);
-            color: white; padding: 12px; border-radius: 8px; font-size: 1rem; outline: none; transition: border 0.2s;
+            width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; font-size: 1rem; outline: none;
         }
         select:focus, input:focus { border-color: var(--accent); }
 
         .btn-action {
-            width: 100%; padding: 14px; background: var(--accent); color: #000;
-            border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer;
-            box-shadow: 0 4px 15px var(--accent-glow); margin-top: 10px;
+            width: 100%; padding: 14px; background: var(--accent); color: #000; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 10px;
         }
-        .btn-delete { background: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; cursor:pointer; }
+        .btn-delete { background: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; }
 
         /* Opponent Action Buttons */
         .opp-action-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
         .btn-opp {
-            padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid var(--border);
-            color: var(--text-muted); border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: 0.2s;
+            padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--text-muted); border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: 0.2s;
         }
         .btn-opp.active { background: #3b82f6; color: white; border-color: #3b82f6; box-shadow: 0 0 10px rgba(59, 130, 246, 0.4); }
 
-        /* Strength Meter */
-        .meter-bg { width: 100%; height: 10px; background: #334155; border-radius: 5px; overflow: hidden; margin: 15px 0 5px 0; }
-        .meter-fill { height: 100%; width: 0%; transition: width 0.5s ease, background-color 0.5s ease; }
-        
-        /* Poker Cards - FIX: BLACK TEXT & VISIBILITY */
+        /* Poker Cards - Black Text Fix */
         .hand-display { display: flex; gap: 12px; justify-content: center; margin: 15px 0; }
         .poker-card {
             width: 55px; height: 78px; background: #e2e8f0; border-radius: 6px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            font-weight: 900; /* Extra Bold */
-            font-size: 1.5rem; cursor: pointer; position: relative;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: transform 0.1s;
+            font-weight: 900; font-size: 1.5rem; cursor: pointer; position: relative;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
             color: #000 !important; /* Force Black Text */
-            text-shadow: none; /* Remove any text shadow */
+            text-shadow: none;
         }
-        .poker-card:active { transform: scale(0.95); }
-        .poker-card.empty { 
-            background: rgba(255,255,255,0.05); border: 2px dashed var(--text-muted); 
-            color: var(--text-muted) !important; box-shadow: none; font-weight: normal; font-size: 1.2rem; 
-        }
+        .poker-card.empty { background: rgba(255,255,255,0.05); border: 2px dashed var(--text-muted); color: var(--text-muted) !important; font-weight: normal; font-size: 1.2rem; box-shadow: none; }
         .poker-card.selected { border: 2px solid var(--accent); background: white; }
         
-        /* Suit Colors - Only icons use color, numbers stay black in logic (or we color numbers too, users choice. Usually only suit is colored) */
-        /* Let's keep suit colors for the suit symbol only */
         .suit-s { color: #000; } 
         .suit-h { color: #dc2626; } 
         .suit-c { color: #16a34a; } 
         .suit-d { color: #2563eb; } 
 
-        /* Navigation */
         .bottom-nav {
-            position: fixed; bottom: 0; left: 0; width: 100%;
-            background: rgba(15, 23, 42, 0.98); backdrop-filter: blur(10px);
-            border-top: 1px solid var(--border);
-            display: flex; justify-content: space-around;
-            padding: 10px 0; z-index: 100;
+            position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(15, 23, 42, 0.98); border-top: 1px solid var(--border);
+            display: flex; justify-content: space-around; padding: 10px 0; z-index: 100;
         }
-        .nav-item {
-            color: var(--text-muted); text-align: center; font-size: 0.7rem; cursor: pointer;
-            flex: 1; padding: 5px; opacity: 0.7; transition: 0.2s;
-        }
+        .nav-item { color: var(--text-muted); text-align: center; font-size: 0.7rem; flex: 1; padding: 5px; opacity: 0.7; }
         .nav-item.active { color: var(--accent); opacity: 1; transform: translateY(-2px); }
         .nav-icon { font-size: 1.4rem; display: block; margin-bottom: 4px; }
 
@@ -139,32 +105,27 @@
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* 13x13 Grid - MIXED FREQUENCY STYLE */
+        /* Chart */
         .chart-container { display: grid; grid-template-columns: repeat(13, 1fr); gap: 1px; background: #000; padding: 1px; border-radius: 4px; overflow: hidden; }
         .chart-cell { 
             aspect-ratio: 1; font-size: 0.5rem; display: flex; align-items: center; justify-content: center; 
             background-color: var(--c-fold); color: #fff; font-weight:700; text-shadow: 0 1px 2px rgba(0,0,0,0.8);
-            position: relative;
         }
         .legend-dot { width:10px; height:10px; margin-right:4px; border-radius:2px; }
 
         .result-box { text-align: center; margin-top: 15px; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 8px; }
-        /* Improved AI Text */
-        .ai-advice-text { 
-            text-align: left; margin-top: 15px; line-height: 1.6; font-size: 0.95rem; color: #e2e8f0; 
-            border-left: 3px solid var(--accent); padding-left: 15px; background: rgba(255,255,255,0.03); border-radius: 0 8px 8px 0; padding: 15px;
-        }
-        .ai-list { margin: 5px 0 0 0; padding-left: 20px; color: #cbd5e1; font-size: 0.9rem; }
+        .ai-advice-text { text-align: left; margin-top: 15px; line-height: 1.6; font-size: 0.95rem; color: #e2e8f0; border-left: 3px solid var(--accent); padding-left: 15px; background: rgba(255,255,255,0.03); border-radius: 0 8px 8px 0; padding: 15px; }
+        .ai-list { margin: 5px 0 0 0; padding-left: 20px; color: #cbd5e1; }
         .ai-list li { margin-bottom: 6px; }
-        .category-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; background: #334155; font-size: 0.8rem; margin-bottom: 5px; }
-
-        /* Modal & Canvas */
+        
+        .meter-bg { width: 100%; height: 10px; background: #334155; border-radius: 5px; overflow: hidden; margin: 15px 0 5px 0; }
+        .meter-fill { height: 100%; width: 0%; transition: width 0.5s ease; }
+        
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 200; justify-content: center; align-items: center; }
         .modal-content { background: #1e293b; padding: 20px; border-radius: 16px; width: 90%; max-width: 350px; border: 1px solid var(--border); }
         .suit-row { display: flex; gap: 5px; margin-bottom: 8px; }
         .rank-btn { flex: 1; padding: 10px 0; background: #334155; border: none; color: white; border-radius: 4px; font-weight: bold; }
         canvas#bankrollCanvas { width: 100%; height: 220px; background: rgba(0,0,0,0.2); border-radius: 8px; margin-bottom: 10px; }
-        
         .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
         .history-val { font-weight: bold; font-family: monospace; font-size: 1.1rem; }
         .pos-val { color: var(--accent); } .neg-val { color: var(--danger); }
@@ -174,7 +135,7 @@
 
 <header>
     <h1>Poker God <span style="font-size:0.5em; opacity:0.8; color:white; background:none;">PRO</span></h1>
-    <div style="font-size:0.8rem; color:var(--text-muted);">v3.1 Solver</div>
+    <div style="font-size:0.8rem; color:var(--text-muted);">v3.2</div>
 </header>
 
 <div class="container">
@@ -183,19 +144,10 @@
         <div class="card-panel">
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                 <select id="gameMode" onchange="updateRanges()"><option value="MTT">錦標賽 (MTT)</option><option value="Cash">現金桌 (Cash)</option></select>
-                
                 <select id="playerCount" onchange="updateRanges()">
-                    <option value="2">2人 (Heads Up)</option>
-                    <option value="3">3人</option>
-                    <option value="4">4人</option>
-                    <option value="5">5人</option>
-                    <option value="6">6人 (6-Max)</option>
-                    <option value="7">7人</option>
-                    <option value="8">8人</option>
-                    <option value="9" selected>9人 (Full Ring)</option>
-                    <option value="10">10人</option>
+                    <option value="2">2人 (Heads Up)</option><option value="3">3人</option><option value="4">4人</option><option value="5">5人</option>
+                    <option value="6">6人 (6-Max)</option><option value="7">7人</option><option value="8">8人</option><option value="9" selected>9人 (Full Ring)</option><option value="10">10人</option>
                 </select>
-
                 <select id="heroPosition" onchange="updateRanges()">
                     <option value="BTN">BTN</option><option value="CO">CO</option><option value="MP">MP</option><option value="EP">EP/UTG</option><option value="SB">SB</option><option value="BB">BB</option>
                 </select>
@@ -204,7 +156,7 @@
             <div style="margin-top:10px; font-size:0.8rem; color:var(--text-muted); font-style:italic;" id="rangeInfoText"></div>
         </div>
         <div class="card-panel">
-            <label>13x13 GTO 混合頻率圖 (Solver Frequencies)</label>
+            <label>13x13 混合策略圖 (Mixed Strategy)</label>
             <div class="chart-container" id="rangeGrid"></div>
             <div style="display:flex; justify-content:center; gap:10px; margin-top:10px; font-size:0.75rem; color:#fff; flex-wrap:wrap;">
                 <span style="display:flex; align-items:center;"><div class="legend-dot" style="background:var(--c-allin)"></div> All-in</span>
@@ -217,37 +169,33 @@
 
     <div id="tab-odds" class="tab-content">
         <div class="card-panel">
-            <label>底池賠率計算機</label>
-            <div class="input-group"><label>當前底池 (Pot)</label><input type="number" id="potSize" placeholder="1000"></div>
-            <div class="input-group"><label>跟注金額 (Call Amount)</label><input type="number" id="betSize" placeholder="500"></div>
-            <button class="btn-action" onclick="calcPotOdds()">計算 (Calculate)</button>
+            <label>底池賠率計算</label>
+            <div class="input-group"><label>底池 (Pot)</label><input type="number" id="potSize" placeholder="1000"></div>
+            <div class="input-group"><label>跟注 (Call Amount)</label><input type="number" id="betSize" placeholder="500"></div>
+            <button class="btn-action" onclick="calcPotOdds()">計算</button>
             <div class="result-box" id="oddsResult" style="display:none;">
-                <div class="result-label">所需勝率 (Required Equity)</div>
-                <div class="result-val" id="reqEquity">--%</div>
-                <div class="result-label" style="margin-top:10px;">賠率 (Odds)</div>
-                <div style="color:white; font-size:1.2rem;" id="oddsRatio">-- : 1</div>
+                <div class="result-label">所需勝率</div><div class="result-val" id="reqEquity">--%</div>
+                <div class="result-label" style="margin-top:10px;">賠率</div><div style="color:white; font-size:1.2rem;" id="oddsRatio">-- : 1</div>
             </div>
         </div>
     </div>
 
     <div id="tab-postflop" class="tab-content">
         <div class="card-panel">
-            <label>我的手牌 (Hero Hand)</label>
+            <label>我的手牌</label>
             <div class="hand-display">
                 <div class="poker-card empty" id="card_h1" onclick="sel('h1')">+</div>
                 <div class="poker-card empty" id="card_h2" onclick="sel('h2')">+</div>
             </div>
-            
-            <label style="margin-top:15px;">公共牌 (Board)</label>
+            <label style="margin-top:15px;">公共牌</label>
             <div class="hand-display" style="gap:5px;">
-                <div class="poker-card empty" style="width:40px; height:60px; font-size:1rem;" id="card_b1" onclick="sel('b1')"></div>
-                <div class="poker-card empty" style="width:40px; height:60px; font-size:1rem;" id="card_b2" onclick="sel('b2')"></div>
-                <div class="poker-card empty" style="width:40px; height:60px; font-size:1rem;" id="card_b3" onclick="sel('b3')"></div>
-                <div class="poker-card empty" style="width:40px; height:60px; font-size:1rem;" id="card_b4" onclick="sel('b4')"></div>
-                <div class="poker-card empty" style="width:40px; height:60px; font-size:1rem;" id="card_b5" onclick="sel('b5')"></div>
+                <div class="poker-card empty" style="width:40px;height:60px;font-size:1rem;" id="card_b1" onclick="sel('b1')"></div>
+                <div class="poker-card empty" style="width:40px;height:60px;font-size:1rem;" id="card_b2" onclick="sel('b2')"></div>
+                <div class="poker-card empty" style="width:40px;height:60px;font-size:1rem;" id="card_b3" onclick="sel('b3')"></div>
+                <div class="poker-card empty" style="width:40px;height:60px;font-size:1rem;" id="card_b4" onclick="sel('b4')"></div>
+                <div class="poker-card empty" style="width:40px;height:60px;font-size:1rem;" id="card_b5" onclick="sel('b5')"></div>
             </div>
-
-            <label style="margin-top:20px; border-top:1px solid var(--border); padding-top:15px;">對手行動 (Opponent Action)</label>
+            <label style="margin-top:20px; border-top:1px solid var(--border); padding-top:15px;">對手行動</label>
             <div class="opp-action-grid">
                 <button class="btn-opp" onclick="setOppAction('check', this)">Check</button>
                 <button class="btn-opp" onclick="setOppAction('bet', this)">Bet / 2-Bet</button>
@@ -255,11 +203,10 @@
                 <button class="btn-opp" onclick="setOppAction('3bet', this)">3-Bet</button>
                 <button class="btn-opp" onclick="setOppAction('allin', this)" style="grid-column: span 2; color:var(--danger); border-color:var(--danger);">All-in</button>
             </div>
-
-            <button class="btn-action" onclick="analyzePostflop()">AI 分析決策 (Analyze)</button>
+            <button class="btn-action" onclick="analyzePostflop()">AI 分析決策</button>
             
             <div class="result-box" id="postflopResult" style="display:none;">
-                <div class="result-label">牌力分析 (Hand Strength)</div>
+                <div class="result-label">牌力強度</div>
                 <div class="meter-bg"><div class="meter-fill" id="strengthBar"></div></div>
                 <span class="category-badge" id="handCategory">--</span>
                 <div class="ai-advice-text" id="aiAdvice"></div>
@@ -276,34 +223,18 @@
             </div>
         </div>
         <div class="card-panel">
-            <label>新增紀錄 (Add Record)</label>
-            <div class="row-group">
-                <input type="date" id="brDate" style="flex:2">
-                <select id="brType" style="flex:1"><option>MTT</option><option>Cash</option></select>
-            </div>
-            
-            <div class="input-group" style="margin-top:10px;">
-                <label>場次名稱 (Name)</label>
-                <input type="text" id="brName" list="brNameList" placeholder="例如: 3400限時">
-                <datalist id="brNameList"></datalist>
-            </div>
-            
+            <label>新增紀錄</label>
+            <div class="row-group"><input type="date" id="brDate" style="flex:2"><select id="brType" style="flex:1"><option>MTT</option><option>Cash</option></select></div>
+            <div class="input-group" style="margin-top:10px;"><input type="text" id="brName" list="brNameList" placeholder="名稱 (如: 3400限時)"><datalist id="brNameList"></datalist></div>
             <div class="row-group" style="margin-top:10px;">
-                <div style="flex:1"><label>買入 (Buy-in)</label><input type="number" id="brBuyIn" placeholder="0" oninput="calcPreview()"></div>
-                <div style="flex:1"><label>獎金 (Prize)</label><input type="number" id="brPrize" placeholder="0" oninput="calcPreview()"></div>
+                <div style="flex:1"><label>買入</label><input type="number" id="brBuyIn" placeholder="0" oninput="calcPreview()"></div>
+                <div style="flex:1"><label>獎金</label><input type="number" id="brPrize" placeholder="0" oninput="calcPreview()"></div>
             </div>
-            <div style="text-align:right; margin-top:5px; font-size:0.85rem; color:#aaa;">
-                盈利: <span id="brProfitPreview" style="font-weight:bold; color:white;">0</span>
-            </div>
-            
-            <button class="btn-action" onclick="addBankroll()">儲存 (Save)</button>
+            <div style="text-align:right; margin-top:5px; font-size:0.85rem; color:#aaa;">盈利: <span id="brProfitPreview" style="font-weight:bold; color:white;">0</span></div>
+            <button class="btn-action" onclick="addBankroll()">儲存</button>
         </div>
-        <div class="card-panel">
-            <label>歷史紀錄</label>
-            <div id="historyList" style="max-height:300px; overflow-y:auto;"></div>
-        </div>
+        <div class="card-panel"><label>歷史紀錄</label><div id="historyList" style="max-height:300px; overflow-y:auto;"></div></div>
     </div>
-
 </div>
 
 <div class="bottom-nav">
@@ -323,11 +254,9 @@
 </div>
 
 <script>
-    // --- STATE ---
     const state = { h1: null, h2: null, b1:null, b2:null, b3:null, b4:null, b5:null, oppAction: null };
     let curSel = null;
     const ranks = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
-    const ranksMap = {'A':14,'K':13,'Q':12,'J':11,'T':10,'9':9,'8':8,'7':7,'6':6,'5':5,'4':4,'3':3,'2':2};
     let bankrollData = JSON.parse(localStorage.getItem('pokerGodBankroll') || '[]');
 
     window.onload = () => {
@@ -344,7 +273,7 @@
         el.classList.add('active');
     }
 
-    // --- MIXED STRATEGY ENGINE (Solver Visualization) ---
+    // --- MIXED STRATEGY ENGINE ---
     function genGrid() {
         const c = document.getElementById('rangeGrid'); c.innerHTML='';
         for(let i=0; i<13; i++) for(let j=0; j<13; j++) {
@@ -371,33 +300,25 @@
 
         document.querySelectorAll('.chart-cell').forEach(c => {
             let r1 = parseInt(c.dataset.r1), r2 = parseInt(c.dataset.r2), type = c.dataset.type;
-            
-            // Calculate Frequencies {a: allin, r: raise, c: call, f: fold}
             let freqs = getFrequencies(r1, r2, type, pos, stack, mode);
             
-            // Build Hard-Stop Gradient to simulate mixed strategy proportions
-            // Order: All-in (Red) -> Raise (Green) -> Call (Yellow) -> Fold (Blue)
+            // Hard-stop gradient to show exact proportions
             let stop1 = freqs.a;
             let stop2 = stop1 + freqs.r;
             let stop3 = stop2 + freqs.c;
             
-            // Using percentages with 0 spread creates sharp lines
-            let grad = `linear-gradient(135deg, 
+            c.style.background = `linear-gradient(135deg, 
                 var(--c-allin) 0% ${stop1}%, 
                 var(--c-raise) ${stop1}% ${stop2}%, 
                 var(--c-call) ${stop2}% ${stop3}%, 
                 var(--c-fold) ${stop3}% 100%)`;
-            
-            c.style.background = grad;
         });
     }
 
-    // --- FREQUENCY CALCULATOR (Simulated Solver Logic) ---
     function getFrequencies(r1, r2, type, pos, stack, mode) {
-        let f = {a:0, r:0, c:0, f:100}; // Default Fold
+        let f = {a:0, r:0, c:0, f:100}; 
         let score = r1*2 + r2 + (type==='pair'?20:0) + (type==='suited'?6:0);
         
-        // 1. PUSH / FOLD (<15BB)
         if(mode === "PushFold") {
             let threshold = 35 - (stack - 5); 
             if(pos==='BTN'||pos==='SB') threshold -= 12; else if(pos==='CO') threshold -= 6;
@@ -405,7 +326,6 @@
             if(type==='pair') {
                 if(r1>=7) { f.a=100; f.f=0; return f; } 
                 if(r1>=2 && r1<7) { 
-                   // Low pairs mix Push/Fold based on stack
                    let pushProb = (8-r1)*10 + (15-stack)*5; 
                    if(pos==='BTN'||pos==='SB') pushProb += 30;
                    pushProb = Math.min(100, Math.max(0, pushProb));
@@ -413,41 +333,27 @@
                 }
             }
             if(score >= threshold + 5) { f.a=100; f.f=0; }
-            else if(score >= threshold) { f.a=50; f.f=50; } // Mix
+            else if(score >= threshold) { f.a=50; f.f=50; } 
             return f;
         }
 
-        // 2. BB DEFENSE
         if(mode === "BBDef") {
-            // 3Bet Region (Top)
             if((type==='pair'&&r1>=10) || (type==='offsuit'&&r1===14&&r2>=12) || (type==='suited'&&r1===14&&r2>=11)) {
-                f.r = 80; f.c = 20; f.f = 0; return f; // Mix 3Bet/Call
+                f.r = 80; f.c = 20; f.f = 0; return f; 
             }
-            // Call Region
             let callThresh = 25;
             if(score >= callThresh) { f.c=100; f.f=0; return f; }
-            if(score >= callThresh - 5) { f.c=40; f.f=60; return f; } // Marginal defense
+            if(score >= callThresh - 5) { f.c=40; f.f=60; return f; } 
             return f;
         }
 
-        // 3. RFI (Standard Open)
-        // Adjust tightness
-        let t = 0; 
-        if(pos==='MP') t=5; if(pos==='CO') t=12; if(pos==='BTN') t=20; if(pos==='SB') t=18;
-        
+        let t = 0; if(pos==='MP') t=5; if(pos==='CO') t=12; if(pos==='BTN') t=20; if(pos==='SB') t=18;
         let openThresh = 45 - t;
-        
-        // Pure Raise
         if(score >= openThresh + 5) { f.r=100; f.f=0; return f; }
-        
-        // Mixed Bottom Range (e.g., A5s, K9s, 22)
         if(score >= openThresh) { f.r=50; f.f=50; return f; }
-        
         return f;
     }
 
-
-    // --- ODDS ---
     function calcPotOdds() {
         let p=parseFloat(document.getElementById('potSize').value), c=parseFloat(document.getElementById('betSize').value);
         if(!p||!c)return;
@@ -456,12 +362,12 @@
         document.getElementById('oddsRatio').innerText = ((p+c)/c).toFixed(1)+' : 1';
     }
 
-    // --- POSTFLOP ---
     function setOppAction(act, btn) {
         state.oppAction = act;
         document.querySelectorAll('.btn-opp').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
     }
+    
     function analyzePostflop() {
         if(!state.h1 || !state.h2 || !state.b1 || !state.b2 || !state.b3) { alert("請選擇手牌與至少 3 張公牌"); return; }
         if(!state.oppAction) { alert("請選擇對手行動"); return; }
@@ -482,7 +388,6 @@
         else if (isDraw) { score=35; catText="Draw (聽牌)"; barColor="#f59e0b"; }
         else { score=15; catText="Air (空氣)"; barColor="#ef4444"; }
 
-        // --- DETAILED AI ADVICE GENERATION (UPDATED) ---
         let adviceHtml = "";
         const act = state.oppAction;
         
@@ -525,22 +430,17 @@
         names.forEach(n => { let opt=document.createElement('option'); opt.value=n; dl.appendChild(opt); });
     }
     function calcPreview() {
-        let b=parseFloat(document.getElementById('brBuyIn').value)||0;
-        let p=parseFloat(document.getElementById('brPrize').value)||0;
-        let d=p-b;
-        let el=document.getElementById('brProfitPreview');
-        el.innerText=(d>=0?'+':'')+d; el.style.color=d>=0?'var(--accent)':'var(--danger)';
+        let b=parseFloat(document.getElementById('brBuyIn').value)||0; let p=parseFloat(document.getElementById('brPrize').value)||0;
+        let d=p-b; document.getElementById('brProfitPreview').innerText=(d>=0?'+':'')+d; document.getElementById('brProfitPreview').style.color=d>=0?'var(--accent)':'var(--danger)';
     }
     function addBankroll() {
         let d=document.getElementById('brDate').value, t=document.getElementById('brType').value;
         let n=document.getElementById('brName').value.trim();
         let b=parseFloat(document.getElementById('brBuyIn').value), p=parseFloat(document.getElementById('brPrize').value);
         if(!d||isNaN(b)||isNaN(p)) { alert("請填寫完整資訊"); return; }
-        let profit = p - b;
-        bankrollData.push({ id:Date.now(), date:d, type:t, name:n, buyIn:b, prize:p, amount:profit });
+        bankrollData.push({ id:Date.now(), date:d, type:t, name:n, buyIn:b, prize:p, amount:p-b });
         localStorage.setItem('pokerGodBankroll', JSON.stringify(bankrollData));
         document.getElementById('brName').value=''; document.getElementById('brBuyIn').value=''; document.getElementById('brPrize').value='';
-        document.getElementById('brProfitPreview').innerText='0';
         updateNameList(); renderBankrollUI();
     }
     function deleteRecord(id) {
@@ -554,16 +454,7 @@
         bankrollData.forEach((i,idx)=>{
             tot += i.amount; data.push({x:idx+1, y:tot});
             let d=document.createElement('div'); d.className='history-item';
-            d.innerHTML=`
-                <div style="flex:1">
-                    <div style="font-size:0.9rem; font-weight:bold; color:#fff;">${i.name || '未命名牌局'}</div>
-                    <div style="font-size:0.75rem; color:#888;">${i.date} • ${i.type}</div>
-                    <div style="font-size:0.75rem; color:#aaa;">Buy: ${i.buyIn} | Prize: ${i.prize}</div>
-                </div>
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <span class="history-val ${i.amount>=0?'pos-val':'neg-val'}">${i.amount>=0?'+':''}${i.amount}</span>
-                    <button class="btn-delete" onclick="deleteRecord(${i.id})">✕</button>
-                </div>`;
+            d.innerHTML=`<div style="flex:1"><div style="font-size:0.9rem;font-weight:bold;color:#fff;">${i.name||'未命名'}</div><div style="font-size:0.75rem;color:#888;">${i.date}•${i.type}</div><div style="font-size:0.75rem;color:#aaa;">Buy:${i.buyIn}|Prize:${i.prize}</div></div><div style="display:flex;align-items:center;gap:10px;"><span class="${i.amount>=0?'pos-val':'neg-val'}">${i.amount>=0?'+':''}${i.amount}</span><button class="btn-delete" onclick="deleteRecord(${i.id})">✕</button></div>`;
             l.prepend(d);
         });
         document.getElementById('totalProfit').innerText = (tot>=0?'+':'')+tot;
@@ -579,17 +470,12 @@
         let max=Math.max(...d.map(p=>p.y)), min=Math.min(...d.map(p=>p.y));
         let range=max-min||100; max+=range*0.1; min-=range*0.1;
         let mapX=i=>20+(i/(d.length-1))*(w-40), mapY=v=>h-(20+((v-min)/(max-min))*(h-40));
-        if(min<0 && max>0) {
-            let z=mapY(0); ctx.beginPath(); ctx.strokeStyle="rgba(255,255,255,0.2)"; ctx.setLineDash([5,5]); 
-            ctx.moveTo(20,z); ctx.lineTo(w-20,z); ctx.stroke(); ctx.setLineDash([]);
-        }
+        if(min<0 && max>0) { let z=mapY(0); ctx.beginPath(); ctx.strokeStyle="rgba(255,255,255,0.2)"; ctx.setLineDash([5,5]); ctx.moveTo(20,z); ctx.lineTo(w-20,z); ctx.stroke(); ctx.setLineDash([]); }
         ctx.beginPath(); ctx.strokeStyle='#3b82f6'; ctx.lineWidth=3;
         ctx.moveTo(mapX(0), mapY(d[0].y));
         for(let i=1;i<d.length;i++) ctx.lineTo(mapX(i), mapY(d[i].y));
         ctx.stroke();
     }
-
-    // --- UTILS ---
     function genSelUI(){ 
         [{id:'s',c:'suit-s',s:'♠'},{id:'h',c:'suit-h',s:'♥'},{id:'c',c:'suit-c',s:'♣'},{id:'d',c:'suit-d',s:'♦'}].forEach(x=>{
             let r=document.getElementById('suit-'+(x.id==='s'?'spades':x.id==='h'?'hearts':x.id==='c'?'clubs':'diamonds'));
@@ -606,4 +492,3 @@
 </script>
 </body>
 </html>
-
