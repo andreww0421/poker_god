@@ -163,7 +163,7 @@
 
 <header>
     <h1>Poker God <span style="font-size:0.5em; opacity:0.8; color:white; background:none;">PRO</span></h1>
-    <div style="font-size:0.8rem; color:var(--text-muted);">v2.4</div>
+    <div style="font-size:0.8rem; color:var(--text-muted);">v2.5</div>
 </header>
 
 <div class="container">
@@ -172,10 +172,19 @@
         <div class="card-panel">
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                 <select id="gameMode" onchange="updateRanges()"><option value="MTT">錦標賽 (MTT)</option><option value="Cash">現金桌 (Cash)</option></select>
+                
                 <select id="playerCount" onchange="updateRanges()">
-                    <option value="9">9人 (Full Ring)</option><option value="6">6人 (6-Max)</option><option value="2">2人 (Heads Up)</option>
-                    <option value="3">3人</option><option value="4">4人</option><option value="5">5人</option><option value="7">7人</option><option value="8">8人</option><option value="10">10人</option>
+                    <option value="2">2人 (Heads Up)</option>
+                    <option value="3">3人 Table</option>
+                    <option value="4">4人 Table</option>
+                    <option value="5">5人 Table</option>
+                    <option value="6">6人 (6-Max)</option>
+                    <option value="7">7人 Table</option>
+                    <option value="8">8人 Table</option>
+                    <option value="9" selected>9人 (Full Ring)</option>
+                    <option value="10">10人 Table</option>
                 </select>
+
                 <select id="heroPosition" onchange="updateRanges()">
                     <option value="BTN">BTN</option><option value="CO">CO</option><option value="MP">MP</option><option value="EP">EP/UTG</option><option value="SB">SB</option><option value="BB">BB</option>
                 </select>
@@ -307,7 +316,6 @@
     const state = { h1: null, h2: null, b1:null, b2:null, b3:null, b4:null, b5:null, oppAction: null };
     let curSel = null;
     const ranks = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
-    const ranksMap = {'A':14,'K':13,'Q':12,'J':11,'T':10,'9':9,'8':8,'7':7,'6':6,'5':5,'4':4,'3':3,'2':2};
     let bankrollData = JSON.parse(localStorage.getItem('pokerGodBankroll') || '[]');
 
     window.onload = () => {
@@ -324,54 +332,52 @@
         el.classList.add('active');
     }
 
-    // --- ADVANCED RANGES LOGIC ---
+    // --- ADVANCED RANGES LOGIC (GTO) ---
     function genGrid() {
         const c = document.getElementById('rangeGrid'); c.innerHTML='';
         for(let i=0; i<13; i++) for(let j=0; j<13; j++) {
             let d=document.createElement('div'); d.className='chart-cell';
-            let t=i===j?ranks[i]+ranks[j]:(i<j?ranks[i]+ranks[j]+'s':ranks[j]+ranks[i]+'o');
-            d.innerText=t; d.dataset.h=t; d.dataset.r1=14-i; d.dataset.r2=14-j; 
-            d.dataset.type = i===j?'pair':(i<j?'suited':'offsuit');
+            let r1 = 14-i; let r2 = 14-j;
+            let type = i===j ? 'pair' : (i<j ? 'suited' : 'offsuit');
+            let t = i===j ? ranks[i]+ranks[j] : (i<j ? ranks[i]+ranks[j]+'s' : ranks[j]+ranks[i]+'o');
+            d.innerText=t; d.dataset.h=t; 
+            d.dataset.r1=r1; d.dataset.r2=r2; d.dataset.type=type;
             c.appendChild(d);
         }
     }
 
     function updateRanges() {
-        const stack=parseInt(document.getElementById('stackDepth').value);
-        const pos=document.getElementById('heroPosition').value;
-        const pCount=parseInt(document.getElementById('playerCount').value);
-        const mode=document.getElementById('gameMode').value;
+        const stack = parseInt(document.getElementById('stackDepth').value);
+        const pos = document.getElementById('heroPosition').value;
+        const pCount = parseInt(document.getElementById('playerCount').value);
+        const mode = document.getElementById('gameMode').value;
         const info = document.getElementById('rangeInfoText');
 
         let actType = 'raise'; // default
-        let title = "Standard Open (RFI)";
+        let title = `Standard Open (RFI) - ${pos}`;
 
         if(stack < 15) {
-            title = "Push / Fold (Nash)";
+            title = `Push / Fold (Nash) - ${stack}BB`;
             actType = 'push';
-        } else if(pos === 'BB') {
-            title = "Big Blind Defense (vs Open)";
+        } else if (pos === 'BB') {
+            title = "BB Defense vs Open (Call/3Bet)";
             actType = 'defense';
+        } else if (pos === 'SB' && pCount > 2) {
+            title = "SB Strategy (Raise/Limp)";
+            actType = 'sb_mix';
         }
 
-        info.innerText = `Strategy: ${title} | ${mode} ${pCount}-Max`;
+        info.innerText = `${title} | ${mode} ${pCount}-Max`;
 
         document.querySelectorAll('.chart-cell').forEach(c => {
-            let h=c.dataset.h, r1=parseInt(c.dataset.r1), r2=parseInt(c.dataset.r2), type=c.dataset.type;
+            let r1 = parseInt(c.dataset.r1), r2 = parseInt(c.dataset.r2), type = c.dataset.type;
             let action = 0; // 0:Fold, 1:Call, 2:Raise, 3:Allin
 
-            if(actType === 'push') {
-                // --- PUSH / FOLD LOGIC ---
-                action = getPushFoldAction(r1, r2, type, pos, stack);
-            } else if(actType === 'defense') {
-                // --- BB DEFENSE LOGIC ---
-                action = getBBDefenseAction(r1, r2, type, stack);
-            } else {
-                // --- STANDARD RFI LOGIC ---
-                action = getRFIAction(r1, r2, type, pos, pCount, mode);
-            }
+            if(actType === 'push') action = getPushFoldAction(r1, r2, type, pos, stack);
+            else if(actType === 'defense') action = getBBDefenseAction(r1, r2, type, stack);
+            else if(actType === 'sb_mix') action = getSBAction(r1, r2, type, stack);
+            else action = getRFIAction(r1, r2, type, pos, pCount);
 
-            // Apply Classes
             c.className = 'chart-cell';
             if(action===3) c.classList.add('bg-allin');
             else if(action===2) c.classList.add('bg-raise');
@@ -379,74 +385,49 @@
         });
     }
 
-    // --- ALGORITHMS ---
+    // --- LOGIC FUNCTIONS ---
     function getPushFoldAction(r1, r2, type, pos, stack) {
-        // Simple Nash approximation for <15BB
-        let score = r1 + r2 + (type==='pair'?10:0) + (type==='suited'?3:0);
-        let threshold = 20; // Base tight
-        
-        // Adjust threshold by Position (Later = Wider)
-        if(pos==='BTN'||pos==='SB') threshold -= 8;
-        else if(pos==='CO') threshold -= 5;
-        else if(pos==='EP') threshold += 5;
-
-        // Adjust by Stack (Smaller stack = Wider shove)
-        threshold += (stack - 5); 
-
-        if(score >= threshold) return 3; // All-in
-        return 0; // Fold
+        let score = r1 + r2 + (type==='pair'?12:0) + (type==='suited'?4:0);
+        let minScore = 24; 
+        if(pos==='BTN' || pos==='SB') minScore -= 10; else if(pos==='CO') minScore -= 6; else if(pos==='MP') minScore -= 3;
+        minScore += (stack - 10) * 0.8; 
+        if(type==='pair') { if(r1 >= 7) return 3; if(stack < 8 && r1 >= 2) return 3; }
+        if(type==='suited' && r1===14) return 3; 
+        return score >= minScore ? 3 : 0;
     }
-
     function getBBDefenseAction(r1, r2, type, stack) {
-        // BB vs Steal (BTN/CO open) approximation
-        // Pairs
-        if(type==='pair') {
-            if(r1 >= 10) return 2; // TT+ 3Bet
-            if(r1 >= 2) return 1; // 22-99 Call
-        }
-        // Suited
+        let is3Bet = false;
+        if(type==='pair' && r1>=10) is3Bet = true;
+        if(type==='offsuit' && r1===14 && r2>=11) is3Bet = true;
+        if(type==='suited' && ( (r1===14 && r2>=10) || (r1===14 && r2<=5) )) is3Bet = true; 
+        if(is3Bet) return 2; 
+        if(type==='pair') return 1; 
+        if(type==='suited') { if(r1 >= 9) return 1; if(r1+r2 >= 12 && r1-r2 <= 2) return 1; if(r1-r2 === 2 && r1 >= 8) return 1; return 0; }
+        if(type==='offsuit') { if(r1===14) return 1; if(r1+r2 >= 20) return 1; if(r1+r2 >= 18 && r1-r2<=1) return 1; return 0; }
+        return 0;
+    }
+    function getSBAction(r1, r2, type, stack) {
+        if(type==='pair' && r1>=8) return 2; if(type==='offsuit' && r1>=13 && r2>=10) return 2; if(type==='suited' && r1>=10) return 2;
+        if(type==='pair') return 1; if(type==='suited') return 1; if(type==='offsuit' && r1+r2 >= 16) return 1; 
+        return 0;
+    }
+    function getRFIAction(r1, r2, type, pos, pCount) {
+        let tightness = 0; 
+        if(pos==='MP') tightness = 1; if(pos==='CO') tightness = 3; if(pos==='BTN') tightness = 5; if(pos==='SB') tightness = 4; 
+        if(pCount <= 6 && pos==='EP') tightness = 1;
+        let pairLimit = 7 - tightness; 
+        if(type==='pair') { if(r1 >= pairLimit) return 2; if(pos==='BTN' || pos==='SB') return 2; }
         if(type==='suited') {
-            if(r1 >= 13) return 2; // KQs, AKs 3Bet
-            if(r1 >= 10 && r2 >= 9) return 1; // T9s+ Call
-            if(r1 <= 9 && r2 >= r1-1) return 1; // Connectors Call
-            if(r1===14) return 2; // A2s-A5s 3Bet Bluff sometimes, mostly Call. Let's say Mix/Call
+            if(r1 >= 14 - (tightness*0.8)) return 2; if(r1 === 13 && r2 >= 10 - tightness) return 2; 
+            let minSum = 22 - (tightness * 2.5); if(r1+r2 >= minSum && r1-r2 <= 2) return 2;
+            if(tightness >= 5) { if(r1 >= 10) return 2; if(r1 >= 8 && r1-r2<=2) return 2; }
         }
-        // Offsuit
         if(type==='offsuit') {
-            if(r1===14 && r2>=10) return 2; // AQo+ 3Bet
-            if(r1===14 || (r1>=11 && r2>=10)) return 1; // Ax, Broadways Call
+            if(r1===14 && r2 >= 10 - (tightness*1.2)) return 2; if(r1===13 && r2 >= 11 - tightness) return 2; 
+            if(tightness >= 3) { if(r1===12 && r2 >= 9) return 2; if(r1===11 && r2 >= 9) return 2; }
         }
         return 0;
     }
-
-    function getRFIAction(r1, r2, type, pos, pCount, mode) {
-        // Base Score
-        let score = r1 + r2 + (type==='pair'?10:0) + (type==='suited'?4:0);
-        if(type==='offsuit' && r1-r2 > 4) score -= 3; // Unconnected Penalty
-
-        let threshold = 30; // Default UTG 9max
-        
-        // Position Adjustments
-        if(pos==='BTN') threshold = 18; // Very Wide
-        else if(pos==='CO') threshold = 22;
-        else if(pos==='MP') threshold = 26;
-        else if(pos==='SB') threshold = 20; // SB RFI is wide
-        
-        // Player Count Adjustments
-        if(pCount <= 6 && pos==='EP') threshold -= 4; // 6max UTG is looser than 9max UTG
-        if(pCount === 2) threshold = 10; // Heads Up is ATC
-
-        // SB Special Logic (Limp/Raise Mix)
-        if(pos === 'SB') {
-            if(score >= threshold + 5) return 2; // Strong -> Raise
-            if(score >= threshold) return 1; // Marginal -> Call/Limp
-            return 0;
-        }
-
-        if(score >= threshold) return 2; // Raise
-        return 0;
-    }
-
 
     // --- ODDS ---
     function calcPotOdds() {
