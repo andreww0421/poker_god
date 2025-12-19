@@ -13,7 +13,7 @@
     <style>
         :root {
             --bg-dark: #0f172a;
-            --bg-panel: rgba(30, 41, 59, 0.85);
+            --bg-panel: rgba(30, 41, 59, 0.95); /* Slightly darker for better contrast */
             --accent: #10b981; 
             --accent-glow: rgba(16, 185, 129, 0.3);
             --danger: #ef4444; 
@@ -21,11 +21,11 @@
             --text-muted: #94a3b8;
             --border: rgba(255,255,255,0.1);
             
-            /* GTO Chart Colors (Modern Solver Style) */
+            /* GTO Chart Colors (Solver Style) */
             --c-raise: #10b981; /* Green: Raise */
             --c-call: #eab308;  /* Yellow: Call */
             --c-allin: #ef4444; /* Red: All-in */
-            --c-fold: #334155;  /* Dark Blue-Grey: Fold */
+            --c-fold: #334155;  /* Blue-Grey: Fold */
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -94,20 +94,26 @@
         .meter-bg { width: 100%; height: 10px; background: #334155; border-radius: 5px; overflow: hidden; margin: 15px 0 5px 0; }
         .meter-fill { height: 100%; width: 0%; transition: width 0.5s ease, background-color 0.5s ease; }
         
-        /* Poker Cards - FIX: BLACK TEXT */
+        /* Poker Cards - FIX: BLACK TEXT & VISIBILITY */
         .hand-display { display: flex; gap: 12px; justify-content: center; margin: 15px 0; }
         .poker-card {
             width: 55px; height: 78px; background: #e2e8f0; border-radius: 6px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            font-weight: 800; font-size: 1.4rem; cursor: pointer; position: relative;
+            font-weight: 900; /* Extra Bold */
+            font-size: 1.5rem; cursor: pointer; position: relative;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: transform 0.1s;
             color: #000 !important; /* Force Black Text */
+            text-shadow: none; /* Remove any text shadow */
         }
         .poker-card:active { transform: scale(0.95); }
-        .poker-card.empty { background: rgba(255,255,255,0.05); border: 2px dashed var(--text-muted); color: var(--text-muted) !important; box-shadow: none; font-weight: normal; }
+        .poker-card.empty { 
+            background: rgba(255,255,255,0.05); border: 2px dashed var(--text-muted); 
+            color: var(--text-muted) !important; box-shadow: none; font-weight: normal; font-size: 1.2rem; 
+        }
         .poker-card.selected { border: 2px solid var(--accent); background: white; }
         
-        /* Suit Colors */
+        /* Suit Colors - Only icons use color, numbers stay black in logic (or we color numbers too, users choice. Usually only suit is colored) */
+        /* Let's keep suit colors for the suit symbol only */
         .suit-s { color: #000; } 
         .suit-h { color: #dc2626; } 
         .suit-c { color: #16a34a; } 
@@ -132,11 +138,11 @@
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* 13x13 Grid - GRADIENT STYLE */
+        /* 13x13 Grid - MIXED FREQUENCY STYLE */
         .chart-container { display: grid; grid-template-columns: repeat(13, 1fr); gap: 1px; background: #000; padding: 1px; border-radius: 4px; overflow: hidden; }
         .chart-cell { 
             aspect-ratio: 1; font-size: 0.5rem; display: flex; align-items: center; justify-content: center; 
-            background-color: var(--c-fold); color: #fff; font-weight:500; text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+            background-color: var(--c-fold); color: #fff; font-weight:700; text-shadow: 0 1px 2px rgba(0,0,0,0.8);
             position: relative;
         }
         .legend-dot { width:10px; height:10px; margin-right:4px; border-radius:2px; }
@@ -148,7 +154,7 @@
             border-left: 3px solid var(--accent); padding-left: 15px; background: rgba(255,255,255,0.03); border-radius: 0 8px 8px 0; padding: 15px;
         }
         .ai-list { margin: 5px 0 0 0; padding-left: 20px; color: #cbd5e1; font-size: 0.9rem; }
-        .ai-list li { margin-bottom: 4px; }
+        .ai-list li { margin-bottom: 6px; }
         .category-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; background: #334155; font-size: 0.8rem; margin-bottom: 5px; }
 
         /* Modal & Canvas */
@@ -167,7 +173,7 @@
 
 <header>
     <h1>Poker God <span style="font-size:0.5em; opacity:0.8; color:white; background:none;">PRO</span></h1>
-    <div style="font-size:0.8rem; color:var(--text-muted);">v3.0 GTO</div>
+    <div style="font-size:0.8rem; color:var(--text-muted);">v3.1 Solver</div>
 </header>
 
 <div class="container">
@@ -197,7 +203,7 @@
             <div style="margin-top:10px; font-size:0.8rem; color:var(--text-muted); font-style:italic;" id="rangeInfoText"></div>
         </div>
         <div class="card-panel">
-            <label>13x13 混合頻率圖 (Mixed Frequencies)</label>
+            <label>13x13 GTO 混合頻率圖 (Solver Frequencies)</label>
             <div class="chart-container" id="rangeGrid"></div>
             <div style="display:flex; justify-content:center; gap:10px; margin-top:10px; font-size:0.75rem; color:#fff; flex-wrap:wrap;">
                 <span style="display:flex; align-items:center;"><div class="legend-dot" style="background:var(--c-allin)"></div> All-in</span>
@@ -337,7 +343,7 @@
         el.classList.add('active');
     }
 
-    // --- MIXED STRATEGY ENGINE ---
+    // --- MIXED STRATEGY ENGINE (Solver Visualization) ---
     function genGrid() {
         const c = document.getElementById('rangeGrid'); c.innerHTML='';
         for(let i=0; i<13; i++) for(let j=0; j<13; j++) {
@@ -368,12 +374,13 @@
             // Calculate Frequencies {a: allin, r: raise, c: call, f: fold}
             let freqs = getFrequencies(r1, r2, type, pos, stack, mode);
             
-            // Build Gradient from Percentages
+            // Build Hard-Stop Gradient to simulate mixed strategy proportions
+            // Order: All-in (Red) -> Raise (Green) -> Call (Yellow) -> Fold (Blue)
             let stop1 = freqs.a;
             let stop2 = stop1 + freqs.r;
             let stop3 = stop2 + freqs.c;
             
-            // Linear Gradient to simulate mixed strategy visual
+            // Using percentages with 0 spread creates sharp lines
             let grad = `linear-gradient(135deg, 
                 var(--c-allin) 0% ${stop1}%, 
                 var(--c-raise) ${stop1}% ${stop2}%, 
@@ -432,7 +439,7 @@
         // Pure Raise
         if(score >= openThresh + 5) { f.r=100; f.f=0; return f; }
         
-        // Mixed Bottom Range
+        // Mixed Bottom Range (e.g., A5s, K9s, 22)
         if(score >= openThresh) { f.r=50; f.f=50; return f; }
         
         return f;
@@ -474,29 +481,33 @@
         else if (isDraw) { score=35; catText="Draw (聽牌)"; barColor="#f59e0b"; }
         else { score=15; catText="Air (空氣)"; barColor="#ef4444"; }
 
-        // --- DETAILED AI ADVICE GENERATION ---
+        // --- DETAILED AI ADVICE GENERATION (UPDATED) ---
         let adviceHtml = "";
         const act = state.oppAction;
         
-        adviceHtml += `<strong>當前局勢分析:</strong> 對手行動為 <span style="color:var(--accent)">${act.toUpperCase()}</span>，你的牌力定義為 <strong>${catText}</strong>。<br>`;
-        
+        adviceHtml += `<strong>局勢:</strong> 面對 <span style="color:var(--accent)">${act.toUpperCase()}</span>，牌力 <strong>${catText}</strong>。<br>`;
         adviceHtml += `<ul class="ai-list">`;
         
         if (act === 'check') {
-            if(score > 60) adviceHtml += `<li><strong>價值下注 (Value Bet):</strong> 對手示弱。建議下注底池的 66%-75% 來獲取價值。</li><li><strong>保護手牌:</strong> 若牌面潮濕 (Wet Board)，更應該下注以拒絕底池權益。</li>`;
-            else if(score > 30) adviceHtml += `<li><strong>過牌控池 (Pot Control):</strong> 你的牌力中等或有聽牌。過牌可以免費看轉牌，實現權益 (Realize Equity)。</li><li><strong>避免被加注:</strong> 下注可能導致被 Check-Raise，過牌是安全的 GTO 選項。</li>`;
-            else adviceHtml += `<li><strong>放棄/微詐唬:</strong> 若你有位置優勢 (IP)，可嘗試小注偷底，但大部分時候建議過牌放棄。</li>`;
+            if(score > 60) adviceHtml += `<li><span style="color:var(--c-raise)">● 下注 (Bet):</span> 對手示弱。建議下注底池的 66%-75% 來獲取價值。</li>`;
+            else if(score > 30) adviceHtml += `<li><span style="color:var(--c-call)">● 過牌 (Check Back):</span> 牌力中等。過牌可免費看轉牌，實現權益 (Realize Equity)。</li>`;
+            else adviceHtml += `<li><span style="color:var(--c-call)">● 放棄 (Give up):</span> 若無位置優勢，過牌是安全的 GTO 選項。</li>`;
         } 
         else if (act === 'bet') {
-            adviceHtml += `<li><strong>底池賠率:</strong> 請使用上方計算機確認賠率是否合適。</li>`;
-            if(score > 70) adviceHtml += `<li><strong>加注 (Raise):</strong> 這是強牌。如果是堅果，可以慢打 (Call)；如果是怕被反超的牌，建議加注 (x3)。</li>`;
-            else if(score > 40) adviceHtml += `<li><strong>跟注 (Call):</strong> 你的牌力足以抓詐唬，或你有聽牌賠率。不要加注打跑對手的詐唬範圍。</li>`;
-            else adviceHtml += `<li><strong>棄牌 (Fold):</strong> 對手下注代表有牌或強詐唬。你的空氣牌沒有勝算，長期來看棄牌是 +EV。</li>`;
+            if(score > 70) adviceHtml += `<li><span style="color:var(--c-raise)">● 加注 (Raise):</span> 強牌建議加注 (3x) 來造池。若牌面乾燥可考慮慢打 (Call)。</li>`;
+            else if(score > 40) adviceHtml += `<li><span style="color:var(--c-call)">● 跟注 (Call):</span> 牌力足以抓詐唬或有聽牌賠率。不要加注打跑對手的詐唬範圍。</li>`;
+            else adviceHtml += `<li><span style="color:var(--c-fold)">● 棄牌 (Fold):</span> 對手下注代表有牌。空氣牌長期來看棄牌是 +EV。</li>`;
+        }
+        else if (act === 'raise' || act === '3bet') {
+            adviceHtml += `<li><strong>風險警告:</strong> 對手展現極強攻擊性。</li>`;
+            if(score > 85) adviceHtml += `<li><span style="color:var(--c-allin)">● 全下 (All-in):</span> 堅果牌(Nuts)。現在是打光籌碼的好時機，對手很難棄掉強牌。</li>`;
+            else if(score > 60) adviceHtml += `<li><span style="color:var(--c-call)">● 跟注 (Call):</span> 兩對或三條在此情況下通常落後於 Set 或順子。建議跟注控池，不要再加注。</li>`;
+            else adviceHtml += `<li><span style="color:var(--c-fold)">● 棄牌 (Fold):</span> 面對 Raise/3-Bet，頂對通常已經不夠好了。果斷棄牌保存實力。</li>`;
         }
         else if (act === 'allin') {
-            if(score > 80) adviceHtml += `<li><strong>秒接 (Snap Call):</strong> 你的牌力在頂端範圍，輸了也無怨無悔 (Cooler)。</li>`;
-            else if(score > 40 && isDraw) adviceHtml += `<li><strong>數學計算:</strong> 計算你的補牌數 (Outs) x 2 (或4)。若勝率 > 底池賠率，則必須跟注。</li>`;
-            else adviceHtml += `<li><strong>棄牌 (Fold):</strong> 不要用邊緣牌接全下。保護你的資金 (Bankroll)。</li>`;
+            if(score > 80) adviceHtml += `<li><span style="color:var(--c-call)">● 秒接 (Snap Call):</span> 牌力頂尖，這是 Cooler (冤家牌)，輸了也無怨無悔。</li>`;
+            else if(score > 40 && isDraw) adviceHtml += `<li><span style="color:var(--c-call)">● 計算賠率:</span> 計算補牌數 (Outs)。若 (Outs x 2) > 底池賠率，則必須跟注。</li>`;
+            else adviceHtml += `<li><span style="color:var(--c-fold)">● 棄牌 (Fold):</span> 不要用邊緣牌接全下。保護你的資金 (Bankroll)。</li>`;
         }
         adviceHtml += `</ul>`;
 
