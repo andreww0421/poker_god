@@ -46,8 +46,7 @@
             --card-bg: #ffffff;
             --card-text: #000;
             --nav-bg: rgba(255, 255, 255, 0.98);
-            
-            --c-fold: #94a3b8; /* Lighter grey for fold in light mode */
+            --c-fold: #94a3b8; 
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -83,10 +82,12 @@
         .input-group { margin-bottom: 12px; }
         .row-group { display: flex; gap: 10px; }
         label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 6px; display: block; }
+        
         select, input {
             width: 100%; background: rgba(125,125,125,0.1); border: 1px solid var(--border); color: var(--text-main); padding: 12px; border-radius: 8px; font-size: 1rem; outline: none;
         }
         select:focus, input:focus { border-color: var(--accent); }
+        select option { background-color: var(--bg-body); color: var(--text-main); }
 
         .btn-action {
             width: 100%; padding: 14px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 10px; text-shadow: 0 1px 2px rgba(0,0,0,0.2);
@@ -104,9 +105,7 @@
             width: 55px; height: 78px; background: var(--card-bg); border-radius: 6px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             font-weight: 900; font-size: 1.5rem; cursor: pointer; position: relative;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
-            color: var(--card-text) !important;
-            border: 1px solid var(--border);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); color: var(--card-text) !important; border: 1px solid var(--border);
         }
         .poker-card.empty { background: rgba(125,125,125,0.05); border: 2px dashed var(--text-muted); color: var(--text-muted) !important; font-weight: normal; font-size: 1.2rem; box-shadow: none; }
         .poker-card.selected { border: 2px solid var(--accent); background: #fff; color: #000 !important; }
@@ -126,20 +125,17 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
         .chart-container { display: grid; grid-template-columns: repeat(13, 1fr); gap: 1px; background: #000; padding: 1px; border-radius: 4px; overflow: hidden; }
-        .chart-cell { 
-            aspect-ratio: 1; font-size: 0.5rem; display: flex; align-items: center; justify-content: center; 
-            background-color: var(--c-fold); color: #fff; font-weight:700; text-shadow: 0 1px 2px rgba(0,0,0,0.8);
-        }
+        .chart-cell { aspect-ratio: 1; font-size: 0.5rem; display: flex; align-items: center; justify-content: center; background-color: var(--c-fold); color: #fff; font-weight:700; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
         .legend-dot { width:10px; height:10px; margin-right:4px; border-radius:2px; }
 
         .result-box { text-align: center; margin-top: 15px; padding: 15px; background: rgba(125,125,125,0.1); border-radius: 8px; }
         .ai-advice-text { text-align: left; margin-top: 15px; line-height: 1.6; font-size: 0.95rem; color: var(--text-main); border-left: 3px solid var(--accent); padding-left: 15px; background: rgba(125,125,125,0.05); border-radius: 0 8px 8px 0; padding: 15px; }
-        .ai-list { margin: 5px 0 0 0; padding-left: 20px; color: var(--text-muted); } 
-        .ai-list li { margin-bottom: 6px; }
+        .ai-list { margin: 5px 0 0 0; padding-left: 20px; color: var(--text-muted); } .ai-list li { margin-bottom: 6px; }
         
         .meter-bg { width: 100%; height: 10px; background: var(--text-muted); border-radius: 5px; overflow: hidden; margin: 15px 0 5px 0; opacity: 0.3; }
         .meter-fill { height: 100%; width: 0%; transition: width 0.5s ease; }
-        
+        .category-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; background: #334155; font-size: 0.8rem; margin-bottom: 5px; }
+
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 200; justify-content: center; align-items: center; }
         .modal-content { background: var(--bg-panel); padding: 20px; border-radius: 16px; width: 90%; max-width: 350px; border: 1px solid var(--border); }
         .suit-row { display: flex; gap: 5px; margin-bottom: 8px; }
@@ -149,12 +145,20 @@
         .history-val { font-weight: bold; font-family: monospace; font-size: 1.1rem; }
         .pos-val { color: var(--accent); } .neg-val { color: var(--danger); }
 
-        /* Trainer Styles */
         .trainer-stats { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 0.9rem; color: var(--text-muted); }
         .trainer-feedback { text-align: center; margin-top: 15px; padding: 10px; border-radius: 8px; font-weight: bold; display: none; }
         .fb-correct { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; }
         .fb-wrong { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444; }
         .trainer-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 20px; }
+
+        /* Floating Action Button (FAB) Menu */
+        .fab-wrapper { position: fixed; bottom: 85px; right: 20px; z-index: 150; display: flex; flex-direction: column-reverse; align-items: flex-end; gap: 10px; }
+        .fab-btn { width: 50px; height: 50px; border-radius: 50%; background: var(--accent); color: #fff; border: none; font-size: 1.5rem; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; }
+        .fab-btn:active { transform: scale(0.95); }
+        .fab-menu { display: none; flex-direction: column; gap: 8px; margin-bottom: 5px; }
+        .fab-menu.active { display: flex; animation: fadeInUp 0.2s; }
+        .fab-item { background: var(--bg-panel); color: var(--text-main); border: 1px solid var(--border); padding: 10px 16px; border-radius: 8px; cursor: pointer; text-align: right; box-shadow: 0 2px 8px rgba(0,0,0,0.2); font-size: 0.9rem; white-space: nowrap; display: block; font-weight: 500; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -168,7 +172,6 @@
 </header>
 
 <div class="container">
-    
     <div id="tab-ranges" class="tab-content active">
         <div class="card-panel">
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
@@ -206,20 +209,17 @@
                 <div style="font-size:1.1rem; font-weight:bold; margin-bottom:5px;" id="trScenario">Loading...</div>
                 <div style="color:var(--text-muted); font-size:0.9rem;">What is the GTO action?</div>
             </div>
-            
             <div class="hand-display">
                 <div class="poker-card selected" id="trCard1"></div>
                 <div class="poker-card selected" id="trCard2"></div>
             </div>
-
             <div class="trainer-grid">
                 <button class="btn-action" style="background:var(--c-fold); margin:0;" onclick="checkTrainer('fold')">Fold</button>
                 <button class="btn-action" style="background:var(--c-call); color:black; margin:0;" onclick="checkTrainer('call')">Call</button>
                 <button class="btn-action" style="background:var(--c-raise); margin:0;" onclick="checkTrainer('raise')">Raise</button>
             </div>
-
             <div id="trFeedback" class="trainer-feedback"></div>
-            <button id="trNextBtn" class="btn-action" style="display:none; background:var(--bg-dark); border:1px solid var(--border);" onclick="nextDrill()">Next Hand ➔</button>
+            <button id="trNextBtn" class="btn-action" style="display:none; background:var(--bg-body); color:var(--text-main); border:1px solid var(--border);" onclick="nextDrill()">Next Hand ➔</button>
         </div>
     </div>
 
@@ -231,7 +231,7 @@
             <button class="btn-action" onclick="calcPotOdds()">計算</button>
             <div class="result-box" id="oddsResult" style="display:none;">
                 <div class="result-label">所需勝率</div><div class="result-val" id="reqEquity">--%</div>
-                <div class="result-label" style="margin-top:10px;">賠率</div><div style="color:white; font-size:1.2rem;" id="oddsRatio">-- : 1</div>
+                <div class="result-label" style="margin-top:10px;">賠率</div><div style="color:var(--text-main); font-size:1.2rem;" id="oddsRatio">-- : 1</div>
             </div>
         </div>
     </div>
@@ -260,7 +260,6 @@
                 <button class="btn-opp" onclick="setOppAction('allin', this)" style="grid-column: span 2; color:var(--danger); border-color:var(--danger);">All-in</button>
             </div>
             <button class="btn-action" onclick="analyzePostflop()">AI 分析決策</button>
-            
             <div class="result-box" id="postflopResult" style="display:none;">
                 <div class="result-label">牌力強度</div>
                 <div class="meter-bg"><div class="meter-fill" id="strengthBar"></div></div>
@@ -293,6 +292,15 @@
     </div>
 </div>
 
+<div class="fab-wrapper">
+    <div class="fab-menu" id="fabMenu">
+        <div class="fab-item" onclick="exportData()">匯出備份 (Export)</div>
+        <div class="fab-item" onclick="document.getElementById('importFile').click()">還原資料 (Import)</div>
+    </div>
+    <button class="fab-btn" onclick="toggleFab()">☰</button>
+</div>
+<input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(this)">
+
 <div class="bottom-nav">
     <div class="nav-item active" onclick="switchTab('ranges', this)"><span class="nav-icon">📊</span>Ranges</div>
     <div class="nav-item" onclick="switchTab('trainer', this)"><span class="nav-icon">🎓</span>Trainer</div>
@@ -314,7 +322,6 @@
     let curSel = null;
     const ranks = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
     let bankrollData = JSON.parse(localStorage.getItem('pokerGodBankroll') || '[]');
-    // Trainer State
     let trState = { correct:0, total:0, streak:0, current:null };
 
     window.onload = () => {
@@ -322,7 +329,7 @@
         genGrid(); genSelUI(); updateRanges();
         document.getElementById('brDate').valueAsDate = new Date();
         updateNameList(); renderBankrollUI();
-        nextDrill(); // Init trainer
+        nextDrill(); 
         if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
     };
 
@@ -331,6 +338,55 @@
         document.getElementById('tab-'+id).classList.add('active');
         document.querySelectorAll('.nav-item').forEach(d=>d.classList.remove('active'));
         el.classList.add('active');
+    }
+
+    // --- FAB MENU ---
+    function toggleFab() {
+        const menu = document.getElementById('fabMenu');
+        const btn = document.querySelector('.fab-btn');
+        menu.classList.toggle('active');
+        btn.innerText = menu.classList.contains('active') ? '✕' : '☰';
+    }
+    // Close FAB when clicking outside
+    document.addEventListener('click', function(e) {
+        const fab = document.querySelector('.fab-wrapper');
+        const menu = document.getElementById('fabMenu');
+        if (!fab.contains(e.target) && menu.classList.contains('active')) {
+            toggleFab();
+        }
+    });
+
+    // --- DATA EXPORT/IMPORT ---
+    function exportData() {
+        const dataStr = JSON.stringify(bankrollData);
+        const blob = new Blob([dataStr], {type: "application/json"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = "poker_god_backup_" + new Date().toISOString().slice(0,10) + ".json";
+        a.click();
+        toggleFab(); // Close menu
+    }
+
+    function importData(input) {
+        const file = input.files[0];
+        if (!file) return;
+        if(!confirm("警告：還原資料將會覆蓋目前的紀錄，確定要繼續嗎？")) { input.value = ''; return; }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const json = JSON.parse(e.target.result);
+                if (Array.isArray(json)) {
+                    bankrollData = json;
+                    localStorage.setItem('pokerGodBankroll', JSON.stringify(bankrollData));
+                    updateNameList(); renderBankrollUI();
+                    alert("資料還原成功！");
+                } else { alert("檔案格式錯誤"); }
+            } catch (err) { alert("無法讀取檔案"); }
+        };
+        reader.readAsText(file);
+        input.value = '';
+        toggleFab(); // Close menu
     }
 
     // --- THEME ---
@@ -345,7 +401,7 @@
         body.setAttribute('data-theme', newTheme);
         localStorage.setItem('pokerGodTheme', newTheme);
         updateThemeIcon();
-        renderBankrollUI(); // Redraw chart
+        renderBankrollUI(); 
     }
     function updateThemeIcon() {
         const isLight = document.body.getAttribute('data-theme') === 'light';
@@ -354,77 +410,44 @@
 
     // --- TRAINER LOGIC ---
     function nextDrill() {
-        // Generate Scenario
         const positions = ['EP','MP','CO','BTN','SB','BB'];
         const pos = positions[Math.floor(Math.random()*positions.length)];
-        const stack = Math.random() < 0.3 ? 12 : (Math.random() < 0.6 ? 40 : 100); // 12BB, 40BB, 100BB
-        
-        // Generate Hand
+        const stack = Math.random() < 0.3 ? 12 : (Math.random() < 0.6 ? 40 : 100); 
         const r1Idx = Math.floor(Math.random()*13);
         const r2Idx = Math.floor(Math.random()*13);
         const s1 = {id:'s', symbol:'♠', class:'suit-s'};
-        const s2 = (r1Idx===r2Idx || Math.random()<0.23) ? s1 : {id:'h', symbol:'♥', class:'suit-h'}; // Suited or Off
-        
+        const s2 = (r1Idx===r2Idx || Math.random()<0.23) ? s1 : {id:'h', symbol:'♥', class:'suit-h'};
         const r1 = ranks[Math.min(r1Idx, r2Idx)];
         const r2 = ranks[Math.max(r1Idx, r2Idx)];
         const type = (r1===r2) ? 'pair' : (s1.id===s2.id ? 'suited' : 'offsuit');
-        
         trState.current = { r1:14-Math.min(r1Idx,r2Idx), r2:14-Math.max(r1Idx,r2Idx), type, pos, stack };
-        
-        // Render UI
         document.getElementById('trScenario').innerText = `${pos} | ${stack}BB`;
         renderTrainerCard('trCard1', r1, s1);
         renderTrainerCard('trCard2', r2, (r1===r2 && s1.id===s2.id) ? {id:'d',symbol:'♦',class:'suit-d'} : s2);
-        
         document.getElementById('trFeedback').style.display = 'none';
         document.getElementById('trNextBtn').style.display = 'none';
     }
-    
     function renderTrainerCard(id, r, s) {
-        const el = document.getElementById(id);
-        el.innerHTML = `<span class="${s.class}">${s.symbol}</span><span>${r}</span>`;
+        document.getElementById(id).innerHTML = `<span class="${s.class}">${s.symbol}</span><span>${r}</span>`;
     }
-
     function checkTrainer(act) {
-        if(document.getElementById('trNextBtn').style.display === 'block') return; // Already answered
-
+        if(document.getElementById('trNextBtn').style.display === 'block') return;
         const { r1, r2, type, pos, stack } = trState.current;
-        
-        // Reuse GTO Logic
-        let mode = "RFI";
-        if(stack < 15) mode = "PushFold";
-        else if(pos === "BB") mode = "BBDef";
-        else if(pos === "SB") mode = "SB"; // Simplified SB vs BB logic or RFI
-        
+        let mode = "RFI"; if(stack < 15) mode = "PushFold"; else if(pos === "BB") mode = "BBDef"; else if(pos === "SB") mode = "SB";
         const freqs = getFrequencies(r1, r2, type, pos, stack, mode);
-        
-        // Determine "Correct" Action (Simple Majority)
-        let correctAct = 'fold';
-        let maxVal = freqs.f;
+        let correctAct = 'fold'; let maxVal = freqs.f;
         if(freqs.c > maxVal) { maxVal = freqs.c; correctAct = 'call'; }
         if(freqs.r > maxVal) { maxVal = freqs.r; correctAct = 'raise'; }
-        if(freqs.a > maxVal) { maxVal = freqs.a; correctAct = 'raise'; } // Push is subset of Raise button here
-
-        // User Mapping
-        let userAct = act;
-        if(act === 'raise' && freqs.a > 50) userAct = 'raise'; // Mapping "All-in" to "Raise" button for simplicity
-
-        let isCorrect = (userAct === correctAct) || (maxVal < 60 && freqs[act[0]] > 30); // Allow mix
-
-        trState.total++;
-        if(isCorrect) { trState.correct++; trState.streak++; } else { trState.streak = 0; }
-        
-        // Update Stats
+        if(freqs.a > maxVal) { maxVal = freqs.a; correctAct = 'raise'; } 
+        let userAct = act; if(act === 'raise' && freqs.a > 50) userAct = 'raise';
+        let isCorrect = (userAct === correctAct) || (maxVal < 60 && freqs[act[0]] > 30);
+        trState.total++; if(isCorrect) { trState.correct++; trState.streak++; } else { trState.streak = 0; }
         document.getElementById('trScore').innerText = `${trState.correct}/${trState.total}`;
         document.getElementById('trStreak').innerText = trState.streak;
-
-        // Feedback UI
         const fb = document.getElementById('trFeedback');
         fb.style.display = 'block';
         fb.className = 'trainer-feedback ' + (isCorrect ? 'fb-correct' : 'fb-wrong');
-        fb.innerHTML = `<strong>${isCorrect ? 'Correct!' : 'Mistake!'}</strong><br>
-        GTO: Raise ${freqs.r+freqs.a}% | Call ${freqs.c}% | Fold ${freqs.f}%`;
-        
+        fb.innerHTML = `<strong>${isCorrect ? 'Correct!' : 'Mistake!'}</strong><br>GTO: Raise ${freqs.r+freqs.a}% | Call ${freqs.c}% | Fold ${freqs.f}%`;
         document.getElementById('trNextBtn').style.display = 'block';
     }
 
@@ -487,7 +510,6 @@
         if(!state.h1 || !state.h2 || !state.b1 || !state.b2 || !state.b3) { alert("請選擇手牌與至少 3 張公牌"); return; }
         if(!state.oppAction) { alert("請選擇對手行動"); return; }
 
-        // Blocker Logic
         let blockers = [];
         const hCards = [state.h1, state.h2];
         const suits = hCards.map(c=>c.suit.symbol);
@@ -497,7 +519,6 @@
         if(ranks.includes('K')) blockers.push("阻擋了對手 KK 及次級踢腳 (Kx) 組合");
         if(state.h1.suit.id === state.h2.suit.id) blockers.push(`阻擋了對手 ${state.h1.suit.symbol} 同花堅果/聽牌組合`);
         
-        // Hand Strength Logic
         let suitCount = {}; [state.h1, state.h2, state.b1, state.b2, state.b3, state.b4, state.b5].forEach(c => { if(c) suitCount[c.suit.id] = (suitCount[c.suit.id]||0)+1; });
         let isFlush = Object.values(suitCount).some(v => v >= 5);
         let isDraw = Object.values(suitCount).some(v => v === 4);
@@ -522,6 +543,7 @@
         adviceHtml += `<ul class="ai-list">`;
         if (state.oppAction === 'check') adviceHtml += score > 60 ? `<li><span style="color:var(--c-raise)">● 下注 (Bet):</span> 價值下注。</li>` : `<li><span style="color:var(--c-call)">● 過牌 (Check):</span> 控池。</li>`;
         else if (state.oppAction === 'bet') adviceHtml += score > 70 ? `<li><span style="color:var(--c-raise)">● 加注 (Raise):</span> 強牌。</li>` : (score>40 ? `<li><span style="color:var(--c-call)">● 跟注 (Call):</span> 抓詐唬。</li>` : `<li><span style="color:var(--c-fold)">● 棄牌 (Fold):</span> 沒牌。</li>`);
+        else adviceHtml += score > 70 ? `<li><span style="color:var(--c-call)">● 應對強攻:</span> 考慮跟注或全下。</li>` : `<li><span style="color:var(--c-fold)">● 棄牌 (Fold):</span> 風險過高。</li>`;
         adviceHtml += `</ul>`;
 
         document.getElementById('postflopResult').style.display='block';
