@@ -9,109 +9,116 @@
     <link rel="manifest" href="manifest.json">
     <link rel="shortcut icon" href="icon.png" type="image/png">
     <link rel="icon" href="icon.png" type="image/png">
-    <link rel="apple-touch-icon" href="icon.png?v=3">
+    <link rel="apple-touch-icon" href="icon.png?v=4">
     
     <style>
         :root {
-            --bg-dark: #0f172a;
+            /* Default Dark Mode */
+            --bg-body: #0f172a;
             --bg-panel: rgba(30, 41, 59, 0.95);
-            --accent: #10b981; 
-            --accent-glow: rgba(16, 185, 129, 0.3);
-            --danger: #ef4444; 
             --text-main: #f1f5f9;
             --text-muted: #94a3b8;
             --border: rgba(255,255,255,0.1);
+            --accent: #10b981; 
+            --accent-glow: rgba(16, 185, 129, 0.3);
+            --danger: #ef4444; 
+            --card-bg: #e2e8f0;
+            --card-text: #000;
+            --nav-bg: rgba(15, 23, 42, 0.98);
             
             /* GTO Colors */
-            --c-raise: #10b981; /* Green */
-            --c-call: #eab308;  /* Yellow */
-            --c-allin: #ef4444; /* Red */
-            --c-fold: #334155;  /* Blue-Grey */
+            --c-raise: #10b981; 
+            --c-call: #eab308;
+            --c-allin: #ef4444;
+            --c-fold: #334155;
+        }
+
+        /* Light Mode Overrides */
+        [data-theme="light"] {
+            --bg-body: #f1f5f9;
+            --bg-panel: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: rgba(0,0,0,0.1);
+            --accent: #059669;
+            --accent-glow: rgba(5, 150, 105, 0.2);
+            --danger: #dc2626;
+            --card-bg: #ffffff;
+            --card-text: #000;
+            --nav-bg: rgba(255, 255, 255, 0.98);
+            
+            --c-fold: #94a3b8; /* Lighter grey for fold in light mode */
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         body {
-            background-color: var(--bg-dark);
-            background-image: radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.05) 0%, transparent 20%);
+            background-color: var(--bg-body);
             color: var(--text-main);
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            margin: 0; padding: 0;
-            padding-bottom: 90px;
-            min-height: 100vh;
+            margin: 0; padding: 0; padding-bottom: 90px; min-height: 100vh;
+            transition: background-color 0.3s, color 0.3s;
         }
 
-        /* --- Header Logo Styles --- */
         header {
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 12px 20px;
-            position: sticky; top: 0; z-index: 50;
-            border-bottom: 1px solid var(--border);
+            background: var(--bg-panel); backdrop-filter: blur(10px); padding: 12px 20px;
+            position: sticky; top: 0; z-index: 50; border-bottom: 1px solid var(--border);
             display: flex; justify-content: space-between; align-items: center;
+            transition: background-color 0.3s;
         }
-        .header-brand {
-            display: flex; align-items: center; gap: 12px;
-        }
-        .header-logo {
-            width: 36px; height: 36px;
-            border-radius: 8px; /* 圓角 */
-            object-fit: cover;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        h1 { margin: 0; font-size: 1.2rem; font-weight: 800; letter-spacing: 0.5px; background: linear-gradient(to right, #10b981, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .header-brand { display: flex; align-items: center; gap: 12px; }
+        .header-logo { width: 36px; height: 36px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border); }
+        h1 { margin: 0; font-size: 1.2rem; font-weight: 800; letter-spacing: 0.5px; background: linear-gradient(to right, var(--accent), #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .theme-btn { background: transparent; border: 1px solid var(--border); color: var(--text-main); padding: 6px 10px; border-radius: 20px; cursor: pointer; font-size: 1.2rem; }
 
         .container { max-width: 600px; margin: 0 auto; padding: 15px; }
         
         .card-panel {
             background: var(--bg-panel); backdrop-filter: blur(12px); border: 1px solid var(--border);
-            border-radius: 16px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            border-radius: 16px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            transition: background-color 0.3s;
         }
 
         .input-group { margin-bottom: 12px; }
         .row-group { display: flex; gap: 10px; }
         label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 6px; display: block; }
         select, input {
-            width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--border); color: white; padding: 12px; border-radius: 8px; font-size: 1rem; outline: none;
+            width: 100%; background: rgba(125,125,125,0.1); border: 1px solid var(--border); color: var(--text-main); padding: 12px; border-radius: 8px; font-size: 1rem; outline: none;
         }
         select:focus, input:focus { border-color: var(--accent); }
 
         .btn-action {
-            width: 100%; padding: 14px; background: var(--accent); color: #000; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 10px;
+            width: 100%; padding: 14px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 10px; text-shadow: 0 1px 2px rgba(0,0,0,0.2);
         }
         .btn-delete { background: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; }
 
         .opp-action-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
         .btn-opp {
-            padding: 10px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--text-muted); border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: 0.2s;
+            padding: 10px; background: rgba(125,125,125,0.1); border: 1px solid var(--border); color: var(--text-muted); border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: 0.2s;
         }
-        .btn-opp.active { background: #3b82f6; color: white; border-color: #3b82f6; box-shadow: 0 0 10px rgba(59, 130, 246, 0.4); }
+        .btn-opp.active { background: #3b82f6; color: white; border-color: #3b82f6; }
 
-        /* Poker Cards */
         .hand-display { display: flex; gap: 12px; justify-content: center; margin: 15px 0; }
         .poker-card {
-            width: 55px; height: 78px; background: #e2e8f0; border-radius: 6px;
+            width: 55px; height: 78px; background: var(--card-bg); border-radius: 6px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             font-weight: 900; font-size: 1.5rem; cursor: pointer; position: relative;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
-            color: #000 !important;
-            text-shadow: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
+            color: var(--card-text) !important;
+            border: 1px solid var(--border);
         }
-        .poker-card.empty { background: rgba(255,255,255,0.05); border: 2px dashed var(--text-muted); color: var(--text-muted) !important; font-weight: normal; font-size: 1.2rem; box-shadow: none; }
-        .poker-card.selected { border: 2px solid var(--accent); background: white; }
+        .poker-card.empty { background: rgba(125,125,125,0.05); border: 2px dashed var(--text-muted); color: var(--text-muted) !important; font-weight: normal; font-size: 1.2rem; box-shadow: none; }
+        .poker-card.selected { border: 2px solid var(--accent); background: #fff; color: #000 !important; }
         
-        .suit-s { color: #000; } 
-        .suit-h { color: #dc2626; } 
-        .suit-c { color: #16a34a; } 
-        .suit-d { color: #2563eb; } 
+        .suit-s { color: #000; } .suit-h { color: #dc2626; } .suit-c { color: #16a34a; } .suit-d { color: #2563eb; } 
 
         .bottom-nav {
-            position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(15, 23, 42, 0.98); border-top: 1px solid var(--border);
-            display: flex; justify-content: space-around; padding: 10px 0; z-index: 100;
+            position: fixed; bottom: 0; left: 0; width: 100%; background: var(--nav-bg); border-top: 1px solid var(--border);
+            display: flex; justify-content: space-around; padding: 10px 0; z-index: 100; transition: background-color 0.3s;
         }
         .nav-item { color: var(--text-muted); text-align: center; font-size: 0.7rem; flex: 1; padding: 5px; opacity: 0.7; }
-        .nav-item.active { color: var(--accent); opacity: 1; transform: translateY(-2px); }
+        .nav-item.active { color: var(--accent); opacity: 1; transform: translateY(-2px); font-weight: bold; }
         .nav-icon { font-size: 1.4rem; display: block; margin-bottom: 4px; }
 
         .tab-content { display: none; animation: fadeIn 0.3s ease; }
@@ -125,22 +132,29 @@
         }
         .legend-dot { width:10px; height:10px; margin-right:4px; border-radius:2px; }
 
-        .result-box { text-align: center; margin-top: 15px; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 8px; }
-        .ai-advice-text { text-align: left; margin-top: 15px; line-height: 1.6; font-size: 0.95rem; color: #e2e8f0; border-left: 3px solid var(--accent); padding-left: 15px; background: rgba(255,255,255,0.03); border-radius: 0 8px 8px 0; padding: 15px; }
-        .ai-list { margin: 5px 0 0 0; padding-left: 20px; color: #cbd5e1; }
+        .result-box { text-align: center; margin-top: 15px; padding: 15px; background: rgba(125,125,125,0.1); border-radius: 8px; }
+        .ai-advice-text { text-align: left; margin-top: 15px; line-height: 1.6; font-size: 0.95rem; color: var(--text-main); border-left: 3px solid var(--accent); padding-left: 15px; background: rgba(125,125,125,0.05); border-radius: 0 8px 8px 0; padding: 15px; }
+        .ai-list { margin: 5px 0 0 0; padding-left: 20px; color: var(--text-muted); } 
         .ai-list li { margin-bottom: 6px; }
         
-        .meter-bg { width: 100%; height: 10px; background: #334155; border-radius: 5px; overflow: hidden; margin: 15px 0 5px 0; }
+        .meter-bg { width: 100%; height: 10px; background: var(--text-muted); border-radius: 5px; overflow: hidden; margin: 15px 0 5px 0; opacity: 0.3; }
         .meter-fill { height: 100%; width: 0%; transition: width 0.5s ease; }
         
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 200; justify-content: center; align-items: center; }
-        .modal-content { background: #1e293b; padding: 20px; border-radius: 16px; width: 90%; max-width: 350px; border: 1px solid var(--border); }
+        .modal-content { background: var(--bg-panel); padding: 20px; border-radius: 16px; width: 90%; max-width: 350px; border: 1px solid var(--border); }
         .suit-row { display: flex; gap: 5px; margin-bottom: 8px; }
-        .rank-btn { flex: 1; padding: 10px 0; background: #334155; border: none; color: white; border-radius: 4px; font-weight: bold; }
-        canvas#bankrollCanvas { width: 100%; height: 220px; background: rgba(0,0,0,0.2); border-radius: 8px; margin-bottom: 10px; }
+        .rank-btn { flex: 1; padding: 10px 0; background: rgba(125,125,125,0.2); border: 1px solid var(--border); color: var(--text-main); border-radius: 4px; font-weight: bold; }
+        canvas#bankrollCanvas { width: 100%; height: 220px; background: rgba(125,125,125,0.1); border-radius: 8px; margin-bottom: 10px; }
         .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
         .history-val { font-weight: bold; font-family: monospace; font-size: 1.1rem; }
         .pos-val { color: var(--accent); } .neg-val { color: var(--danger); }
+
+        /* Trainer Styles */
+        .trainer-stats { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 0.9rem; color: var(--text-muted); }
+        .trainer-feedback { text-align: center; margin-top: 15px; padding: 10px; border-radius: 8px; font-weight: bold; display: none; }
+        .fb-correct { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; }
+        .fb-wrong { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444; }
+        .trainer-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 20px; }
     </style>
 </head>
 <body>
@@ -148,9 +162,9 @@
 <header>
     <div class="header-brand">
         <img src="icon.png" alt="App Logo" class="header-logo" onerror="this.style.display='none'">
-        <h1>Poker God <span style="font-size:0.5em; opacity:0.8; color:white; background:none;">PRO</span></h1>
+        <h1>Poker God <span style="font-size:0.5em; opacity:0.8; background:none; -webkit-text-fill-color: var(--text-main);">PRO</span></h1>
     </div>
-    <div style="font-size:0.8rem; color:var(--text-muted);">v3.4</div>
+    <button class="theme-btn" onclick="toggleTheme()" id="themeIcon">☀️</button>
 </header>
 
 <div class="container">
@@ -171,14 +185,41 @@
             <div style="margin-top:10px; font-size:0.8rem; color:var(--text-muted); font-style:italic;" id="rangeInfoText"></div>
         </div>
         <div class="card-panel">
-            <label>13x13 混合策略圖 (Mixed Strategy)</label>
+            <label>13x13 混合策略圖 (GTO Frequencies)</label>
             <div class="chart-container" id="rangeGrid"></div>
-            <div style="display:flex; justify-content:center; gap:10px; margin-top:10px; font-size:0.75rem; color:#fff; flex-wrap:wrap;">
+            <div style="display:flex; justify-content:center; gap:10px; margin-top:10px; font-size:0.75rem; color:var(--text-muted); flex-wrap:wrap;">
                 <span style="display:flex; align-items:center;"><div class="legend-dot" style="background:var(--c-allin)"></div> All-in</span>
                 <span style="display:flex; align-items:center;"><div class="legend-dot" style="background:var(--c-raise)"></div> Raise</span>
                 <span style="display:flex; align-items:center;"><div class="legend-dot" style="background:var(--c-call)"></div> Call</span>
                 <span style="display:flex; align-items:center;"><div class="legend-dot" style="background:var(--c-fold)"></div> Fold</span>
             </div>
+        </div>
+    </div>
+
+    <div id="tab-trainer" class="tab-content">
+        <div class="card-panel">
+            <div class="trainer-stats">
+                <span>Streak: <span id="trStreak" style="color:var(--accent)">0</span></span>
+                <span>Score: <span id="trScore">0/0</span></span>
+            </div>
+            <div style="text-align:center; margin-bottom:20px;">
+                <div style="font-size:1.1rem; font-weight:bold; margin-bottom:5px;" id="trScenario">Loading...</div>
+                <div style="color:var(--text-muted); font-size:0.9rem;">What is the GTO action?</div>
+            </div>
+            
+            <div class="hand-display">
+                <div class="poker-card selected" id="trCard1"></div>
+                <div class="poker-card selected" id="trCard2"></div>
+            </div>
+
+            <div class="trainer-grid">
+                <button class="btn-action" style="background:var(--c-fold); margin:0;" onclick="checkTrainer('fold')">Fold</button>
+                <button class="btn-action" style="background:var(--c-call); color:black; margin:0;" onclick="checkTrainer('call')">Call</button>
+                <button class="btn-action" style="background:var(--c-raise); margin:0;" onclick="checkTrainer('raise')">Raise</button>
+            </div>
+
+            <div id="trFeedback" class="trainer-feedback"></div>
+            <button id="trNextBtn" class="btn-action" style="display:none; background:var(--bg-dark); border:1px solid var(--border);" onclick="nextDrill()">Next Hand ➔</button>
         </div>
     </div>
 
@@ -234,18 +275,18 @@
             <label>資金趨勢</label>
             <canvas id="bankrollCanvas"></canvas>
             <div style="display:flex; justify-content:space-between; margin-top:5px;">
-                <span class="result-label">總盈虧: <span id="totalProfit" style="color:white; font-weight:bold;">0</span></span>
+                <span class="result-label">總盈虧: <span id="totalProfit" style="color:var(--text-main); font-weight:bold;">0</span></span>
             </div>
         </div>
         <div class="card-panel">
             <label>新增紀錄</label>
             <div class="row-group"><input type="date" id="brDate" style="flex:2"><select id="brType" style="flex:1"><option>MTT</option><option>Cash</option></select></div>
-            <div class="input-group" style="margin-top:10px;"><input type="text" id="brName" list="brNameList" placeholder="名稱 (如: 3400限時)"><datalist id="brNameList"></datalist></div>
+            <div class="input-group" style="margin-top:10px;"><input type="text" id="brName" list="brNameList" placeholder="名稱"><datalist id="brNameList"></datalist></div>
             <div class="row-group" style="margin-top:10px;">
                 <div style="flex:1"><label>買入</label><input type="number" id="brBuyIn" placeholder="0" oninput="calcPreview()"></div>
                 <div style="flex:1"><label>獎金</label><input type="number" id="brPrize" placeholder="0" oninput="calcPreview()"></div>
             </div>
-            <div style="text-align:right; margin-top:5px; font-size:0.85rem; color:#aaa;">盈利: <span id="brProfitPreview" style="font-weight:bold; color:white;">0</span></div>
+            <div style="text-align:right; margin-top:5px; font-size:0.85rem; color:var(--text-muted);">盈利: <span id="brProfitPreview" style="font-weight:bold; color:var(--text-main);">0</span></div>
             <button class="btn-action" onclick="addBankroll()">儲存</button>
         </div>
         <div class="card-panel"><label>歷史紀錄</label><div id="historyList" style="max-height:300px; overflow-y:auto;"></div></div>
@@ -254,17 +295,17 @@
 
 <div class="bottom-nav">
     <div class="nav-item active" onclick="switchTab('ranges', this)"><span class="nav-icon">📊</span>Ranges</div>
-    <div class="nav-item" onclick="switchTab('odds', this)"><span class="nav-icon">🧮</span>Odds</div>
+    <div class="nav-item" onclick="switchTab('trainer', this)"><span class="nav-icon">🎓</span>Trainer</div>
     <div class="nav-item" onclick="switchTab('postflop', this)"><span class="nav-icon">♠️</span>Postflop</div>
     <div class="nav-item" onclick="switchTab('bankroll', this)"><span class="nav-icon">💰</span>Bankroll</div>
 </div>
 
 <div class="modal" id="cardModal">
     <div class="modal-content">
-        <h3 style="margin:0 0 15px 0; color:white;">Select Card</h3>
+        <h3 style="margin:0 0 15px 0; color:var(--text-main);">Select Card</h3>
         <div id="suit-spades" class="suit-row"></div><div id="suit-hearts" class="suit-row"></div>
         <div id="suit-clubs" class="suit-row"></div><div id="suit-diamonds" class="suit-row"></div>
-        <button onclick="closeSel()" style="width:100%; margin-top:10px; padding:10px; background:rgba(255,255,255,0.1); border:none; color:white; border-radius:4px;">Cancel</button>
+        <button onclick="closeSel()" style="width:100%; margin-top:10px; padding:10px; background:rgba(125,125,125,0.2); border:none; color:var(--text-main); border-radius:4px;">Cancel</button>
     </div>
 </div>
 
@@ -273,11 +314,15 @@
     let curSel = null;
     const ranks = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
     let bankrollData = JSON.parse(localStorage.getItem('pokerGodBankroll') || '[]');
+    // Trainer State
+    let trState = { correct:0, total:0, streak:0, current:null };
 
     window.onload = () => {
+        initTheme();
         genGrid(); genSelUI(); updateRanges();
         document.getElementById('brDate').valueAsDate = new Date();
         updateNameList(); renderBankrollUI();
+        nextDrill(); // Init trainer
         if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
     };
 
@@ -288,7 +333,102 @@
         el.classList.add('active');
     }
 
-    // --- MIXED STRATEGY ENGINE ---
+    // --- THEME ---
+    function initTheme() {
+        const theme = localStorage.getItem('pokerGodTheme') || 'dark';
+        document.body.setAttribute('data-theme', theme);
+        updateThemeIcon();
+    }
+    function toggleTheme() {
+        const body = document.body;
+        const newTheme = body.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+        body.setAttribute('data-theme', newTheme);
+        localStorage.setItem('pokerGodTheme', newTheme);
+        updateThemeIcon();
+        renderBankrollUI(); // Redraw chart
+    }
+    function updateThemeIcon() {
+        const isLight = document.body.getAttribute('data-theme') === 'light';
+        document.getElementById('themeIcon').innerText = isLight ? '🌙' : '☀️';
+    }
+
+    // --- TRAINER LOGIC ---
+    function nextDrill() {
+        // Generate Scenario
+        const positions = ['EP','MP','CO','BTN','SB','BB'];
+        const pos = positions[Math.floor(Math.random()*positions.length)];
+        const stack = Math.random() < 0.3 ? 12 : (Math.random() < 0.6 ? 40 : 100); // 12BB, 40BB, 100BB
+        
+        // Generate Hand
+        const r1Idx = Math.floor(Math.random()*13);
+        const r2Idx = Math.floor(Math.random()*13);
+        const s1 = {id:'s', symbol:'♠', class:'suit-s'};
+        const s2 = (r1Idx===r2Idx || Math.random()<0.23) ? s1 : {id:'h', symbol:'♥', class:'suit-h'}; // Suited or Off
+        
+        const r1 = ranks[Math.min(r1Idx, r2Idx)];
+        const r2 = ranks[Math.max(r1Idx, r2Idx)];
+        const type = (r1===r2) ? 'pair' : (s1.id===s2.id ? 'suited' : 'offsuit');
+        
+        trState.current = { r1:14-Math.min(r1Idx,r2Idx), r2:14-Math.max(r1Idx,r2Idx), type, pos, stack };
+        
+        // Render UI
+        document.getElementById('trScenario').innerText = `${pos} | ${stack}BB`;
+        renderTrainerCard('trCard1', r1, s1);
+        renderTrainerCard('trCard2', r2, (r1===r2 && s1.id===s2.id) ? {id:'d',symbol:'♦',class:'suit-d'} : s2);
+        
+        document.getElementById('trFeedback').style.display = 'none';
+        document.getElementById('trNextBtn').style.display = 'none';
+    }
+    
+    function renderTrainerCard(id, r, s) {
+        const el = document.getElementById(id);
+        el.innerHTML = `<span class="${s.class}">${s.symbol}</span><span>${r}</span>`;
+    }
+
+    function checkTrainer(act) {
+        if(document.getElementById('trNextBtn').style.display === 'block') return; // Already answered
+
+        const { r1, r2, type, pos, stack } = trState.current;
+        
+        // Reuse GTO Logic
+        let mode = "RFI";
+        if(stack < 15) mode = "PushFold";
+        else if(pos === "BB") mode = "BBDef";
+        else if(pos === "SB") mode = "SB"; // Simplified SB vs BB logic or RFI
+        
+        const freqs = getFrequencies(r1, r2, type, pos, stack, mode);
+        
+        // Determine "Correct" Action (Simple Majority)
+        let correctAct = 'fold';
+        let maxVal = freqs.f;
+        if(freqs.c > maxVal) { maxVal = freqs.c; correctAct = 'call'; }
+        if(freqs.r > maxVal) { maxVal = freqs.r; correctAct = 'raise'; }
+        if(freqs.a > maxVal) { maxVal = freqs.a; correctAct = 'raise'; } // Push is subset of Raise button here
+
+        // User Mapping
+        let userAct = act;
+        if(act === 'raise' && freqs.a > 50) userAct = 'raise'; // Mapping "All-in" to "Raise" button for simplicity
+
+        let isCorrect = (userAct === correctAct) || (maxVal < 60 && freqs[act[0]] > 30); // Allow mix
+
+        trState.total++;
+        if(isCorrect) { trState.correct++; trState.streak++; } else { trState.streak = 0; }
+        
+        // Update Stats
+        document.getElementById('trScore').innerText = `${trState.correct}/${trState.total}`;
+        document.getElementById('trStreak').innerText = trState.streak;
+
+        // Feedback UI
+        const fb = document.getElementById('trFeedback');
+        fb.style.display = 'block';
+        fb.className = 'trainer-feedback ' + (isCorrect ? 'fb-correct' : 'fb-wrong');
+        fb.innerHTML = `<strong>${isCorrect ? 'Correct!' : 'Mistake!'}</strong><br>
+        GTO: Raise ${freqs.r+freqs.a}% | Call ${freqs.c}% | Fold ${freqs.f}%`;
+        
+        document.getElementById('trNextBtn').style.display = 'block';
+    }
+
+    // --- RANGES ---
     function genGrid() {
         const c = document.getElementById('rangeGrid'); c.innerHTML='';
         for(let i=0; i<13; i++) for(let j=0; j<13; j++) {
@@ -299,69 +439,42 @@
             c.appendChild(d);
         }
     }
-
     function updateRanges() {
         const stack=parseInt(document.getElementById('stackDepth').value);
         const pos=document.getElementById('heroPosition').value;
-        const pCount=parseInt(document.getElementById('playerCount').value);
         const info = document.getElementById('rangeInfoText');
-
         let mode = "RFI";
         if(stack < 15) mode = "PushFold";
         else if (pos === 'BB') mode = "BBDef";
-        else if (pos === 'SB' && pCount > 2) mode = "SB";
-
+        else if (pos === 'SB') mode = "SB";
         info.innerText = `Strategy: ${mode} (${stack}BB) - ${pos}`;
-
         document.querySelectorAll('.chart-cell').forEach(c => {
             let r1 = parseInt(c.dataset.r1), r2 = parseInt(c.dataset.r2), type = c.dataset.type;
             let freqs = getFrequencies(r1, r2, type, pos, stack, mode);
-            
-            // Hard-stop gradient logic
-            let stop1 = freqs.a;
-            let stop2 = stop1 + freqs.r;
-            let stop3 = stop2 + freqs.c;
-            
-            c.style.background = `linear-gradient(135deg, 
-                var(--c-allin) 0% ${stop1}%, 
-                var(--c-raise) ${stop1}% ${stop2}%, 
-                var(--c-call) ${stop2}% ${stop3}%, 
-                var(--c-fold) ${stop3}% 100%)`;
+            let stop1 = freqs.a; let stop2 = stop1 + freqs.r; let stop3 = stop2 + freqs.c;
+            c.style.background = `linear-gradient(135deg, var(--c-allin) 0% ${stop1}%, var(--c-raise) ${stop1}% ${stop2}%, var(--c-call) ${stop2}% ${stop3}%, var(--c-fold) ${stop3}% 100%)`;
         });
     }
-
     function getFrequencies(r1, r2, type, pos, stack, mode) {
         let f = {a:0, r:0, c:0, f:100}; 
         let score = r1*2 + r2 + (type==='pair'?20:0) + (type==='suited'?6:0);
-        
         if(mode === "PushFold") {
             let threshold = 35 - (stack - 5); 
             if(pos==='BTN'||pos==='SB') threshold -= 12; else if(pos==='CO') threshold -= 6;
-            
             if(type==='pair') {
                 if(r1>=7) { f.a=100; f.f=0; return f; } 
-                if(r1>=2 && r1<7) { 
-                   let pushProb = (8-r1)*10 + (15-stack)*5; 
-                   if(pos==='BTN'||pos==='SB') pushProb += 30;
-                   pushProb = Math.min(100, Math.max(0, pushProb));
-                   f.a = pushProb; f.f = 100-pushProb; return f;
-                }
+                if(r1>=2 && r1<7) { let pushProb = (8-r1)*10 + (15-stack)*5; if(pos==='BTN'||pos==='SB') pushProb += 30; pushProb = Math.min(100, Math.max(0, pushProb)); f.a = pushProb; f.f = 100-pushProb; return f; }
             }
-            if(score >= threshold + 5) { f.a=100; f.f=0; }
-            else if(score >= threshold) { f.a=50; f.f=50; } 
+            if(score >= threshold + 5) { f.a=100; f.f=0; } else if(score >= threshold) { f.a=50; f.f=50; } 
             return f;
         }
-
         if(mode === "BBDef") {
-            if((type==='pair'&&r1>=10) || (type==='offsuit'&&r1===14&&r2>=12) || (type==='suited'&&r1===14&&r2>=11)) {
-                f.r = 80; f.c = 20; f.f = 0; return f; 
-            }
+            if((type==='pair'&&r1>=10) || (type==='offsuit'&&r1===14&&r2>=12) || (type==='suited'&&r1===14&&r2>=11)) { f.r = 80; f.c = 20; f.f = 0; return f; }
             let callThresh = 25;
             if(score >= callThresh) { f.c=100; f.f=0; return f; }
             if(score >= callThresh - 5) { f.c=40; f.f=60; return f; } 
             return f;
         }
-
         let t = 0; if(pos==='MP') t=5; if(pos==='CO') t=12; if(pos==='BTN') t=20; if(pos==='SB') t=18;
         let openThresh = 45 - t;
         if(score >= openThresh + 5) { f.r=100; f.f=0; return f; }
@@ -369,29 +482,26 @@
         return f;
     }
 
-    function calcPotOdds() {
-        let p=parseFloat(document.getElementById('potSize').value), c=parseFloat(document.getElementById('betSize').value);
-        if(!p||!c)return;
-        document.getElementById('oddsResult').style.display='block';
-        document.getElementById('reqEquity').innerText = ((c/(p+c+c))*100).toFixed(1)+'%';
-        document.getElementById('oddsRatio').innerText = ((p+c)/c).toFixed(1)+' : 1';
-    }
-
-    function setOppAction(act, btn) {
-        state.oppAction = act;
-        document.querySelectorAll('.btn-opp').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-    }
-    
+    // --- POSTFLOP BLOCKER & AI ---
     function analyzePostflop() {
         if(!state.h1 || !state.h2 || !state.b1 || !state.b2 || !state.b3) { alert("請選擇手牌與至少 3 張公牌"); return; }
         if(!state.oppAction) { alert("請選擇對手行動"); return; }
 
+        // Blocker Logic
+        let blockers = [];
+        const hCards = [state.h1, state.h2];
+        const suits = hCards.map(c=>c.suit.symbol);
+        const ranks = hCards.map(c=>c.rank);
+        
+        if(ranks.includes('A')) blockers.push("阻擋了對手 AA 及頂級踢腳 (Ax) 組合");
+        if(ranks.includes('K')) blockers.push("阻擋了對手 KK 及次級踢腳 (Kx) 組合");
+        if(state.h1.suit.id === state.h2.suit.id) blockers.push(`阻擋了對手 ${state.h1.suit.symbol} 同花堅果/聽牌組合`);
+        
+        // Hand Strength Logic
         let suitCount = {}; [state.h1, state.h2, state.b1, state.b2, state.b3, state.b4, state.b5].forEach(c => { if(c) suitCount[c.suit.id] = (suitCount[c.suit.id]||0)+1; });
         let isFlush = Object.values(suitCount).some(v => v >= 5);
         let isDraw = Object.values(suitCount).some(v => v === 4);
-        let ranksAll = [state.h1.rank, state.h2.rank, state.b1.rank, state.b2.rank, state.b3.rank, state.b4?.rank, state.b5?.rank].filter(x=>x);
-        let rCounts = {}; ranksAll.forEach(r => rCounts[r] = (rCounts[r]||0)+1);
+        let rCounts = {}; [state.h1.rank, state.h2.rank, state.b1.rank, state.b2.rank, state.b3.rank, state.b4?.rank, state.b5?.rank].filter(x=>x).forEach(r => rCounts[r] = (rCounts[r]||0)+1);
         let pairs = Object.values(rCounts).filter(v => v===2).length;
         let sets = Object.values(rCounts).filter(v => v===3).length;
         let score=0, catText="High Card", barColor="#ef4444";
@@ -403,33 +513,15 @@
         else if (isDraw) { score=35; catText="Draw (聽牌)"; barColor="#f59e0b"; }
         else { score=15; catText="Air (空氣)"; barColor="#ef4444"; }
 
-        let adviceHtml = "";
-        const act = state.oppAction;
+        let adviceHtml = `<strong>局勢:</strong> 面對 <span style="color:var(--accent)">${state.oppAction.toUpperCase()}</span>，牌力 <strong>${catText}</strong>。<br>`;
         
-        adviceHtml += `<strong>局勢:</strong> 面對 <span style="color:var(--accent)">${act.toUpperCase()}</span>，牌力 <strong>${catText}</strong>。<br>`;
+        if(blockers.length > 0) {
+            adviceHtml += `<div style="margin:5px 0; padding:5px; background:rgba(255,255,0,0.1); border-radius:4px; font-size:0.85rem;">🛡️ <strong>阻擋牌效應:</strong><br>${blockers.join('<br>')}</div>`;
+        }
+
         adviceHtml += `<ul class="ai-list">`;
-        
-        if (act === 'check') {
-            if(score > 60) adviceHtml += `<li><span style="color:var(--c-raise)">● 下注 (Bet):</span> 對手示弱。建議下注底池的 66%-75% 來獲取價值。</li>`;
-            else if(score > 30) adviceHtml += `<li><span style="color:var(--c-call)">● 過牌 (Check Back):</span> 牌力中等。過牌可免費看轉牌，實現權益 (Realize Equity)。</li>`;
-            else adviceHtml += `<li><span style="color:var(--c-call)">● 放棄 (Give up):</span> 若無位置優勢，過牌是安全的 GTO 選項。</li>`;
-        } 
-        else if (act === 'bet') {
-            if(score > 70) adviceHtml += `<li><span style="color:var(--c-raise)">● 加注 (Raise):</span> 強牌建議加注 (3x) 來造池。若牌面乾燥可考慮慢打 (Call)。</li>`;
-            else if(score > 40) adviceHtml += `<li><span style="color:var(--c-call)">● 跟注 (Call):</span> 牌力足以抓詐唬或有聽牌賠率。不要加注打跑對手的詐唬範圍。</li>`;
-            else adviceHtml += `<li><span style="color:var(--c-fold)">● 棄牌 (Fold):</span> 對手下注代表有牌。空氣牌長期來看棄牌是 +EV。</li>`;
-        }
-        else if (act === 'raise' || act === '3bet') {
-            adviceHtml += `<li><strong>風險警告:</strong> 對手展現極強攻擊性。</li>`;
-            if(score > 85) adviceHtml += `<li><span style="color:var(--c-allin)">● 全下 (All-in):</span> 堅果牌(Nuts)。現在是打光籌碼的好時機，對手很難棄掉強牌。</li>`;
-            else if(score > 60) adviceHtml += `<li><span style="color:var(--c-call)">● 跟注 (Call):</span> 兩對或三條在此情況下通常落後於 Set 或順子。建議跟注控池，不要再加注。</li>`;
-            else adviceHtml += `<li><span style="color:var(--c-fold)">● 棄牌 (Fold):</span> 面對 Raise/3-Bet，頂對通常已經不夠好了。果斷棄牌保存實力。</li>`;
-        }
-        else if (act === 'allin') {
-            if(score > 80) adviceHtml += `<li><span style="color:var(--c-call)">● 秒接 (Snap Call):</span> 牌力頂尖，這是 Cooler (冤家牌)，輸了也無怨無悔。</li>`;
-            else if(score > 40 && isDraw) adviceHtml += `<li><span style="color:var(--c-call)">● 計算賠率:</span> 計算補牌數 (Outs)。若 (Outs x 2) > 底池賠率，則必須跟注。</li>`;
-            else adviceHtml += `<li><span style="color:var(--c-fold)">● 棄牌 (Fold):</span> 不要用邊緣牌接全下。保護你的資金 (Bankroll)。</li>`;
-        }
+        if (state.oppAction === 'check') adviceHtml += score > 60 ? `<li><span style="color:var(--c-raise)">● 下注 (Bet):</span> 價值下注。</li>` : `<li><span style="color:var(--c-call)">● 過牌 (Check):</span> 控池。</li>`;
+        else if (state.oppAction === 'bet') adviceHtml += score > 70 ? `<li><span style="color:var(--c-raise)">● 加注 (Raise):</span> 強牌。</li>` : (score>40 ? `<li><span style="color:var(--c-call)">● 跟注 (Call):</span> 抓詐唬。</li>` : `<li><span style="color:var(--c-fold)">● 棄牌 (Fold):</span> 沒牌。</li>`);
         adviceHtml += `</ul>`;
 
         document.getElementById('postflopResult').style.display='block';
@@ -438,7 +530,19 @@
         document.getElementById('aiAdvice').innerHTML = adviceHtml;
     }
 
-    // --- BANKROLL ---
+    // --- COMMON UTILS ---
+    function calcPotOdds() {
+        let p=parseFloat(document.getElementById('potSize').value), c=parseFloat(document.getElementById('betSize').value);
+        if(!p||!c)return;
+        document.getElementById('oddsResult').style.display='block';
+        document.getElementById('reqEquity').innerText = ((c/(p+c+c))*100).toFixed(1)+'%';
+        document.getElementById('oddsRatio').innerText = ((p+c)/c).toFixed(1)+' : 1';
+    }
+    function setOppAction(act, btn) {
+        state.oppAction = act;
+        document.querySelectorAll('.btn-opp').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
     function updateNameList() {
         const names = [...new Set(bankrollData.map(i => i.name).filter(n => n))];
         const dl = document.getElementById('brNameList'); dl.innerHTML = '';
@@ -469,7 +573,7 @@
         bankrollData.forEach((i,idx)=>{
             tot += i.amount; data.push({x:idx+1, y:tot});
             let d=document.createElement('div'); d.className='history-item';
-            d.innerHTML=`<div style="flex:1"><div style="font-size:0.9rem;font-weight:bold;color:#fff;">${i.name||'未命名'}</div><div style="font-size:0.75rem;color:#888;">${i.date}•${i.type}</div><div style="font-size:0.75rem;color:#aaa;">Buy:${i.buyIn}|Prize:${i.prize}</div></div><div style="display:flex;align-items:center;gap:10px;"><span class="${i.amount>=0?'pos-val':'neg-val'}">${i.amount>=0?'+':''}${i.amount}</span><button class="btn-delete" onclick="deleteRecord(${i.id})">✕</button></div>`;
+            d.innerHTML=`<div style="flex:1"><div style="font-size:0.9rem;font-weight:bold;color:var(--text-main);">${i.name||'未命名'}</div><div style="font-size:0.75rem;color:var(--text-muted);">${i.date}•${i.type}</div></div><span class="${i.amount>=0?'pos-val':'neg-val'}">${i.amount>=0?'+':''}${i.amount}</span><button class="btn-delete" onclick="deleteRecord(${i.id})" style="margin-left:10px;">✕</button>`;
             l.prepend(d);
         });
         document.getElementById('totalProfit').innerText = (tot>=0?'+':'')+tot;
@@ -481,12 +585,11 @@
         cvs.width=cvs.parentElement.clientWidth; cvs.height=220;
         let w=cvs.width, h=cvs.height;
         ctx.clearRect(0,0,w,h);
-        if(d.length<2) { ctx.fillStyle="#666"; ctx.font="14px Arial"; ctx.textAlign="center"; ctx.fillText("No Data",w/2,h/2); return; }
+        if(d.length<2) { ctx.fillStyle="#94a3b8"; ctx.font="14px Arial"; ctx.textAlign="center"; ctx.fillText("No Data",w/2,h/2); return; }
         let max=Math.max(...d.map(p=>p.y)), min=Math.min(...d.map(p=>p.y));
         let range=max-min||100; max+=range*0.1; min-=range*0.1;
         let mapX=i=>20+(i/(d.length-1))*(w-40), mapY=v=>h-(20+((v-min)/(max-min))*(h-40));
-        if(min<0 && max>0) { let z=mapY(0); ctx.beginPath(); ctx.strokeStyle="rgba(255,255,255,0.2)"; ctx.setLineDash([5,5]); ctx.moveTo(20,z); ctx.lineTo(w-20,z); ctx.stroke(); ctx.setLineDash([]); }
-        ctx.beginPath(); ctx.strokeStyle='#3b82f6'; ctx.lineWidth=3;
+        ctx.beginPath(); ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(); ctx.lineWidth=3;
         ctx.moveTo(mapX(0), mapY(d[0].y));
         for(let i=1;i<d.length;i++) ctx.lineTo(mapX(i), mapY(d[i].y));
         ctx.stroke();
@@ -501,8 +604,8 @@
     function closeSel(){document.getElementById('cardModal').style.display='none'}
     function setCard(r,s){
         state[curSel]={rank:r,suit:s};
-        let e=document.getElementById('card_'+curSel); e.className='poker-card selected';
-        e.innerHTML=`<span class="${s.c}">${s.s}</span><span>${r}</span>`; closeSel();
+        let el=document.getElementById('card_'+curSel); el.className='poker-card selected';
+        el.innerHTML=`<span class="${s.c}">${s.s}</span><span>${r}</span>`; closeSel();
     }
 </script>
 </body>
