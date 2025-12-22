@@ -83,10 +83,10 @@
         .row-group { display: flex; gap: 10px; }
         label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 6px; display: block; }
         
-        select, input {
-            width: 100%; background: rgba(125,125,125,0.1); border: 1px solid var(--border); color: var(--text-main); padding: 12px; border-radius: 8px; font-size: 1rem; outline: none;
+        select, input, textarea {
+            width: 100%; background: rgba(125,125,125,0.1); border: 1px solid var(--border); color: var(--text-main); padding: 12px; border-radius: 8px; font-size: 1rem; outline: none; font-family: inherit;
         }
-        select:focus, input:focus { border-color: var(--accent); }
+        select:focus, input:focus, textarea:focus { border-color: var(--accent); }
         select option { background-color: var(--bg-body); color: var(--text-main); }
 
         .btn-action {
@@ -101,12 +101,14 @@
         .btn-opp.active { background: #3b82f6; color: white; border-color: #3b82f6; }
 
         .hand-display { display: flex; gap: 12px; justify-content: center; margin: 15px 0; }
+        .hand-mini { display: flex; gap: 4px; } /* For Review List */
         .poker-card {
             width: 55px; height: 78px; background: var(--card-bg); border-radius: 6px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             font-weight: 900; font-size: 1.5rem; cursor: pointer; position: relative;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1); color: var(--card-text) !important; border: 1px solid var(--border);
         }
+        .poker-card.small { width: 30px; height: 42px; font-size: 0.8rem; border-radius: 3px; }
         .poker-card.empty { background: rgba(125,125,125,0.05); border: 2px dashed var(--text-muted); color: var(--text-muted) !important; font-weight: normal; font-size: 1.2rem; box-shadow: none; }
         .poker-card.selected { border: 2px solid var(--accent); background: #fff; color: #000 !important; }
         
@@ -145,16 +147,16 @@
         .history-val { font-weight: bold; font-family: monospace; font-size: 1.1rem; }
         .pos-val { color: var(--accent); } .neg-val { color: var(--danger); }
 
+        /* Trainer Styles */
         .trainer-stats { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 0.9rem; color: var(--text-muted); }
         .trainer-feedback { text-align: center; margin-top: 15px; padding: 10px; border-radius: 8px; font-weight: bold; display: none; }
         .fb-correct { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; }
         .fb-wrong { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444; }
         .trainer-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 20px; }
 
-        /* Floating Action Button (FAB) Menu */
+        /* FAB */
         .fab-wrapper { position: fixed; bottom: 85px; right: 20px; z-index: 150; display: flex; flex-direction: column-reverse; align-items: flex-end; gap: 10px; }
         .fab-btn { width: 50px; height: 50px; border-radius: 50%; background: var(--accent); color: #fff; border: none; font-size: 1.5rem; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; }
-        .fab-btn:active { transform: scale(0.95); }
         .fab-menu { display: none; flex-direction: column; gap: 8px; margin-bottom: 5px; }
         .fab-menu.active { display: flex; animation: fadeInUp 0.2s; }
         .fab-item { background: var(--bg-panel); color: var(--text-main); border: 1px solid var(--border); padding: 10px 16px; border-radius: 8px; cursor: pointer; text-align: right; box-shadow: 0 2px 8px rgba(0,0,0,0.2); font-size: 0.9rem; white-space: nowrap; display: block; font-weight: 500; }
@@ -172,6 +174,7 @@
 </header>
 
 <div class="container">
+    
     <div id="tab-ranges" class="tab-content active">
         <div class="card-panel">
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
@@ -199,20 +202,45 @@
         </div>
     </div>
 
+    <div id="tab-review" class="tab-content">
+        <div class="card-panel">
+            <label>新增手牌檢討 (Add Review)</label>
+            <div class="row-group">
+                <select id="revPos" style="flex:1"><option value="BTN">BTN</option><option value="CO">CO</option><option value="MP">MP</option><option value="EP">EP</option><option value="SB">SB</option><option value="BB">BB</option></select>
+                <select id="revAction" style="flex:2"><option value="">行動...</option><option value="RFI">RFI</option><option value="Call 3Bet">Call 3Bet</option><option value="Check/Call">Check/Call</option><option value="Bluff">Bluff</option></select>
+            </div>
+            
+            <label style="margin-top:10px;">手牌 & 公共牌</label>
+            <div class="hand-display" style="gap:5px; margin:5px 0;">
+                <div class="poker-card empty small" id="rev_h1" onclick="sel('rev_h1')">H1</div>
+                <div class="poker-card empty small" id="rev_h2" onclick="sel('rev_h2')">H2</div>
+                <div style="width:10px;"></div>
+                <div class="poker-card empty small" id="rev_b1" onclick="sel('rev_b1')"></div>
+                <div class="poker-card empty small" id="rev_b2" onclick="sel('rev_b2')"></div>
+                <div class="poker-card empty small" id="rev_b3" onclick="sel('rev_b3')"></div>
+                <div class="poker-card empty small" id="rev_b4" onclick="sel('rev_b4')"></div>
+                <div class="poker-card empty small" id="rev_b5" onclick="sel('rev_b5')"></div>
+            </div>
+
+            <div class="input-group">
+                <textarea id="revNotes" rows="3" placeholder="行動過程與檢討筆記..."></textarea>
+            </div>
+            <button class="btn-action" onclick="addReview()">儲存檢討 (Save)</button>
+        </div>
+        <div class="card-panel">
+            <label>檢討列表 (History)</label>
+            <div id="reviewList" style="max-height:400px; overflow-y:auto;"></div>
+        </div>
+    </div>
+
     <div id="tab-trainer" class="tab-content">
         <div class="card-panel">
-            <div class="trainer-stats">
-                <span>Streak: <span id="trStreak" style="color:var(--accent)">0</span></span>
-                <span>Score: <span id="trScore">0/0</span></span>
-            </div>
+            <div class="trainer-stats"><span>Streak: <span id="trStreak" style="color:var(--accent)">0</span></span><span>Score: <span id="trScore">0/0</span></span></div>
             <div style="text-align:center; margin-bottom:20px;">
                 <div style="font-size:1.1rem; font-weight:bold; margin-bottom:5px;" id="trScenario">Loading...</div>
                 <div style="color:var(--text-muted); font-size:0.9rem;">What is the GTO action?</div>
             </div>
-            <div class="hand-display">
-                <div class="poker-card selected" id="trCard1"></div>
-                <div class="poker-card selected" id="trCard2"></div>
-            </div>
+            <div class="hand-display"><div class="poker-card selected" id="trCard1"></div><div class="poker-card selected" id="trCard2"></div></div>
             <div class="trainer-grid">
                 <button class="btn-action" style="background:var(--c-fold); margin:0;" onclick="checkTrainer('fold')">Fold</button>
                 <button class="btn-action" style="background:var(--c-call); color:black; margin:0;" onclick="checkTrainer('call')">Call</button>
@@ -302,10 +330,11 @@
 <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(this)">
 
 <div class="bottom-nav">
-    <div class="nav-item active" onclick="switchTab('ranges', this)"><span class="nav-icon">📊</span>Ranges</div>
-    <div class="nav-item" onclick="switchTab('trainer', this)"><span class="nav-icon">🎓</span>Trainer</div>
-    <div class="nav-item" onclick="switchTab('postflop', this)"><span class="nav-icon">♠️</span>Postflop</div>
-    <div class="nav-item" onclick="switchTab('bankroll', this)"><span class="nav-icon">💰</span>Bankroll</div>
+    <div class="nav-item active" onclick="switchTab('ranges', this)"><span class="nav-icon">📊</span></div>
+    <div class="nav-item" onclick="switchTab('review', this)"><span class="nav-icon">📝</span></div>
+    <div class="nav-item" onclick="switchTab('trainer', this)"><span class="nav-icon">🎓</span></div>
+    <div class="nav-item" onclick="switchTab('postflop', this)"><span class="nav-icon">♠️</span></div>
+    <div class="nav-item" onclick="switchTab('bankroll', this)"><span class="nav-icon">💰</span></div>
 </div>
 
 <div class="modal" id="cardModal">
@@ -321,14 +350,18 @@
     const state = { h1: null, h2: null, b1:null, b2:null, b3:null, b4:null, b5:null, oppAction: null };
     let curSel = null;
     const ranks = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
+    // Data Stores
     let bankrollData = JSON.parse(localStorage.getItem('pokerGodBankroll') || '[]');
+    let reviewData = JSON.parse(localStorage.getItem('pokerGodReviews') || '[]');
     let trState = { correct:0, total:0, streak:0, current:null };
+    // Review temporary state to hold card HTML for saving
+    let tempReviewCards = {};
 
     window.onload = () => {
         initTheme();
         genGrid(); genSelUI(); updateRanges();
         document.getElementById('brDate').valueAsDate = new Date();
-        updateNameList(); renderBankrollUI();
+        updateNameList(); renderBankrollUI(); renderReviewList();
         nextDrill(); 
         if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
     };
@@ -342,113 +375,101 @@
 
     // --- FAB MENU ---
     function toggleFab() {
-        const menu = document.getElementById('fabMenu');
-        const btn = document.querySelector('.fab-btn');
-        menu.classList.toggle('active');
-        btn.innerText = menu.classList.contains('active') ? '✕' : '☰';
+        document.getElementById('fabMenu').classList.toggle('active');
+        document.querySelector('.fab-btn').innerText = document.getElementById('fabMenu').classList.contains('active') ? '✕' : '☰';
     }
-    // Close FAB when clicking outside
-    document.addEventListener('click', function(e) {
-        const fab = document.querySelector('.fab-wrapper');
-        const menu = document.getElementById('fabMenu');
-        if (!fab.contains(e.target) && menu.classList.contains('active')) {
-            toggleFab();
-        }
-    });
+    document.addEventListener('click', e => { if (!document.querySelector('.fab-wrapper').contains(e.target)) document.getElementById('fabMenu').classList.remove('active'); });
 
-    // --- DATA EXPORT/IMPORT ---
+    // --- DATA ---
     function exportData() {
-        const dataStr = JSON.stringify(bankrollData);
-        const blob = new Blob([dataStr], {type: "application/json"});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = "poker_god_backup_" + new Date().toISOString().slice(0,10) + ".json";
-        a.click();
-        toggleFab(); // Close menu
+        const fullData = { bankroll: bankrollData, reviews: reviewData };
+        const blob = new Blob([JSON.stringify(fullData)], {type: "application/json"});
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+        a.download = "pg_backup_" + new Date().toISOString().slice(0,10) + ".json"; a.click(); toggleFab();
     }
-
     function importData(input) {
-        const file = input.files[0];
-        if (!file) return;
-        if(!confirm("警告：還原資料將會覆蓋目前的紀錄，確定要繼續嗎？")) { input.value = ''; return; }
+        const file = input.files[0]; if (!file) return;
+        if(!confirm("警告：還原將覆蓋現有紀錄！")) { input.value = ''; return; }
         const reader = new FileReader();
         reader.onload = function(e) {
             try {
                 const json = JSON.parse(e.target.result);
-                if (Array.isArray(json)) {
-                    bankrollData = json;
+                if (json.bankroll) {
+                    bankrollData = json.bankroll; reviewData = json.reviews || [];
                     localStorage.setItem('pokerGodBankroll', JSON.stringify(bankrollData));
-                    updateNameList(); renderBankrollUI();
-                    alert("資料還原成功！");
-                } else { alert("檔案格式錯誤"); }
-            } catch (err) { alert("無法讀取檔案"); }
-        };
-        reader.readAsText(file);
-        input.value = '';
-        toggleFab(); // Close menu
+                    localStorage.setItem('pokerGodReviews', JSON.stringify(reviewData));
+                    updateNameList(); renderBankrollUI(); renderReviewList();
+                    alert("還原成功！");
+                } else if(Array.isArray(json)) { // Legacy format support
+                    bankrollData = json; localStorage.setItem('pokerGodBankroll', JSON.stringify(bankrollData));
+                    renderBankrollUI(); alert("還原成功 (舊格式)！");
+                }
+            } catch (err) { alert("檔案錯誤"); }
+        }; reader.readAsText(file); input.value = ''; toggleFab();
+    }
+
+    // --- REVIEW SYSTEM (NEW) ---
+    function addReview() {
+        const pos = document.getElementById('revPos').value;
+        const act = document.getElementById('revAction').value;
+        const notes = document.getElementById('revNotes').value;
+        
+        // Collect cards HTML
+        let cardsHtml = '';
+        ['h1','h2'].forEach(k => cardsHtml += (document.getElementById('rev_'+k).innerHTML || '') + ' ');
+        cardsHtml += '| ';
+        ['b1','b2','b3','b4','b5'].forEach(k => cardsHtml += (document.getElementById('rev_'+k).innerHTML || '') + ' ');
+
+        reviewData.unshift({ id: Date.now(), date: new Date().toLocaleDateString(), pos, act, notes, cards: cardsHtml });
+        localStorage.setItem('pokerGodReviews', JSON.stringify(reviewData));
+        
+        // Reset Inputs
+        document.getElementById('revNotes').value = '';
+        ['h1','h2','b1','b2','b3','b4','b5'].forEach(k => {
+            let el = document.getElementById('rev_'+k); el.className = 'poker-card empty small'; el.innerHTML = '';
+        });
+        renderReviewList();
+    }
+    function deleteReview(id) {
+        if(!confirm("刪除此檢討?")) return;
+        reviewData = reviewData.filter(i => i.id !== id);
+        localStorage.setItem('pokerGodReviews', JSON.stringify(reviewData));
+        renderReviewList();
+    }
+    function renderReviewList() {
+        const l = document.getElementById('reviewList'); l.innerHTML = '';
+        reviewData.forEach(i => {
+            let d = document.createElement('div'); d.className = 'history-item';
+            // Parse simplified card display
+            let cardsDisp = i.cards.replace(/class="poker-card.*?"/g, 'class="poker-card small" style="display:inline-flex; margin-right:2px;"'); 
+            d.innerHTML = `
+            <div style="width:100%">
+                <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                    <span style="font-weight:bold; color:var(--accent)">${i.pos}</span>
+                    <span style="font-size:0.8rem; color:var(--text-muted)">${i.date}</span>
+                    <button class="btn-delete" onclick="deleteReview(${i.id})">✕</button>
+                </div>
+                <div class="hand-mini" style="margin-bottom:8px; flex-wrap:wrap;">${i.cards.replace(/\|/g,'<span style="margin:0 5px;color:#666">|</span>')}</div>
+                <div style="font-size:0.85rem; color:var(--text-main); background:rgba(0,0,0,0.2); padding:8px; border-radius:4px;">
+                    <span style="color:var(--c-call)">${i.act}</span>: ${i.notes}
+                </div>
+            </div>`;
+            l.appendChild(d);
+        });
     }
 
     // --- THEME ---
     function initTheme() {
         const theme = localStorage.getItem('pokerGodTheme') || 'dark';
         document.body.setAttribute('data-theme', theme);
-        updateThemeIcon();
+        document.getElementById('themeIcon').innerText = theme === 'light' ? '🌙' : '☀️';
     }
     function toggleTheme() {
-        const body = document.body;
-        const newTheme = body.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-        body.setAttribute('data-theme', newTheme);
+        const newTheme = document.body.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+        document.body.setAttribute('data-theme', newTheme);
         localStorage.setItem('pokerGodTheme', newTheme);
-        updateThemeIcon();
+        document.getElementById('themeIcon').innerText = newTheme === 'light' ? '🌙' : '☀️';
         renderBankrollUI(); 
-    }
-    function updateThemeIcon() {
-        const isLight = document.body.getAttribute('data-theme') === 'light';
-        document.getElementById('themeIcon').innerText = isLight ? '🌙' : '☀️';
-    }
-
-    // --- TRAINER LOGIC ---
-    function nextDrill() {
-        const positions = ['EP','MP','CO','BTN','SB','BB'];
-        const pos = positions[Math.floor(Math.random()*positions.length)];
-        const stack = Math.random() < 0.3 ? 12 : (Math.random() < 0.6 ? 40 : 100); 
-        const r1Idx = Math.floor(Math.random()*13);
-        const r2Idx = Math.floor(Math.random()*13);
-        const s1 = {id:'s', symbol:'♠', class:'suit-s'};
-        const s2 = (r1Idx===r2Idx || Math.random()<0.23) ? s1 : {id:'h', symbol:'♥', class:'suit-h'};
-        const r1 = ranks[Math.min(r1Idx, r2Idx)];
-        const r2 = ranks[Math.max(r1Idx, r2Idx)];
-        const type = (r1===r2) ? 'pair' : (s1.id===s2.id ? 'suited' : 'offsuit');
-        trState.current = { r1:14-Math.min(r1Idx,r2Idx), r2:14-Math.max(r1Idx,r2Idx), type, pos, stack };
-        document.getElementById('trScenario').innerText = `${pos} | ${stack}BB`;
-        renderTrainerCard('trCard1', r1, s1);
-        renderTrainerCard('trCard2', r2, (r1===r2 && s1.id===s2.id) ? {id:'d',symbol:'♦',class:'suit-d'} : s2);
-        document.getElementById('trFeedback').style.display = 'none';
-        document.getElementById('trNextBtn').style.display = 'none';
-    }
-    function renderTrainerCard(id, r, s) {
-        document.getElementById(id).innerHTML = `<span class="${s.class}">${s.symbol}</span><span>${r}</span>`;
-    }
-    function checkTrainer(act) {
-        if(document.getElementById('trNextBtn').style.display === 'block') return;
-        const { r1, r2, type, pos, stack } = trState.current;
-        let mode = "RFI"; if(stack < 15) mode = "PushFold"; else if(pos === "BB") mode = "BBDef"; else if(pos === "SB") mode = "SB";
-        const freqs = getFrequencies(r1, r2, type, pos, stack, mode);
-        let correctAct = 'fold'; let maxVal = freqs.f;
-        if(freqs.c > maxVal) { maxVal = freqs.c; correctAct = 'call'; }
-        if(freqs.r > maxVal) { maxVal = freqs.r; correctAct = 'raise'; }
-        if(freqs.a > maxVal) { maxVal = freqs.a; correctAct = 'raise'; } 
-        let userAct = act; if(act === 'raise' && freqs.a > 50) userAct = 'raise';
-        let isCorrect = (userAct === correctAct) || (maxVal < 60 && freqs[act[0]] > 30);
-        trState.total++; if(isCorrect) { trState.correct++; trState.streak++; } else { trState.streak = 0; }
-        document.getElementById('trScore').innerText = `${trState.correct}/${trState.total}`;
-        document.getElementById('trStreak').innerText = trState.streak;
-        const fb = document.getElementById('trFeedback');
-        fb.style.display = 'block';
-        fb.className = 'trainer-feedback ' + (isCorrect ? 'fb-correct' : 'fb-wrong');
-        fb.innerHTML = `<strong>${isCorrect ? 'Correct!' : 'Mistake!'}</strong><br>GTO: Raise ${freqs.r+freqs.a}% | Call ${freqs.c}% | Fold ${freqs.f}%`;
-        document.getElementById('trNextBtn').style.display = 'block';
     }
 
     // --- RANGES ---
@@ -457,47 +478,57 @@
         for(let i=0; i<13; i++) for(let j=0; j<13; j++) {
             let d=document.createElement('div'); d.className='chart-cell';
             let t=i===j?ranks[i]+ranks[j]:(i<j?ranks[i]+ranks[j]+'s':ranks[j]+ranks[i]+'o');
-            d.innerText=t; d.dataset.h=t; d.dataset.r1=14-i; d.dataset.r2=14-j; 
-            d.dataset.type = i===j?'pair':(i<j?'suited':'offsuit');
+            d.innerText=t; d.dataset.h=t; d.dataset.r1=14-i; d.dataset.r2=14-j; d.dataset.type = i===j?'pair':(i<j?'suited':'offsuit');
             c.appendChild(d);
         }
     }
     function updateRanges() {
         const stack=parseInt(document.getElementById('stackDepth').value);
         const pos=document.getElementById('heroPosition').value;
-        const info = document.getElementById('rangeInfoText');
-        let mode = "RFI";
-        if(stack < 15) mode = "PushFold";
-        else if (pos === 'BB') mode = "BBDef";
-        else if (pos === 'SB') mode = "SB";
-        info.innerText = `Strategy: ${mode} (${stack}BB) - ${pos}`;
+        const mode = document.getElementById('gameMode').value === 'Cash' ? 'Cash' : (stack < 15 ? "PushFold" : "RFI");
+        if(pos==='BB' && document.getElementById('gameMode').value !== 'Cash') mode = "BBDef"; // Simple override
+        
+        document.getElementById('rangeInfoText').innerText = `Strategy: ${mode} - ${pos}`;
         document.querySelectorAll('.chart-cell').forEach(c => {
             let r1 = parseInt(c.dataset.r1), r2 = parseInt(c.dataset.r2), type = c.dataset.type;
             let freqs = getFrequencies(r1, r2, type, pos, stack, mode);
-            let stop1 = freqs.a; let stop2 = stop1 + freqs.r; let stop3 = stop2 + freqs.c;
-            c.style.background = `linear-gradient(135deg, var(--c-allin) 0% ${stop1}%, var(--c-raise) ${stop1}% ${stop2}%, var(--c-call) ${stop2}% ${stop3}%, var(--c-fold) ${stop3}% 100%)`;
+            let s1 = freqs.a; let s2 = s1 + freqs.r; let s3 = s2 + freqs.c;
+            c.style.background = `linear-gradient(135deg, var(--c-allin) 0% ${s1}%, var(--c-raise) ${s1}% ${s2}%, var(--c-call) ${s2}% ${s3}%, var(--c-fold) ${s3}% 100%)`;
         });
     }
     function getFrequencies(r1, r2, type, pos, stack, mode) {
         let f = {a:0, r:0, c:0, f:100}; 
         let score = r1*2 + r2 + (type==='pair'?20:0) + (type==='suited'?6:0);
+        
+        if (mode === 'Cash') {
+            // Cash Game: Looser RFI
+            // Position penalty (0=BTN/SB, higher=tighter)
+            let t = 0; if(pos==='CO') t=4; if(pos==='MP') t=8; if(pos==='EP') t=12; 
+            // Score boost for playability
+            if(type==='suited') score += 5; 
+            if(type==='pair') score += 8; // Set mining
+            let thresh = 40 - (10 - t); // Base lower than MTT
+            if(score >= thresh) { f.r=100; f.f=0; return f; }
+            return f;
+        }
+
+        // Existing MTT Logic
         if(mode === "PushFold") {
             let threshold = 35 - (stack - 5); 
             if(pos==='BTN'||pos==='SB') threshold -= 12; else if(pos==='CO') threshold -= 6;
             if(type==='pair') {
                 if(r1>=7) { f.a=100; f.f=0; return f; } 
-                if(r1>=2 && r1<7) { let pushProb = (8-r1)*10 + (15-stack)*5; if(pos==='BTN'||pos==='SB') pushProb += 30; pushProb = Math.min(100, Math.max(0, pushProb)); f.a = pushProb; f.f = 100-pushProb; return f; }
+                if(r1>=2 && r1<7) { let p = (8-r1)*10 + (15-stack)*5; if(pos==='BTN'||pos==='SB') p+=30; f.a=Math.min(100,Math.max(0,p)); f.f=100-f.a; return f; }
             }
             if(score >= threshold + 5) { f.a=100; f.f=0; } else if(score >= threshold) { f.a=50; f.f=50; } 
             return f;
         }
         if(mode === "BBDef") {
-            if((type==='pair'&&r1>=10) || (type==='offsuit'&&r1===14&&r2>=12) || (type==='suited'&&r1===14&&r2>=11)) { f.r = 80; f.c = 20; f.f = 0; return f; }
-            let callThresh = 25;
-            if(score >= callThresh) { f.c=100; f.f=0; return f; }
-            if(score >= callThresh - 5) { f.c=40; f.f=60; return f; } 
-            return f;
+            if((type==='pair'&&r1>=10) || (type==='offsuit'&&r1===14&&r2>=12) || (type==='suited'&&r1===14&&r2>=11)) { f.r=80; f.c=20; f.f=0; return f; }
+            let callThresh = 25; if(score >= callThresh) { f.c=100; f.f=0; return f; }
+            if(score >= callThresh - 5) { f.c=40; f.f=60; return f; } return f;
         }
+        // MTT RFI
         let t = 0; if(pos==='MP') t=5; if(pos==='CO') t=12; if(pos==='BTN') t=20; if(pos==='SB') t=18;
         let openThresh = 45 - t;
         if(score >= openThresh + 5) { f.r=100; f.f=0; return f; }
@@ -505,58 +536,10 @@
         return f;
     }
 
-    // --- POSTFLOP BLOCKER & AI ---
-    function analyzePostflop() {
-        if(!state.h1 || !state.h2 || !state.b1 || !state.b2 || !state.b3) { alert("請選擇手牌與至少 3 張公牌"); return; }
-        if(!state.oppAction) { alert("請選擇對手行動"); return; }
-
-        let blockers = [];
-        const hCards = [state.h1, state.h2];
-        const suits = hCards.map(c=>c.suit.symbol);
-        const ranks = hCards.map(c=>c.rank);
-        
-        if(ranks.includes('A')) blockers.push("阻擋了對手 AA 及頂級踢腳 (Ax) 組合");
-        if(ranks.includes('K')) blockers.push("阻擋了對手 KK 及次級踢腳 (Kx) 組合");
-        if(state.h1.suit.id === state.h2.suit.id) blockers.push(`阻擋了對手 ${state.h1.suit.symbol} 同花堅果/聽牌組合`);
-        
-        let suitCount = {}; [state.h1, state.h2, state.b1, state.b2, state.b3, state.b4, state.b5].forEach(c => { if(c) suitCount[c.suit.id] = (suitCount[c.suit.id]||0)+1; });
-        let isFlush = Object.values(suitCount).some(v => v >= 5);
-        let isDraw = Object.values(suitCount).some(v => v === 4);
-        let rCounts = {}; [state.h1.rank, state.h2.rank, state.b1.rank, state.b2.rank, state.b3.rank, state.b4?.rank, state.b5?.rank].filter(x=>x).forEach(r => rCounts[r] = (rCounts[r]||0)+1);
-        let pairs = Object.values(rCounts).filter(v => v===2).length;
-        let sets = Object.values(rCounts).filter(v => v===3).length;
-        let score=0, catText="High Card", barColor="#ef4444";
-        
-        if (isFlush || sets>0&&pairs>0) { score=95; catText="Monster/Nuts"; barColor="#8b5cf6"; }
-        else if (sets>0) { score=80; catText="Set (三條)"; barColor="#10b981"; }
-        else if (pairs>=2) { score=65; catText="Two Pair (兩對)"; barColor="#10b981"; }
-        else if (pairs===1) { score=45; catText="One Pair (一對)"; barColor="#f59e0b"; }
-        else if (isDraw) { score=35; catText="Draw (聽牌)"; barColor="#f59e0b"; }
-        else { score=15; catText="Air (空氣)"; barColor="#ef4444"; }
-
-        let adviceHtml = `<strong>局勢:</strong> 面對 <span style="color:var(--accent)">${state.oppAction.toUpperCase()}</span>，牌力 <strong>${catText}</strong>。<br>`;
-        
-        if(blockers.length > 0) {
-            adviceHtml += `<div style="margin:5px 0; padding:5px; background:rgba(255,255,0,0.1); border-radius:4px; font-size:0.85rem;">🛡️ <strong>阻擋牌效應:</strong><br>${blockers.join('<br>')}</div>`;
-        }
-
-        adviceHtml += `<ul class="ai-list">`;
-        if (state.oppAction === 'check') adviceHtml += score > 60 ? `<li><span style="color:var(--c-raise)">● 下注 (Bet):</span> 價值下注。</li>` : `<li><span style="color:var(--c-call)">● 過牌 (Check):</span> 控池。</li>`;
-        else if (state.oppAction === 'bet') adviceHtml += score > 70 ? `<li><span style="color:var(--c-raise)">● 加注 (Raise):</span> 強牌。</li>` : (score>40 ? `<li><span style="color:var(--c-call)">● 跟注 (Call):</span> 抓詐唬。</li>` : `<li><span style="color:var(--c-fold)">● 棄牌 (Fold):</span> 沒牌。</li>`);
-        else adviceHtml += score > 70 ? `<li><span style="color:var(--c-call)">● 應對強攻:</span> 考慮跟注或全下。</li>` : `<li><span style="color:var(--c-fold)">● 棄牌 (Fold):</span> 風險過高。</li>`;
-        adviceHtml += `</ul>`;
-
-        document.getElementById('postflopResult').style.display='block';
-        let bar=document.getElementById('strengthBar'); bar.style.width=score+'%'; bar.style.backgroundColor=barColor;
-        document.getElementById('handCategory').innerText=catText; document.getElementById('handCategory').style.color=barColor;
-        document.getElementById('aiAdvice').innerHTML = adviceHtml;
-    }
-
-    // --- COMMON UTILS ---
+    // --- OTHER ---
     function calcPotOdds() {
         let p=parseFloat(document.getElementById('potSize').value), c=parseFloat(document.getElementById('betSize').value);
-        if(!p||!c)return;
-        document.getElementById('oddsResult').style.display='block';
+        if(!p||!c)return; document.getElementById('oddsResult').style.display='block';
         document.getElementById('reqEquity').innerText = ((c/(p+c+c))*100).toFixed(1)+'%';
         document.getElementById('oddsRatio').innerText = ((p+c)/c).toFixed(1)+' : 1';
     }
@@ -565,69 +548,67 @@
         document.querySelectorAll('.btn-opp').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
     }
-    function updateNameList() {
-        const names = [...new Set(bankrollData.map(i => i.name).filter(n => n))];
-        const dl = document.getElementById('brNameList'); dl.innerHTML = '';
-        names.forEach(n => { let opt=document.createElement('option'); opt.value=n; dl.appendChild(opt); });
+    function analyzePostflop() {
+        if(!state.h1 || !state.h2 || !state.b1 || !state.b2 || !state.b3) { alert("請選擇手牌與至少 3 張公牌"); return; }
+        if(!state.oppAction) { alert("請選擇對手行動"); return; }
+        let blockers = []; const hCards = [state.h1, state.h2];
+        const ranks = hCards.map(c=>c.rank);
+        if(ranks.includes('A')) blockers.push("阻擋了 AA 及 Ax 組合");
+        if(ranks.includes('K')) blockers.push("阻擋了 KK 及 Kx 組合");
+        if(state.h1.suit.id === state.h2.suit.id) blockers.push(`阻擋了 ${state.h1.suit.symbol} 同花組合`);
+        
+        let suitCount = {}; [state.h1, state.h2, state.b1, state.b2, state.b3, state.b4, state.b5].forEach(c => { if(c) suitCount[c.suit.id] = (suitCount[c.suit.id]||0)+1; });
+        let isFlush = Object.values(suitCount).some(v => v >= 5);
+        let isDraw = Object.values(suitCount).some(v => v === 4);
+        let rCounts = {}; [state.h1.rank, state.h2.rank, state.b1.rank, state.b2.rank, state.b3.rank, state.b4?.rank, state.b5?.rank].filter(x=>x).forEach(r => rCounts[r] = (rCounts[r]||0)+1);
+        let pairs = Object.values(rCounts).filter(v => v===2).length;
+        let sets = Object.values(rCounts).filter(v => v===3).length;
+        let score=0, catText="High Card", barColor="#ef4444";
+        if (isFlush || sets>0&&pairs>0) { score=95; catText="Monster/Nuts"; barColor="#8b5cf6"; }
+        else if (sets>0) { score=80; catText="Set"; barColor="#10b981"; }
+        else if (pairs>=2) { score=65; catText="Two Pair"; barColor="#10b981"; }
+        else if (pairs===1) { score=45; catText="One Pair"; barColor="#f59e0b"; }
+        else if (isDraw) { score=35; catText="Draw"; barColor="#f59e0b"; }
+        else { score=15; catText="Air"; barColor="#ef4444"; }
+
+        let adviceHtml = `<strong>局勢:</strong> 面對 <span style="color:var(--accent)">${state.oppAction}</span>，牌力 <strong>${catText}</strong>。<br>`;
+        if(blockers.length > 0) adviceHtml += `<div style="margin:5px 0; padding:5px; background:rgba(255,255,0,0.1); border-radius:4px; font-size:0.85rem;">🛡️ <strong>阻擋牌:</strong><br>${blockers.join('<br>')}</div>`;
+        adviceHtml += `<ul class="ai-list">`;
+        if (state.oppAction === 'check') adviceHtml += score > 60 ? `<li><span style="color:var(--c-raise)">● 下注:</span> 價值。</li>` : `<li><span style="color:var(--c-call)">● 過牌:</span> 控池。</li>`;
+        else adviceHtml += score > 70 ? `<li><span style="color:var(--c-raise)">● 加注:</span> 強牌。</li>` : (score>40 ? `<li><span style="color:var(--c-call)">● 跟注:</span> 抓詐唬。</li>` : `<li><span style="color:var(--c-fold)">● 棄牌:</span> 沒牌。</li>`);
+        adviceHtml += `</ul>`;
+        document.getElementById('postflopResult').style.display='block';
+        document.getElementById('strengthBar').style.width=score+'%'; document.getElementById('strengthBar').style.backgroundColor=barColor;
+        document.getElementById('handCategory').innerText=catText; document.getElementById('handCategory').style.color=barColor;
+        document.getElementById('aiAdvice').innerHTML = adviceHtml;
     }
-    function calcPreview() {
-        let b=parseFloat(document.getElementById('brBuyIn').value)||0; let p=parseFloat(document.getElementById('brPrize').value)||0;
-        let d=p-b; document.getElementById('brProfitPreview').innerText=(d>=0?'+':'')+d; document.getElementById('brProfitPreview').style.color=d>=0?'var(--accent)':'var(--danger)';
-    }
-    function addBankroll() {
-        let d=document.getElementById('brDate').value, t=document.getElementById('brType').value;
-        let n=document.getElementById('brName').value.trim();
-        let b=parseFloat(document.getElementById('brBuyIn').value), p=parseFloat(document.getElementById('brPrize').value);
-        if(!d||isNaN(b)||isNaN(p)) { alert("請填寫完整資訊"); return; }
-        bankrollData.push({ id:Date.now(), date:d, type:t, name:n, buyIn:b, prize:p, amount:p-b });
-        localStorage.setItem('pokerGodBankroll', JSON.stringify(bankrollData));
-        document.getElementById('brName').value=''; document.getElementById('brBuyIn').value=''; document.getElementById('brPrize').value='';
-        updateNameList(); renderBankrollUI();
-    }
-    function deleteRecord(id) {
-        if(!confirm("確定刪除?"))return;
-        bankrollData=bankrollData.filter(i=>i.id!==id);
-        localStorage.setItem('pokerGodBankroll',JSON.stringify(bankrollData));
-        updateNameList(); renderBankrollUI();
-    }
-    function renderBankrollUI() {
-        let l=document.getElementById('historyList'); l.innerHTML=''; let tot=0, data=[{x:0,y:0}];
-        bankrollData.forEach((i,idx)=>{
-            tot += i.amount; data.push({x:idx+1, y:tot});
-            let d=document.createElement('div'); d.className='history-item';
-            d.innerHTML=`<div style="flex:1"><div style="font-size:0.9rem;font-weight:bold;color:var(--text-main);">${i.name||'未命名'}</div><div style="font-size:0.75rem;color:var(--text-muted);">${i.date}•${i.type}</div></div><span class="${i.amount>=0?'pos-val':'neg-val'}">${i.amount>=0?'+':''}${i.amount}</span><button class="btn-delete" onclick="deleteRecord(${i.id})" style="margin-left:10px;">✕</button>`;
-            l.prepend(d);
-        });
-        document.getElementById('totalProfit').innerText = (tot>=0?'+':'')+tot;
-        document.getElementById('totalProfit').style.color = tot>=0?'var(--accent)':'var(--danger)';
-        drawChart(data);
-    }
-    function drawChart(d) {
-        let cvs=document.getElementById('bankrollCanvas'), ctx=cvs.getContext('2d');
-        cvs.width=cvs.parentElement.clientWidth; cvs.height=220;
-        let w=cvs.width, h=cvs.height;
-        ctx.clearRect(0,0,w,h);
-        if(d.length<2) { ctx.fillStyle="#94a3b8"; ctx.font="14px Arial"; ctx.textAlign="center"; ctx.fillText("No Data",w/2,h/2); return; }
-        let max=Math.max(...d.map(p=>p.y)), min=Math.min(...d.map(p=>p.y));
-        let range=max-min||100; max+=range*0.1; min-=range*0.1;
-        let mapX=i=>20+(i/(d.length-1))*(w-40), mapY=v=>h-(20+((v-min)/(max-min))*(h-40));
-        ctx.beginPath(); ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(); ctx.lineWidth=3;
-        ctx.moveTo(mapX(0), mapY(d[0].y));
-        for(let i=1;i<d.length;i++) ctx.lineTo(mapX(i), mapY(d[i].y));
-        ctx.stroke();
-    }
-    function genSelUI(){ 
-        [{id:'s',c:'suit-s',s:'♠'},{id:'h',c:'suit-h',s:'♥'},{id:'c',c:'suit-c',s:'♣'},{id:'d',c:'suit-d',s:'♦'}].forEach(x=>{
-            let r=document.getElementById('suit-'+(x.id==='s'?'spades':x.id==='h'?'hearts':x.id==='c'?'clubs':'diamonds'));
-            ranks.forEach(k=>{let b=document.createElement('button');b.className='rank-btn '+x.c;b.innerText=k+x.s;b.onclick=()=>setCard(k,x);r.appendChild(b)});
-        });
-    }
+
+    // --- COMMON HELPERS ---
+    function updateNameList() { const names = [...new Set(bankrollData.map(i => i.name).filter(n => n))]; const dl = document.getElementById('brNameList'); dl.innerHTML = ''; names.forEach(n => { let opt=document.createElement('option'); opt.value=n; dl.appendChild(opt); }); }
+    function calcPreview() { let b=parseFloat(document.getElementById('brBuyIn').value)||0; let p=parseFloat(document.getElementById('brPrize').value)||0; let d=p-b; document.getElementById('brProfitPreview').innerText=(d>=0?'+':'')+d; document.getElementById('brProfitPreview').style.color=d>=0?'var(--accent)':'var(--danger)'; }
+    function addBankroll() { let d=document.getElementById('brDate').value, t=document.getElementById('brType').value; let n=document.getElementById('brName').value.trim(); let b=parseFloat(document.getElementById('brBuyIn').value), p=parseFloat(document.getElementById('brPrize').value); if(!d||isNaN(b)||isNaN(p)) { alert("請填寫完整資訊"); return; } bankrollData.push({ id:Date.now(), date:d, type:t, name:n, buyIn:b, prize:p, amount:p-b }); localStorage.setItem('pokerGodBankroll', JSON.stringify(bankrollData)); document.getElementById('brName').value=''; document.getElementById('brBuyIn').value=''; document.getElementById('brPrize').value=''; updateNameList(); renderBankrollUI(); }
+    function deleteRecord(id) { if(!confirm("確定刪除?"))return; bankrollData=bankrollData.filter(i=>i.id!==id); localStorage.setItem('pokerGodBankroll',JSON.stringify(bankrollData)); updateNameList(); renderBankrollUI(); }
+    function renderBankrollUI() { let l=document.getElementById('historyList'); l.innerHTML=''; let tot=0, data=[{x:0,y:0}]; bankrollData.forEach((i,idx)=>{ tot += i.amount; data.push({x:idx+1, y:tot}); let d=document.createElement('div'); d.className='history-item'; d.innerHTML=`<div style="flex:1"><div style="font-size:0.9rem;font-weight:bold;color:var(--text-main);">${i.name||'未命名'}</div><div style="font-size:0.75rem;color:var(--text-muted);">${i.date}•${i.type}</div></div><span class="${i.amount>=0?'pos-val':'neg-val'}">${i.amount>=0?'+':''}${i.amount}</span><button class="btn-delete" onclick="deleteRecord(${i.id})" style="margin-left:10px;">✕</button>`; l.prepend(d); }); document.getElementById('totalProfit').innerText = (tot>=0?'+':'')+tot; document.getElementById('totalProfit').style.color = tot>=0?'var(--accent)':'var(--danger)'; drawChart(data); }
+    function drawChart(d) { let cvs=document.getElementById('bankrollCanvas'), ctx=cvs.getContext('2d'); cvs.width=cvs.parentElement.clientWidth; cvs.height=220; let w=cvs.width, h=cvs.height; ctx.clearRect(0,0,w,h); if(d.length<2) { ctx.fillStyle="#94a3b8"; ctx.font="14px Arial"; ctx.textAlign="center"; ctx.fillText("No Data",w/2,h/2); return; } let max=Math.max(...d.map(p=>p.y)), min=Math.min(...d.map(p=>p.y)); let range=max-min||100; max+=range*0.1; min-=range*0.1; let mapX=i=>20+(i/(d.length-1))*(w-40), mapY=v=>h-(20+((v-min)/(max-min))*(h-40)); ctx.beginPath(); ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(); ctx.lineWidth=3; ctx.moveTo(mapX(0), mapY(d[0].y)); for(let i=1;i<d.length;i++) ctx.lineTo(mapX(i), mapY(d[i].y)); ctx.stroke(); }
+    
+    // --- TRAINER ---
+    function nextDrill() { const positions = ['EP','MP','CO','BTN','SB','BB']; const pos = positions[Math.floor(Math.random()*positions.length)]; const stack = Math.random() < 0.3 ? 12 : (Math.random() < 0.6 ? 40 : 100); const r1Idx = Math.floor(Math.random()*13); const r2Idx = Math.floor(Math.random()*13); const s1 = {id:'s', symbol:'♠', class:'suit-s'}; const s2 = (r1Idx===r2Idx || Math.random()<0.23) ? s1 : {id:'h', symbol:'♥', class:'suit-h'}; const r1 = ranks[Math.min(r1Idx, r2Idx)]; const r2 = ranks[Math.max(r1Idx, r2Idx)]; const type = (r1===r2) ? 'pair' : (s1.id===s2.id ? 'suited' : 'offsuit'); trState.current = { r1:14-Math.min(r1Idx,r2Idx), r2:14-Math.max(r1Idx,r2Idx), type, pos, stack }; document.getElementById('trScenario').innerText = `${pos} | ${stack}BB`; renderTrainerCard('trCard1', r1, s1); renderTrainerCard('trCard2', r2, (r1===r2 && s1.id===s2.id) ? {id:'d',symbol:'♦',class:'suit-d'} : s2); document.getElementById('trFeedback').style.display = 'none'; document.getElementById('trNextBtn').style.display = 'none'; }
+    function renderTrainerCard(id, r, s) { document.getElementById(id).innerHTML = `<span class="${s.class}">${s.symbol}</span><span>${r}</span>`; }
+    function checkTrainer(act) { if(document.getElementById('trNextBtn').style.display === 'block') return; const { r1, r2, type, pos, stack } = trState.current; let mode = "RFI"; if(stack < 15) mode = "PushFold"; else if(pos === "BB") mode = "BBDef"; else if(pos === "SB") mode = "SB"; const freqs = getFrequencies(r1, r2, type, pos, stack, mode); let correctAct = 'fold'; let maxVal = freqs.f; if(freqs.c > maxVal) { maxVal = freqs.c; correctAct = 'call'; } if(freqs.r > maxVal) { maxVal = freqs.r; correctAct = 'raise'; } if(freqs.a > maxVal) { maxVal = freqs.a; correctAct = 'raise'; } let userAct = act; if(act === 'raise' && freqs.a > 50) userAct = 'raise'; let isCorrect = (userAct === correctAct) || (maxVal < 60 && freqs[act[0]] > 30); trState.total++; if(isCorrect) { trState.correct++; trState.streak++; } else { trState.streak = 0; } document.getElementById('trScore').innerText = `${trState.correct}/${trState.total}`; document.getElementById('trStreak').innerText = trState.streak; const fb = document.getElementById('trFeedback'); fb.style.display = 'block'; fb.className = 'trainer-feedback ' + (isCorrect ? 'fb-correct' : 'fb-wrong'); fb.innerHTML = `<strong>${isCorrect ? 'Correct!' : 'Mistake!'}</strong><br>GTO: Raise ${freqs.r+freqs.a}% | Call ${freqs.c}% | Fold ${freqs.f}%`; document.getElementById('trNextBtn').style.display = 'block'; }
+
+    function genSelUI(){ [{id:'s',c:'suit-s',s:'♠'},{id:'h',c:'suit-h',s:'♥'},{id:'c',c:'suit-c',s:'♣'},{id:'d',c:'suit-d',s:'♦'}].forEach(x=>{ let r=document.getElementById('suit-'+(x.id==='s'?'spades':x.id==='h'?'hearts':x.id==='c'?'clubs':'diamonds')); ranks.forEach(k=>{let b=document.createElement('button');b.className='rank-btn '+x.c;b.innerText=k+x.s;b.onclick=()=>setCard(k,x);r.appendChild(b)}); }); }
     function sel(id){curSel=id;document.getElementById('cardModal').style.display='flex'}
     function closeSel(){document.getElementById('cardModal').style.display='none'}
     function setCard(r,s){
-        state[curSel]={rank:r,suit:s};
-        let el=document.getElementById('card_'+curSel); el.className='poker-card selected';
-        el.innerHTML=`<span class="${s.c}">${s.s}</span><span>${r}</span>`; closeSel();
+        if (curSel.startsWith('rev_')) { // Direct DOM update for Review tab
+            let el=document.getElementById(curSel); el.className='poker-card small selected';
+            el.innerHTML=`<span class="${s.c}">${s.s}</span><span>${r}</span>`;
+        } else { // State update for Calculator
+            state[curSel]={rank:r,suit:s};
+            let el=document.getElementById('card_'+curSel); el.className='poker-card selected';
+            el.innerHTML=`<span class="${s.c}">${s.s}</span><span>${r}</span>`; 
+        }
+        closeSel();
     }
 </script>
 </body>
