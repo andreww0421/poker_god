@@ -87,6 +87,7 @@
             width: 100%; background: rgba(125,125,125,0.1); border: 1px solid var(--border); color: var(--text-main); padding: 12px; border-radius: 8px; font-size: 1rem; outline: none; font-family: inherit;
         }
         select:focus, input:focus, textarea:focus { border-color: var(--accent); }
+        /* Dropdown fix for dark mode */
         select option { background-color: var(--bg-body); color: var(--text-main); }
 
         .btn-action {
@@ -101,14 +102,12 @@
         .btn-opp.active { background: #3b82f6; color: white; border-color: #3b82f6; }
 
         .hand-display { display: flex; gap: 12px; justify-content: center; margin: 15px 0; }
-        .hand-mini { display: flex; gap: 4px; } /* For Review List */
         .poker-card {
             width: 55px; height: 78px; background: var(--card-bg); border-radius: 6px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             font-weight: 900; font-size: 1.5rem; cursor: pointer; position: relative;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1); color: var(--card-text) !important; border: 1px solid var(--border);
         }
-        .poker-card.small { width: 30px; height: 42px; font-size: 0.8rem; border-radius: 3px; }
         .poker-card.empty { background: rgba(125,125,125,0.05); border: 2px dashed var(--text-muted); color: var(--text-muted) !important; font-weight: normal; font-size: 1.2rem; box-shadow: none; }
         .poker-card.selected { border: 2px solid var(--accent); background: #fff; color: #000 !important; }
         
@@ -116,11 +115,15 @@
 
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; width: 100%; background: var(--nav-bg); border-top: 1px solid var(--border);
-            display: flex; justify-content: space-around; padding: 10px 0; z-index: 100; transition: background-color 0.3s;
+            display: flex; justify-content: space-around; padding: 8px 0; z-index: 100; transition: background-color 0.3s;
         }
-        .nav-item { color: var(--text-muted); text-align: center; font-size: 0.7rem; flex: 1; padding: 5px; opacity: 0.7; }
+        .nav-item { 
+            color: var(--text-muted); text-align: center; flex: 1; padding: 4px; opacity: 0.7; 
+            display: flex; flex-direction: column; align-items: center; gap: 2px;
+        }
         .nav-item.active { color: var(--accent); opacity: 1; transform: translateY(-2px); font-weight: bold; }
-        .nav-icon { font-size: 1.4rem; display: block; margin-bottom: 4px; }
+        .nav-icon { font-size: 1.3rem; display: block; line-height: 1; }
+        .nav-label { font-size: 0.7rem; display: block; }
 
         .tab-content { display: none; animation: fadeIn 0.3s ease; }
         .tab-content.active { display: block; }
@@ -202,45 +205,20 @@
         </div>
     </div>
 
-    <div id="tab-review" class="tab-content">
-        <div class="card-panel">
-            <label>新增手牌檢討 (Add Review)</label>
-            <div class="row-group">
-                <select id="revPos" style="flex:1"><option value="BTN">BTN</option><option value="CO">CO</option><option value="MP">MP</option><option value="EP">EP</option><option value="SB">SB</option><option value="BB">BB</option></select>
-                <select id="revAction" style="flex:2"><option value="">行動...</option><option value="RFI">RFI</option><option value="Call 3Bet">Call 3Bet</option><option value="Check/Call">Check/Call</option><option value="Bluff">Bluff</option></select>
-            </div>
-            
-            <label style="margin-top:10px;">手牌 & 公共牌</label>
-            <div class="hand-display" style="gap:5px; margin:5px 0;">
-                <div class="poker-card empty small" id="rev_h1" onclick="sel('rev_h1')">H1</div>
-                <div class="poker-card empty small" id="rev_h2" onclick="sel('rev_h2')">H2</div>
-                <div style="width:10px;"></div>
-                <div class="poker-card empty small" id="rev_b1" onclick="sel('rev_b1')"></div>
-                <div class="poker-card empty small" id="rev_b2" onclick="sel('rev_b2')"></div>
-                <div class="poker-card empty small" id="rev_b3" onclick="sel('rev_b3')"></div>
-                <div class="poker-card empty small" id="rev_b4" onclick="sel('rev_b4')"></div>
-                <div class="poker-card empty small" id="rev_b5" onclick="sel('rev_b5')"></div>
-            </div>
-
-            <div class="input-group">
-                <textarea id="revNotes" rows="3" placeholder="行動過程與檢討筆記..."></textarea>
-            </div>
-            <button class="btn-action" onclick="addReview()">儲存檢討 (Save)</button>
-        </div>
-        <div class="card-panel">
-            <label>檢討列表 (History)</label>
-            <div id="reviewList" style="max-height:400px; overflow-y:auto;"></div>
-        </div>
-    </div>
-
     <div id="tab-trainer" class="tab-content">
         <div class="card-panel">
-            <div class="trainer-stats"><span>Streak: <span id="trStreak" style="color:var(--accent)">0</span></span><span>Score: <span id="trScore">0/0</span></span></div>
+            <div class="trainer-stats">
+                <span>Streak: <span id="trStreak" style="color:var(--accent)">0</span></span>
+                <span>Score: <span id="trScore">0/0</span></span>
+            </div>
             <div style="text-align:center; margin-bottom:20px;">
                 <div style="font-size:1.1rem; font-weight:bold; margin-bottom:5px;" id="trScenario">Loading...</div>
                 <div style="color:var(--text-muted); font-size:0.9rem;">What is the GTO action?</div>
             </div>
-            <div class="hand-display"><div class="poker-card selected" id="trCard1"></div><div class="poker-card selected" id="trCard2"></div></div>
+            <div class="hand-display">
+                <div class="poker-card selected" id="trCard1"></div>
+                <div class="poker-card selected" id="trCard2"></div>
+            </div>
             <div class="trainer-grid">
                 <button class="btn-action" style="background:var(--c-fold); margin:0;" onclick="checkTrainer('fold')">Fold</button>
                 <button class="btn-action" style="background:var(--c-call); color:black; margin:0;" onclick="checkTrainer('call')">Call</button>
@@ -330,11 +308,21 @@
 <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(this)">
 
 <div class="bottom-nav">
-    <div class="nav-item active" onclick="switchTab('ranges', this)"><span class="nav-icon">📊</span></div>
-    <div class="nav-item" onclick="switchTab('review', this)"><span class="nav-icon">📝</span></div>
-    <div class="nav-item" onclick="switchTab('trainer', this)"><span class="nav-icon">🎓</span></div>
-    <div class="nav-item" onclick="switchTab('postflop', this)"><span class="nav-icon">♠️</span></div>
-    <div class="nav-item" onclick="switchTab('bankroll', this)"><span class="nav-icon">💰</span></div>
+    <div class="nav-item active" onclick="switchTab('ranges', this)">
+        <span class="nav-icon">📊</span><span class="nav-label">Ranges</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('trainer', this)">
+        <span class="nav-icon">🎓</span><span class="nav-label">Trainer</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('odds', this)">
+        <span class="nav-icon">🧮</span><span class="nav-label">Odds</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('postflop', this)">
+        <span class="nav-icon">♠️</span><span class="nav-label">Postflop</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('bankroll', this)">
+        <span class="nav-icon">💰</span><span class="nav-label">Bankroll</span>
+    </div>
 </div>
 
 <div class="modal" id="cardModal">
@@ -350,18 +338,14 @@
     const state = { h1: null, h2: null, b1:null, b2:null, b3:null, b4:null, b5:null, oppAction: null };
     let curSel = null;
     const ranks = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
-    // Data Stores
     let bankrollData = JSON.parse(localStorage.getItem('pokerGodBankroll') || '[]');
-    let reviewData = JSON.parse(localStorage.getItem('pokerGodReviews') || '[]');
     let trState = { correct:0, total:0, streak:0, current:null };
-    // Review temporary state to hold card HTML for saving
-    let tempReviewCards = {};
 
     window.onload = () => {
         initTheme();
         genGrid(); genSelUI(); updateRanges();
         document.getElementById('brDate').valueAsDate = new Date();
-        updateNameList(); renderBankrollUI(); renderReviewList();
+        updateNameList(); renderBankrollUI();
         nextDrill(); 
         if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
     };
@@ -382,7 +366,7 @@
 
     // --- DATA ---
     function exportData() {
-        const fullData = { bankroll: bankrollData, reviews: reviewData };
+        const fullData = { bankroll: bankrollData };
         const blob = new Blob([JSON.stringify(fullData)], {type: "application/json"});
         const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
         a.download = "pg_backup_" + new Date().toISOString().slice(0,10) + ".json"; a.click(); toggleFab();
@@ -394,82 +378,35 @@
         reader.onload = function(e) {
             try {
                 const json = JSON.parse(e.target.result);
+                // Support both old array format and new object format
                 if (json.bankroll) {
-                    bankrollData = json.bankroll; reviewData = json.reviews || [];
-                    localStorage.setItem('pokerGodBankroll', JSON.stringify(bankrollData));
-                    localStorage.setItem('pokerGodReviews', JSON.stringify(reviewData));
-                    updateNameList(); renderBankrollUI(); renderReviewList();
-                    alert("還原成功！");
-                } else if(Array.isArray(json)) { // Legacy format support
-                    bankrollData = json; localStorage.setItem('pokerGodBankroll', JSON.stringify(bankrollData));
-                    renderBankrollUI(); alert("還原成功 (舊格式)！");
+                    bankrollData = json.bankroll;
+                } else if(Array.isArray(json)) { 
+                    bankrollData = json;
                 }
+                localStorage.setItem('pokerGodBankroll', JSON.stringify(bankrollData));
+                updateNameList(); renderBankrollUI();
+                alert("還原成功！");
             } catch (err) { alert("檔案錯誤"); }
         }; reader.readAsText(file); input.value = ''; toggleFab();
-    }
-
-    // --- REVIEW SYSTEM (NEW) ---
-    function addReview() {
-        const pos = document.getElementById('revPos').value;
-        const act = document.getElementById('revAction').value;
-        const notes = document.getElementById('revNotes').value;
-        
-        // Collect cards HTML
-        let cardsHtml = '';
-        ['h1','h2'].forEach(k => cardsHtml += (document.getElementById('rev_'+k).innerHTML || '') + ' ');
-        cardsHtml += '| ';
-        ['b1','b2','b3','b4','b5'].forEach(k => cardsHtml += (document.getElementById('rev_'+k).innerHTML || '') + ' ');
-
-        reviewData.unshift({ id: Date.now(), date: new Date().toLocaleDateString(), pos, act, notes, cards: cardsHtml });
-        localStorage.setItem('pokerGodReviews', JSON.stringify(reviewData));
-        
-        // Reset Inputs
-        document.getElementById('revNotes').value = '';
-        ['h1','h2','b1','b2','b3','b4','b5'].forEach(k => {
-            let el = document.getElementById('rev_'+k); el.className = 'poker-card empty small'; el.innerHTML = '';
-        });
-        renderReviewList();
-    }
-    function deleteReview(id) {
-        if(!confirm("刪除此檢討?")) return;
-        reviewData = reviewData.filter(i => i.id !== id);
-        localStorage.setItem('pokerGodReviews', JSON.stringify(reviewData));
-        renderReviewList();
-    }
-    function renderReviewList() {
-        const l = document.getElementById('reviewList'); l.innerHTML = '';
-        reviewData.forEach(i => {
-            let d = document.createElement('div'); d.className = 'history-item';
-            // Parse simplified card display
-            let cardsDisp = i.cards.replace(/class="poker-card.*?"/g, 'class="poker-card small" style="display:inline-flex; margin-right:2px;"'); 
-            d.innerHTML = `
-            <div style="width:100%">
-                <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                    <span style="font-weight:bold; color:var(--accent)">${i.pos}</span>
-                    <span style="font-size:0.8rem; color:var(--text-muted)">${i.date}</span>
-                    <button class="btn-delete" onclick="deleteReview(${i.id})">✕</button>
-                </div>
-                <div class="hand-mini" style="margin-bottom:8px; flex-wrap:wrap;">${i.cards.replace(/\|/g,'<span style="margin:0 5px;color:#666">|</span>')}</div>
-                <div style="font-size:0.85rem; color:var(--text-main); background:rgba(0,0,0,0.2); padding:8px; border-radius:4px;">
-                    <span style="color:var(--c-call)">${i.act}</span>: ${i.notes}
-                </div>
-            </div>`;
-            l.appendChild(d);
-        });
     }
 
     // --- THEME ---
     function initTheme() {
         const theme = localStorage.getItem('pokerGodTheme') || 'dark';
         document.body.setAttribute('data-theme', theme);
-        document.getElementById('themeIcon').innerText = theme === 'light' ? '🌙' : '☀️';
+        updateThemeIcon();
     }
     function toggleTheme() {
         const newTheme = document.body.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
         document.body.setAttribute('data-theme', newTheme);
         localStorage.setItem('pokerGodTheme', newTheme);
-        document.getElementById('themeIcon').innerText = newTheme === 'light' ? '🌙' : '☀️';
+        updateThemeIcon();
         renderBankrollUI(); 
+    }
+    function updateThemeIcon() {
+        const isLight = document.body.getAttribute('data-theme') === 'light';
+        document.getElementById('themeIcon').innerText = isLight ? '🌙' : '☀️';
     }
 
     // --- RANGES ---
@@ -486,7 +423,7 @@
         const stack=parseInt(document.getElementById('stackDepth').value);
         const pos=document.getElementById('heroPosition').value;
         const mode = document.getElementById('gameMode').value === 'Cash' ? 'Cash' : (stack < 15 ? "PushFold" : "RFI");
-        if(pos==='BB' && document.getElementById('gameMode').value !== 'Cash') mode = "BBDef"; // Simple override
+        if(pos==='BB' && document.getElementById('gameMode').value !== 'Cash') mode = "BBDef"; 
         
         document.getElementById('rangeInfoText').innerText = `Strategy: ${mode} - ${pos}`;
         document.querySelectorAll('.chart-cell').forEach(c => {
@@ -501,18 +438,14 @@
         let score = r1*2 + r2 + (type==='pair'?20:0) + (type==='suited'?6:0);
         
         if (mode === 'Cash') {
-            // Cash Game: Looser RFI
-            // Position penalty (0=BTN/SB, higher=tighter)
             let t = 0; if(pos==='CO') t=4; if(pos==='MP') t=8; if(pos==='EP') t=12; 
-            // Score boost for playability
             if(type==='suited') score += 5; 
-            if(type==='pair') score += 8; // Set mining
-            let thresh = 40 - (10 - t); // Base lower than MTT
+            if(type==='pair') score += 8; 
+            let thresh = 40 - (10 - t); 
             if(score >= thresh) { f.r=100; f.f=0; return f; }
             return f;
         }
 
-        // Existing MTT Logic
         if(mode === "PushFold") {
             let threshold = 35 - (stack - 5); 
             if(pos==='BTN'||pos==='SB') threshold -= 12; else if(pos==='CO') threshold -= 6;
@@ -528,7 +461,6 @@
             let callThresh = 25; if(score >= callThresh) { f.c=100; f.f=0; return f; }
             if(score >= callThresh - 5) { f.c=40; f.f=60; return f; } return f;
         }
-        // MTT RFI
         let t = 0; if(pos==='MP') t=5; if(pos==='CO') t=12; if(pos==='BTN') t=20; if(pos==='SB') t=18;
         let openThresh = 45 - t;
         if(score >= openThresh + 5) { f.r=100; f.f=0; return f; }
@@ -600,15 +532,9 @@
     function sel(id){curSel=id;document.getElementById('cardModal').style.display='flex'}
     function closeSel(){document.getElementById('cardModal').style.display='none'}
     function setCard(r,s){
-        if (curSel.startsWith('rev_')) { // Direct DOM update for Review tab
-            let el=document.getElementById(curSel); el.className='poker-card small selected';
-            el.innerHTML=`<span class="${s.c}">${s.s}</span><span>${r}</span>`;
-        } else { // State update for Calculator
-            state[curSel]={rank:r,suit:s};
-            let el=document.getElementById('card_'+curSel); el.className='poker-card selected';
-            el.innerHTML=`<span class="${s.c}">${s.s}</span><span>${r}</span>`; 
-        }
-        closeSel();
+        state[curSel]={rank:r,suit:s};
+        let el=document.getElementById('card_'+curSel); el.className='poker-card selected';
+        el.innerHTML=`<span class="${s.c}">${s.s}</span><span>${r}</span>`; closeSel();
     }
 </script>
 </body>
