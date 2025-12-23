@@ -87,7 +87,6 @@
             width: 100%; background: rgba(125,125,125,0.1); border: 1px solid var(--border); color: var(--text-main); padding: 12px; border-radius: 8px; font-size: 1rem; outline: none; font-family: inherit;
         }
         select:focus, input:focus, textarea:focus { border-color: var(--accent); }
-        /* Dropdown fix for dark mode */
         select option { background-color: var(--bg-body); color: var(--text-main); }
 
         .btn-action {
@@ -409,7 +408,7 @@
         document.getElementById('themeIcon').innerText = isLight ? '🌙' : '☀️';
     }
 
-    // --- RANGES ---
+    // --- RANGES (UPDATED CASH LOGIC) ---
     function genGrid() {
         const c = document.getElementById('rangeGrid'); c.innerHTML='';
         for(let i=0; i<13; i++) for(let j=0; j<13; j++) {
@@ -437,12 +436,34 @@
         let f = {a:0, r:0, c:0, f:100}; 
         let score = r1*2 + r2 + (type==='pair'?20:0) + (type==='suited'?6:0);
         
+        // --- CASH GAME ADJUSTMENTS ---
         if (mode === 'Cash') {
-            let t = 0; if(pos==='CO') t=4; if(pos==='MP') t=8; if(pos==='EP') t=12; 
-            if(type==='suited') score += 5; 
-            if(type==='pair') score += 8; 
-            let thresh = 40 - (10 - t); 
+            let posBonus = 0; // Position tightness
+            if(pos==='EP') posBonus = 0;
+            else if(pos==='MP') posBonus = 4;
+            else if(pos==='CO') posBonus = 10;
+            else if(pos==='BTN'||pos==='SB') posBonus = 15;
+
+            // 1. Suited Connectors & Gappers (Boosted for Cash)
+            if (type === 'suited') {
+               let gap = r1 - r2;
+               if (gap === 1 && r1 <= 11) score += 15; // 54s - JTs boost
+               if (gap === 2 && r1 <= 11) score += 10; // 64s - J9s boost
+            }
+
+            // 2. Offsuit Connectors (Late Pos Only)
+            if (type === 'offsuit') {
+               let gap = r1 - r2;
+               if (gap === 1 && r1 <= 11) { // T9o, 98o
+                   if (pos === 'CO' || pos === 'BTN' || pos === 'SB') score += 12;
+                   else score -= 10; // Fold in EP
+               }
+            }
+            
+            // 3. Threshold check
+            let thresh = 42 - posBonus; 
             if(score >= thresh) { f.r=100; f.f=0; return f; }
+            if(score >= thresh - 3) { f.r=50; f.f=50; return f; } // Mix
             return f;
         }
 
@@ -507,7 +528,8 @@
         if(blockers.length > 0) adviceHtml += `<div style="margin:5px 0; padding:5px; background:rgba(255,255,0,0.1); border-radius:4px; font-size:0.85rem;">🛡️ <strong>阻擋牌:</strong><br>${blockers.join('<br>')}</div>`;
         adviceHtml += `<ul class="ai-list">`;
         if (state.oppAction === 'check') adviceHtml += score > 60 ? `<li><span style="color:var(--c-raise)">● 下注:</span> 價值。</li>` : `<li><span style="color:var(--c-call)">● 過牌:</span> 控池。</li>`;
-        else adviceHtml += score > 70 ? `<li><span style="color:var(--c-raise)">● 加注:</span> 強牌。</li>` : (score>40 ? `<li><span style="color:var(--c-call)">● 跟注:</span> 抓詐唬。</li>` : `<li><span style="color:var(--c-fold)">● 棄牌:</span> 沒牌。</li>`);
+        else if (state.oppAction === 'bet') adviceHtml += score > 70 ? `<li><span style="color:var(--c-raise)">● 加注:</span> 強牌。</li>` : (score>40 ? `<li><span style="color:var(--c-call)">● 跟注:</span> 抓詐唬。</li>` : `<li><span style="color:var(--c-fold)">● 棄牌:</span> 沒牌。</li>`);
+        else adviceHtml += score > 70 ? `<li><span style="color:var(--c-call)">● 應對強攻:</span> 考慮跟注或全下。</li>` : `<li><span style="color:var(--c-fold)">● 棄牌 (Fold):</span> 風險過高。</li>`;
         adviceHtml += `</ul>`;
         document.getElementById('postflopResult').style.display='block';
         document.getElementById('strengthBar').style.width=score+'%'; document.getElementById('strengthBar').style.backgroundColor=barColor;
