@@ -90,12 +90,16 @@
         .fb-wrong { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444; }
         .trainer-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 20px; }
 
-        /* FAB */
+        /* FAB - Fixed Alignment */
         .fab-wrapper { position: fixed; bottom: 85px; right: 20px; z-index: 150; display: flex; flex-direction: column-reverse; align-items: flex-end; gap: 10px; }
         .fab-btn { width: 50px; height: 50px; border-radius: 50%; background: var(--accent); color: #fff; border: none; font-size: 1.5rem; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; }
         .fab-menu { display: none; flex-direction: column; gap: 8px; margin-bottom: 5px; }
         .fab-menu.active { display: flex; animation: fadeInUp 0.2s; }
-        .fab-item { background: var(--bg-panel); color: var(--text-main); border: 1px solid var(--border); padding: 10px 16px; border-radius: 8px; cursor: pointer; text-align: right; box-shadow: 0 2px 8px rgba(0,0,0,0.2); font-size: 0.9rem; white-space: nowrap; display: block; font-weight: 500; }
+        .fab-item { 
+            background: var(--bg-panel); color: var(--text-main); border: 1px solid var(--border); padding: 10px 16px; border-radius: 8px; cursor: pointer; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2); font-size: 0.9rem; white-space: nowrap; font-weight: 500;
+            display: flex; align-items: center; justify-content: center; gap: 8px; /* Centered with icon */
+        }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         /* Lang Select */
@@ -118,7 +122,10 @@
     <div id="tab-ranges" class="tab-content active">
         <div class="card-panel">
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                <select id="gameMode" onchange="updateRanges()"><option value="MTT">MTT</option><option value="Cash">Cash</option></select>
+                <select id="gameMode" onchange="updateRanges()">
+                    <option value="MTT" data-i18n="mode_mtt">MTT</option>
+                    <option value="Cash" data-i18n="mode_cash">Cash</option>
+                </select>
                 <select id="playerCount" onchange="updateRanges()">
                     <option value="2">2 Max</option><option value="3">3 Max</option><option value="4">4 Max</option><option value="5">5 Max</option>
                     <option value="6">6 Max</option><option value="7">7 Max</option><option value="8">8 Max</option><option value="9" selected>9 Max (Full Ring)</option><option value="10">10 Max</option>
@@ -234,7 +241,7 @@
 
 <div class="fab-wrapper">
     <div class="fab-menu" id="fabMenu">
-        <div class="fab-item" onclick="openLangModal()" data-i18n="language">語言 (Language)</div>
+        <div class="fab-item" onclick="openLangModal()"><span>🌐</span> <span data-i18n="language">語言 (Language)</span></div>
         <div class="fab-item" onclick="exportData()" data-i18n="export">匯出備份</div>
         <div class="fab-item" onclick="document.getElementById('importFile').click()" data-i18n="import">還原資料</div>
     </div>
@@ -294,7 +301,8 @@
             fold: '棄牌', call: '跟注', raise: '加注', check: '過牌', bet: '下注', allin: '全下',
             strat_rfi: '策略: RFI (首率先入)', strat_push: '策略: Push/Fold (推/棄)', strat_bb: '策略: BB 防守', strat_cash: '策略: 現金桌',
             ai_situation: '局勢: 面對', ai_strength: '牌力', blocker_effect: '🛡️ 阻擋牌效應:', ai_advice: '建議',
-            advice_val: '價值', advice_ctrl: '控池', advice_giveup: '放棄', advice_strong: '強牌', advice_bluff: '抓詐唬', advice_draw: '聽牌', advice_nuts: '堅果牌', advice_snap: '秒接', advice_math: '計算賠率'
+            advice_val: '價值', advice_ctrl: '控池', advice_giveup: '放棄', advice_strong: '強牌', advice_bluff: '抓詐唬', advice_draw: '聽牌', advice_nuts: '堅果牌', advice_snap: '秒接', advice_math: '計算賠率',
+            mode_mtt: '錦標賽 (MTT)', mode_cash: '現金桌 (Cash)'
         },
         'zh-CN': {
             nav_ranges: '范围表', nav_trainer: '测验', nav_odds: '赔率', nav_postflop: '翻后', nav_bankroll: '资金',
@@ -306,7 +314,8 @@
             fold: '弃牌', call: '跟注', raise: '加注', check: '过牌', bet: '下注', allin: '全下',
             strat_rfi: '策略: RFI (首率先入)', strat_push: '策略: Push/Fold (推/弃)', strat_bb: '策略: BB 防守', strat_cash: '策略: 现金桌',
             ai_situation: '局势: 面对', ai_strength: '牌力', blocker_effect: '🛡️ 阻挡牌效应:', ai_advice: '建议',
-            advice_val: '价值', advice_ctrl: '控池', advice_giveup: '放弃', advice_strong: '强牌', advice_bluff: '抓诈唬', advice_draw: '听牌', advice_nuts: '坚果牌', advice_snap: '秒接', advice_math: '计算赔率'
+            advice_val: '价值', advice_ctrl: '控池', advice_giveup: '放弃', advice_strong: '强牌', advice_bluff: '抓诈唬', advice_draw: '听牌', advice_nuts: '坚果牌', advice_snap: '秒接', advice_math: '计算赔率',
+            mode_mtt: '锦标赛 (MTT)', mode_cash: '现金桌 (Cash)'
         },
         'en': {
             nav_ranges: 'Ranges', nav_trainer: 'Trainer', nav_odds: 'Odds', nav_postflop: 'Postflop', nav_bankroll: 'Bankroll',
@@ -318,7 +327,8 @@
             fold: 'Fold', call: 'Call', raise: 'Raise', check: 'Check', bet: 'Bet', allin: 'All-in',
             strat_rfi: 'Strategy: RFI', strat_push: 'Strategy: Push/Fold', strat_bb: 'Strategy: BB Defense', strat_cash: 'Strategy: Cash Game',
             ai_situation: 'Situation: Vs', ai_strength: 'Hand', blocker_effect: '🛡️ Blockers:', ai_advice: 'Advice',
-            advice_val: 'Value', advice_ctrl: 'Pot Control', advice_giveup: 'Give Up', advice_strong: 'Strong', advice_bluff: 'Bluff Catch', advice_draw: 'Draw', advice_nuts: 'Nuts', advice_snap: 'Snap Call', advice_math: 'Check Odds'
+            advice_val: 'Value', advice_ctrl: 'Pot Control', advice_giveup: 'Give Up', advice_strong: 'Strong', advice_bluff: 'Bluff Catch', advice_draw: 'Draw', advice_nuts: 'Nuts', advice_snap: 'Snap Call', advice_math: 'Check Odds',
+            mode_mtt: 'Tournament (MTT)', mode_cash: 'Cash Game'
         },
         'ja': {
             nav_ranges: 'レンジ', nav_trainer: '練習', nav_odds: 'オッズ', nav_postflop: 'フロップ後', nav_bankroll: '資金管理',
@@ -330,7 +340,8 @@
             fold: 'フォールド', call: 'コール', raise: 'レイズ', check: 'チェック', bet: 'ベット', allin: 'オールイン',
             strat_rfi: '戦略: RFI (オープン)', strat_push: '戦略: プッシュ/フォールド', strat_bb: '戦略: BBディフェンス', strat_cash: '戦略: キャッシュゲーム',
             ai_situation: '状況: Vs', ai_strength: 'ハンド', blocker_effect: '🛡️ ブロッカー:', ai_advice: '助言',
-            advice_val: 'バリュー', advice_ctrl: 'ポット管理', advice_giveup: '諦める', advice_strong: '強い', advice_bluff: 'ブラフキャッチ', advice_draw: 'ドロー', advice_nuts: 'ナッツ', advice_snap: 'スナップ', advice_math: 'オッズ確認'
+            advice_val: 'バリュー', advice_ctrl: 'ポット管理', advice_giveup: '諦める', advice_strong: '強い', advice_bluff: 'ブラフキャッチ', advice_draw: 'ドロー', advice_nuts: 'ナッツ', advice_snap: 'スナップ', advice_math: 'オッズ確認',
+            mode_mtt: 'トーナメント (MTT)', mode_cash: 'キャッシュ (Cash)'
         },
         'ko': {
             nav_ranges: '레인지', nav_trainer: '트레이너', nav_odds: '오즈', nav_postflop: '포스트플랍', nav_bankroll: '뱅크롤',
@@ -342,7 +353,8 @@
             fold: '폴드', call: '콜', raise: '레이즈', check: '체크', bet: '벳', allin: '올인',
             strat_rfi: '전략: RFI (오픈)', strat_push: '전략: 푸쉬/폴드', strat_bb: '전략: BB 방어', strat_cash: '전략: 캐시 게임',
             ai_situation: '상황: Vs', ai_strength: '핸드', blocker_effect: '🛡️ 블로커:', ai_advice: '조언',
-            advice_val: '밸류', advice_ctrl: '팟 컨트롤', advice_giveup: '포기', advice_strong: '강함', advice_bluff: '블러프 캐치', advice_draw: '드로우', advice_nuts: '너츠', advice_snap: '스냅 콜', advice_math: '오즈 확인'
+            advice_val: '밸류', advice_ctrl: '팟 컨트롤', advice_giveup: '포기', advice_strong: '강함', advice_bluff: '블러프 캐치', advice_draw: '드로우', advice_nuts: '너츠', advice_snap: '스냅 콜', advice_math: '오즈 확인',
+            mode_mtt: '토너먼트 (MTT)', mode_cash: '캐시 게임 (Cash)'
         }
     };
 
