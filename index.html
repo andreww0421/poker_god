@@ -84,6 +84,11 @@
         .history-val { font-weight: bold; font-family: monospace; font-size: 1.1rem; }
         .pos-val { color: var(--accent); } .neg-val { color: var(--danger); }
 
+        /* Total Profit Display (NEW) */
+        .total-profit-box { text-align: center; padding: 10px; border-top: 1px solid var(--border); margin-top: 10px; }
+        .tp-label { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 5px; display: block; }
+        .tp-value { font-size: 2.2rem; font-weight: 800; letter-spacing: 1px; }
+
         .trainer-stats { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 0.9rem; color: var(--text-muted); }
         .trainer-feedback { text-align: center; margin-top: 15px; padding: 10px; border-radius: 8px; font-weight: bold; display: none; }
         .fb-correct { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; }
@@ -114,7 +119,7 @@
         <img src="icon.png" alt="App Logo" class="header-logo" onerror="this.style.display='none'">
         <h1>Poker God <span style="font-size:0.5em; opacity:0.8; background:none; -webkit-text-fill-color: var(--text-main);">PRO</span></h1>
     </div>
-    <div class="version-tag">v5.4.1</div>
+    <div class="version-tag">v5.4.2</div>
 </header>
 
 <div class="container">
@@ -220,10 +225,13 @@
         <div class="card-panel">
             <label data-i18n="bankroll_trend">資金趨勢</label>
             <canvas id="bankrollCanvas"></canvas>
-            <div style="display:flex; justify-content:space-between; margin-top:5px;">
-                <span class="result-label" data-i18n="total_profit">總盈虧: <span id="totalProfit" style="color:var(--text-main); font-weight:bold;">0</span></span>
+            
+            <div class="total-profit-box">
+                <span class="tp-label" data-i18n="total_profit">總盈虧</span>
+                <div id="bigTotalProfit" class="tp-value">0</div>
             </div>
         </div>
+        
         <div class="card-panel">
             <label data-i18n="add_record">新增紀錄</label>
             <div class="row-group"><input type="date" id="brDate" style="flex:2"><select id="brType" style="flex:1"><option>MTT</option><option>Cash</option></select></div>
@@ -384,7 +392,7 @@
         el.classList.add('active');
         
         if(id === 'trainer') nextDrill();
-        if(id === 'bankroll') renderBankrollUI(); // Force refresh chart
+        if(id === 'bankroll') renderBankrollUI(); 
     }
 
     // --- I18N FUNCTIONS ---
@@ -557,34 +565,55 @@
         document.getElementById('aiAdvice').innerHTML = adviceHtml;
     }
 
-    // --- COMMON HELPERS ---
+    // --- CHART & BANKROLL ---
     function updateNameList() { const names = [...new Set(bankrollData.map(i => i.name).filter(n => n))]; const dl = document.getElementById('brNameList'); dl.innerHTML = ''; names.forEach(n => { let opt=document.createElement('option'); opt.value=n; dl.appendChild(opt); }); }
     function calcPreview() { let b=parseFloat(document.getElementById('brBuyIn').value)||0; let p=parseFloat(document.getElementById('brPrize').value)||0; let d=p-b; document.getElementById('brProfitPreview').innerText=(d>=0?'+':'')+d; document.getElementById('brProfitPreview').style.color=d>=0?'var(--accent)':'var(--danger)'; }
-    function addBankroll() { let d=document.getElementById('brDate').value, t=document.getElementById('brType').value; let n=document.getElementById('brName').value.trim(); let b=parseFloat(document.getElementById('brBuyIn').value), p=parseFloat(document.getElementById('brPrize').value); if(!d||isNaN(b)||isNaN(p)) { alert("請填寫完整資訊"); return; } bankrollData.push({ id:Date.now(), date:d, type:t, name:n, buyIn:b, prize:p, amount:p-b }); localStorage.setItem('pokerGodBankroll', JSON.stringify(bankrollData)); document.getElementById('brName').value=''; document.getElementById('brBuyIn').value=''; document.getElementById('brPrize').value=''; updateNameList(); renderBankrollUI(); }
-    function deleteRecord(id) { if(!confirm("Delete?"))return; bankrollData=bankrollData.filter(i=>i.id!==id); localStorage.setItem('pokerGodBankroll',JSON.stringify(bankrollData)); updateNameList(); renderBankrollUI(); }
     
-    // --- CHART FIX ---
+    function addBankroll() { 
+        let d=document.getElementById('brDate').value, t=document.getElementById('brType').value; 
+        let n=document.getElementById('brName').value.trim(); 
+        let b=parseFloat(document.getElementById('brBuyIn').value), p=parseFloat(document.getElementById('brPrize').value); 
+        if(!d||isNaN(b)||isNaN(p)) { alert("請填寫完整資訊"); return; } 
+        bankrollData.push({ id:Date.now(), date:d, type:t, name:n, buyIn:b, prize:p, amount:p-b }); 
+        localStorage.setItem('pokerGodBankroll', JSON.stringify(bankrollData)); 
+        document.getElementById('brName').value=''; document.getElementById('brBuyIn').value=''; document.getElementById('brPrize').value=''; 
+        updateNameList(); renderBankrollUI(); 
+    }
+    
+    function deleteRecord(id) { 
+        if(!confirm("Delete?"))return; 
+        bankrollData=bankrollData.filter(i=>i.id!==id); 
+        localStorage.setItem('pokerGodBankroll',JSON.stringify(bankrollData)); 
+        updateNameList(); renderBankrollUI(); 
+    }
+    
     function renderBankrollUI() { 
-        // 1. Sort for List (Newest first)
-        let listData = [...bankrollData].sort((a,b) => new Date(b.date) - new Date(a.date));
-        
-        let l=document.getElementById('historyList'); l.innerHTML=''; 
-        listData.forEach((i)=>{ 
-            let d=document.createElement('div'); d.className='history-item'; 
-            d.innerHTML=`<div style="flex:1"><div style="font-size:0.9rem;font-weight:bold;color:var(--text-main);">${i.name||'--'}</div><div style="font-size:0.75rem;color:var(--text-muted);">${i.date}•${i.type}</div></div><span class="${i.amount>=0?'pos-val':'neg-val'}">${i.amount>=0?'+':''}${i.amount}</span><button class="btn-delete" onclick="deleteRecord(${i.id})" style="margin-left:10px;">✕</button>`; l.appendChild(d); 
-        }); 
+        // 1. Sort Logic (Same Day Fix: Date then ID)
+        let chartData = [...bankrollData].sort((a,b) => {
+            const dateA = new Date(a.date);
+            const dateB = new Date(b.date);
+            return dateA - dateB || a.id - b.id; // Secondary sort by creation ID
+        });
 
-        // 2. Sort for Chart (Oldest first) & Calculate Cumulative
-        let chartData = [...bankrollData].sort((a,b) => new Date(a.date) - new Date(b.date));
+        // 2. Calc Points
         let tot=0, points=[{x:0, y:0}];
         chartData.forEach((i, idx) => {
             tot += i.amount;
             points.push({x: idx+1, y: tot});
         });
 
-        document.getElementById('totalProfit').innerText = (tot>=0?'+':'')+tot; 
-        document.getElementById('totalProfit').style.color = tot>=0?'var(--accent)':'var(--danger)'; 
-        
+        // 3. Update Big Total Display
+        const el = document.getElementById('bigTotalProfit');
+        el.innerText = (tot>=0?'+':'')+tot; 
+        el.style.color = tot>=0?'var(--accent)':'var(--danger)';
+
+        // 4. Update List (Newest First)
+        let l=document.getElementById('historyList'); l.innerHTML=''; 
+        [...chartData].reverse().forEach((i)=>{ 
+            let d=document.createElement('div'); d.className='history-item'; 
+            d.innerHTML=`<div style="flex:1"><div style="font-size:0.9rem;font-weight:bold;color:var(--text-main);">${i.name||'--'}</div><div style="font-size:0.75rem;color:var(--text-muted);">${i.date}•${i.type}</div></div><span class="${i.amount>=0?'pos-val':'neg-val'}">${i.amount>=0?'+':''}${i.amount}</span><button class="btn-delete" onclick="deleteRecord(${i.id})" style="margin-left:10px;">✕</button>`; l.appendChild(d); 
+        }); 
+
         setTimeout(() => drawChart(points), 50);
     }
     
@@ -592,15 +621,11 @@
         let cvs=document.getElementById('bankrollCanvas');
         if(!cvs) return;
         let ctx=cvs.getContext('2d'); 
-        
-        // Critical Fix: Force resize to container width
         cvs.width = cvs.parentElement.clientWidth || 300; 
         cvs.height = 220; 
-        
         let w=cvs.width, h=cvs.height; 
         ctx.clearRect(0,0,w,h); 
         
-        // If no records (only initial 0,0), show text
         if(d.length < 2) { 
             ctx.fillStyle="#94a3b8"; ctx.font="14px Arial"; ctx.textAlign="center"; 
             ctx.fillText("No Data",w/2,h/2); return; 
@@ -608,20 +633,21 @@
         
         let max=Math.max(...d.map(p=>p.y)), min=Math.min(...d.map(p=>p.y)); 
         let range=max-min; if(range === 0) range = 100;
-        max+=range*0.1; min-=range*0.1; 
         
-        let mapX=i=>20+(i/(d.length-1))*(w-40), mapY=v=>h-(20+((v-min)/(max-min))*(h-40)); 
+        // Add Padding (Top/Bottom)
+        let padding = range * 0.1;
+        max += padding; min -= padding;
+        
+        let mapX=i=>20+(i/(d.length-1))*(w-40);
+        let mapY=v=>h-(20+((v-min)/(max-min))*(h-40)); 
         
         ctx.beginPath(); 
-        // Force color fallback
         ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#10b981'; 
         ctx.lineWidth=3; 
-        
         ctx.moveTo(mapX(0), mapY(d[0].y)); 
         for(let i=1;i<d.length;i++) ctx.lineTo(mapX(i), mapY(d[i].y)); 
         ctx.stroke(); 
         
-        // Draw Dots
         ctx.fillStyle = ctx.strokeStyle;
         for(let i=0;i<d.length;i++) {
             ctx.beginPath();
