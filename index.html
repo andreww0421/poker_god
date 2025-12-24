@@ -114,7 +114,7 @@
         <img src="icon.png" alt="App Logo" class="header-logo" onerror="this.style.display='none'">
         <h1>Poker God <span style="font-size:0.5em; opacity:0.8; background:none; -webkit-text-fill-color: var(--text-main);">PRO</span></h1>
     </div>
-    <div class="version-tag">v5.3</div>
+    <div class="version-tag">v5.4.1</div>
 </header>
 
 <div class="container">
@@ -383,9 +383,8 @@
         document.querySelectorAll('.nav-item').forEach(d=>d.classList.remove('active'));
         el.classList.add('active');
         
-        // Fix: Force logic reload when switching to tabs
         if(id === 'trainer') nextDrill();
-        if(id === 'bankroll') renderBankrollUI(); // Fix chart rendering
+        if(id === 'bankroll') renderBankrollUI(); // Force refresh chart
     }
 
     // --- I18N FUNCTIONS ---
@@ -394,7 +393,7 @@
         document.querySelectorAll('[data-i18n]').forEach(el => {
             el.innerText = t(el.getAttribute('data-i18n'));
         });
-        updateRanges(); // Trigger range title update
+        updateRanges(); 
     }
     function openLangModal() { toggleFab(); document.getElementById('langModal').style.display='flex'; }
     function changeLang(lang) {
@@ -563,22 +562,30 @@
     function calcPreview() { let b=parseFloat(document.getElementById('brBuyIn').value)||0; let p=parseFloat(document.getElementById('brPrize').value)||0; let d=p-b; document.getElementById('brProfitPreview').innerText=(d>=0?'+':'')+d; document.getElementById('brProfitPreview').style.color=d>=0?'var(--accent)':'var(--danger)'; }
     function addBankroll() { let d=document.getElementById('brDate').value, t=document.getElementById('brType').value; let n=document.getElementById('brName').value.trim(); let b=parseFloat(document.getElementById('brBuyIn').value), p=parseFloat(document.getElementById('brPrize').value); if(!d||isNaN(b)||isNaN(p)) { alert("請填寫完整資訊"); return; } bankrollData.push({ id:Date.now(), date:d, type:t, name:n, buyIn:b, prize:p, amount:p-b }); localStorage.setItem('pokerGodBankroll', JSON.stringify(bankrollData)); document.getElementById('brName').value=''; document.getElementById('brBuyIn').value=''; document.getElementById('brPrize').value=''; updateNameList(); renderBankrollUI(); }
     function deleteRecord(id) { if(!confirm("Delete?"))return; bankrollData=bankrollData.filter(i=>i.id!==id); localStorage.setItem('pokerGodBankroll',JSON.stringify(bankrollData)); updateNameList(); renderBankrollUI(); }
+    
+    // --- CHART FIX ---
     function renderBankrollUI() { 
+        // 1. Sort for List (Newest first)
+        let listData = [...bankrollData].sort((a,b) => new Date(b.date) - new Date(a.date));
+        
         let l=document.getElementById('historyList'); l.innerHTML=''; 
-        let tot=0, data=[{x:0,y:0}]; 
-        
-        bankrollData.forEach((i,idx)=>{ 
-            tot += i.amount; 
-            data.push({x:idx+1, y:tot}); 
+        listData.forEach((i)=>{ 
             let d=document.createElement('div'); d.className='history-item'; 
-            d.innerHTML=`<div style="flex:1"><div style="font-size:0.9rem;font-weight:bold;color:var(--text-main);">${i.name||'--'}</div><div style="font-size:0.75rem;color:var(--text-muted);">${i.date}•${i.type}</div></div><span class="${i.amount>=0?'pos-val':'neg-val'}">${i.amount>=0?'+':''}${i.amount}</span><button class="btn-delete" onclick="deleteRecord(${i.id})" style="margin-left:10px;">✕</button>`; l.prepend(d); 
+            d.innerHTML=`<div style="flex:1"><div style="font-size:0.9rem;font-weight:bold;color:var(--text-main);">${i.name||'--'}</div><div style="font-size:0.75rem;color:var(--text-muted);">${i.date}•${i.type}</div></div><span class="${i.amount>=0?'pos-val':'neg-val'}">${i.amount>=0?'+':''}${i.amount}</span><button class="btn-delete" onclick="deleteRecord(${i.id})" style="margin-left:10px;">✕</button>`; l.appendChild(d); 
         }); 
-        
+
+        // 2. Sort for Chart (Oldest first) & Calculate Cumulative
+        let chartData = [...bankrollData].sort((a,b) => new Date(a.date) - new Date(b.date));
+        let tot=0, points=[{x:0, y:0}];
+        chartData.forEach((i, idx) => {
+            tot += i.amount;
+            points.push({x: idx+1, y: tot});
+        });
+
         document.getElementById('totalProfit').innerText = (tot>=0?'+':'')+tot; 
         document.getElementById('totalProfit').style.color = tot>=0?'var(--accent)':'var(--danger)'; 
         
-        // Ensure drawing happens after DOM update
-        setTimeout(() => drawChart(data), 50);
+        setTimeout(() => drawChart(points), 50);
     }
     
     function drawChart(d) { 
@@ -600,10 +607,7 @@
         } 
         
         let max=Math.max(...d.map(p=>p.y)), min=Math.min(...d.map(p=>p.y)); 
-        let range=max-min; 
-        if(range === 0) range = 100; // Prevent div by zero
-        
-        // Add padding
+        let range=max-min; if(range === 0) range = 100;
         max+=range*0.1; min-=range*0.1; 
         
         let mapX=i=>20+(i/(d.length-1))*(w-40), mapY=v=>h-(20+((v-min)/(max-min))*(h-40)); 
@@ -621,7 +625,7 @@
         ctx.fillStyle = ctx.strokeStyle;
         for(let i=0;i<d.length;i++) {
             ctx.beginPath();
-            ctx.arc(mapX(i), mapY(d[i].y), 3, 0, Math.PI*2);
+            ctx.arc(mapX(i), mapY(d[i].y), 4, 0, Math.PI*2);
             ctx.fill();
         }
     }
