@@ -40,8 +40,8 @@
         .row-group { display: flex; gap: 10px; margin-bottom: 12px; }
         .input-group { margin-bottom: 12px; }
         label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 6px; display: block; }
-        select, input { width: 100%; background: rgba(125,125,125,0.1); border: 1px solid var(--border); color: var(--text-main); padding: 12px; border-radius: 8px; font-size: 1rem; outline: none; }
-        select:focus, input:focus { border-color: var(--accent); }
+        select, input, textarea { width: 100%; background: rgba(125,125,125,0.1); border: 1px solid var(--border); color: var(--text-main); padding: 12px; border-radius: 8px; font-size: 1rem; outline: none; font-family: inherit; }
+        select:focus, input:focus, textarea:focus { border-color: var(--accent); }
         select option { background-color: var(--bg-body); color: var(--text-main); }
 
         .btn-action { width: 100%; padding: 14px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 10px; }
@@ -84,11 +84,6 @@
         .history-val { font-weight: bold; font-family: monospace; font-size: 1.1rem; }
         .pos-val { color: var(--accent); } .neg-val { color: var(--danger); }
 
-        /* Total Profit Display (NEW) */
-        .total-profit-box { text-align: center; padding: 10px; border-top: 1px solid var(--border); margin-top: 10px; }
-        .tp-label { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 5px; display: block; }
-        .tp-value { font-size: 2.2rem; font-weight: 800; letter-spacing: 1px; }
-
         .trainer-stats { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 0.9rem; color: var(--text-muted); }
         .trainer-feedback { text-align: center; margin-top: 15px; padding: 10px; border-radius: 8px; font-weight: bold; display: none; }
         .fb-correct { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; }
@@ -110,6 +105,21 @@
         /* Lang Select */
         .lang-option { width: 100%; padding: 15px; margin-bottom: 8px; background: rgba(125,125,125,0.1); border: 1px solid var(--border); color: var(--text-main); border-radius: 8px; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .lang-option.active { border-color: var(--accent); background: rgba(16, 185, 129, 0.1); }
+
+        /* Analytics Styles */
+        .filter-tabs { display: flex; background: rgba(125,125,125,0.1); border-radius: 8px; padding: 4px; margin-bottom: 15px; }
+        .filter-tab { flex: 1; text-align: center; padding: 8px; font-size: 0.9rem; border-radius: 6px; cursor: pointer; color: var(--text-muted); transition: 0.2s; }
+        .filter-tab.active { background: var(--accent); color: #fff; font-weight: bold; }
+        
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .stat-card { background: rgba(125,125,125,0.05); border: 1px solid var(--border); border-radius: 8px; padding: 10px; text-align: center; }
+        .stat-label { font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px; }
+        .stat-val { font-size: 1.1rem; font-weight: bold; color: var(--text-main); }
+        .stat-val.profit { font-size: 1.2rem; }
+
+        .total-profit-box { text-align: center; padding: 15px; margin-top: 5px; border-top: 1px solid var(--border); }
+        .tp-label { font-size: 0.9rem; color: var(--text-muted); display: block; margin-bottom: 5px; }
+        .tp-value { font-size: 2.5rem; font-weight: 800; letter-spacing: 1px; }
     </style>
 </head>
 <body>
@@ -119,7 +129,7 @@
         <img src="icon.png" alt="App Logo" class="header-logo" onerror="this.style.display='none'">
         <h1>Poker God <span style="font-size:0.5em; opacity:0.8; background:none; -webkit-text-fill-color: var(--text-main);">PRO</span></h1>
     </div>
-    <div class="version-tag">v5.4.2</div>
+    <div class="version-tag">v5.4.3</div>
 </header>
 
 <div class="container">
@@ -222,8 +232,33 @@
     </div>
 
     <div id="tab-bankroll" class="tab-content">
+        <div class="filter-tabs">
+            <div class="filter-tab active" onclick="setFilter('ALL', this)" data-i18n="all">全部</div>
+            <div class="filter-tab" onclick="setFilter('MTT', this)">MTT</div>
+            <div class="filter-tab" onclick="setFilter('Cash', this)">Cash</div>
+        </div>
+
         <div class="card-panel">
             <label data-i18n="bankroll_trend">資金趨勢</label>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-label" data-i18n="invested">總投入</span>
+                    <div class="stat-val" id="statInvested">0</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label" data-i18n="revenue">總回報</span>
+                    <div class="stat-val" id="statRevenue">0</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">ROI</span>
+                    <div class="stat-val" id="statROI">0%</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label" data-i18n="win_rate">勝率</span>
+                    <div class="stat-val" id="statWinRate">0%</div>
+                </div>
+            </div>
+
             <canvas id="bankrollCanvas"></canvas>
             
             <div class="total-profit-box">
@@ -236,6 +271,7 @@
             <label data-i18n="add_record">新增紀錄</label>
             <div class="row-group"><input type="date" id="brDate" style="flex:2"><select id="brType" style="flex:1"><option>MTT</option><option>Cash</option></select></div>
             <div class="input-group" style="margin-top:10px;"><input type="text" id="brName" list="brNameList" placeholder="Name"><datalist id="brNameList"></datalist></div>
+            <div class="input-group" style="margin-top:10px;"><input type="text" id="brNote" placeholder="Note (Optional)"></div>
             <div class="row-group" style="margin-top:10px;">
                 <div style="flex:1"><label data-i18n="buyin">買入</label><input type="number" id="brBuyIn" placeholder="0" oninput="calcPreview()"></div>
                 <div style="flex:1"><label data-i18n="prize">獎金</label><input type="number" id="brPrize" placeholder="0" oninput="calcPreview()"></div>
@@ -311,7 +347,8 @@
             strat_rfi: '策略: RFI (首率先入)', strat_push: '策略: Push/Fold (推/棄)', strat_bb: '策略: BB 防守', strat_cash: '策略: 現金桌',
             ai_situation: '局勢: 面對', ai_strength: '牌力', blocker_effect: '🛡️ 阻擋牌效應:', ai_advice: '建議',
             advice_val: '價值', advice_ctrl: '控池', advice_giveup: '放棄', advice_strong: '強牌', advice_bluff: '抓詐唬', advice_draw: '聽牌', advice_nuts: '堅果牌', advice_snap: '秒接', advice_math: '計算賠率',
-            mode_mtt: '錦標賽 (MTT)', mode_cash: '現金桌 (Cash)', theme_toggle: '切換主題'
+            mode_mtt: '錦標賽 (MTT)', mode_cash: '現金桌 (Cash)', theme_toggle: '切換主題',
+            invested: '總投入', revenue: '總回報', win_rate: '勝率', all: '全部'
         },
         'zh-CN': {
             nav_ranges: '范围表', nav_trainer: '测验', nav_odds: '赔率', nav_postflop: '翻后', nav_bankroll: '资金',
@@ -324,7 +361,8 @@
             strat_rfi: '策略: RFI (首率先入)', strat_push: '策略: Push/Fold (推/弃)', strat_bb: '策略: BB 防守', strat_cash: '策略: 现金桌',
             ai_situation: '局势: 面对', ai_strength: '牌力', blocker_effect: '🛡️ 阻挡牌效应:', ai_advice: '建议',
             advice_val: '价值', advice_ctrl: '控池', advice_giveup: '放弃', advice_strong: '强牌', advice_bluff: '抓诈唬', advice_draw: '听牌', advice_nuts: '坚果牌', advice_snap: '秒接', advice_math: '计算赔率',
-            mode_mtt: '锦标赛 (MTT)', mode_cash: '现金桌 (Cash)', theme_toggle: '切换主题'
+            mode_mtt: '锦标赛 (MTT)', mode_cash: '现金桌 (Cash)', theme_toggle: '切换主题',
+            invested: '总投入', revenue: '总回报', win_rate: '胜率', all: '全部'
         },
         'en': {
             nav_ranges: 'Ranges', nav_trainer: 'Trainer', nav_odds: 'Odds', nav_postflop: 'Postflop', nav_bankroll: 'Bankroll',
@@ -337,7 +375,8 @@
             strat_rfi: 'Strategy: RFI', strat_push: 'Strategy: Push/Fold', strat_bb: 'Strategy: BB Defense', strat_cash: 'Strategy: Cash Game',
             ai_situation: 'Situation: Vs', ai_strength: 'Hand', blocker_effect: '🛡️ Blockers:', ai_advice: 'Advice',
             advice_val: 'Value', advice_ctrl: 'Pot Control', advice_giveup: 'Give Up', advice_strong: 'Strong', advice_bluff: 'Bluff Catch', advice_draw: 'Draw', advice_nuts: 'Nuts', advice_snap: 'Snap Call', advice_math: 'Check Odds',
-            mode_mtt: 'Tournament (MTT)', mode_cash: 'Cash Game', theme_toggle: 'Toggle Theme'
+            mode_mtt: 'Tournament (MTT)', mode_cash: 'Cash Game', theme_toggle: 'Toggle Theme',
+            invested: 'Invested', revenue: 'Returned', win_rate: 'Win Rate', all: 'All'
         },
         'ja': {
             nav_ranges: 'レンジ', nav_trainer: '練習', nav_odds: 'オッズ', nav_postflop: 'フロップ後', nav_bankroll: '資金管理',
@@ -350,7 +389,8 @@
             strat_rfi: '戦略: RFI (オープン)', strat_push: '戦略: プッシュ/フォールド', strat_bb: '戦略: BBディフェンス', strat_cash: '戦略: キャッシュゲーム',
             ai_situation: '状況: Vs', ai_strength: 'ハンド', blocker_effect: '🛡️ ブロッカー:', ai_advice: '助言',
             advice_val: 'バリュー', advice_ctrl: 'ポット管理', advice_giveup: '諦める', advice_strong: '強い', advice_bluff: 'ブラフキャッチ', advice_draw: 'ドロー', advice_nuts: 'ナッツ', advice_snap: 'スナップ', advice_math: 'オッズ確認',
-            mode_mtt: 'トーナメント (MTT)', mode_cash: 'キャッシュ (Cash)', theme_toggle: 'テーマ切替'
+            mode_mtt: 'トーナメント (MTT)', mode_cash: 'キャッシュ (Cash)', theme_toggle: 'テーマ切替',
+            invested: '投資額', revenue: '回収額', win_rate: '勝率', all: 'すべて'
         },
         'ko': {
             nav_ranges: '레인지', nav_trainer: '트레이너', nav_odds: '오즈', nav_postflop: '포스트플랍', nav_bankroll: '뱅크롤',
@@ -363,11 +403,13 @@
             strat_rfi: '전략: RFI (오픈)', strat_push: '전략: 푸쉬/폴드', strat_bb: '전략: BB 방어', strat_cash: '전략: 캐시 게임',
             ai_situation: '상황: Vs', ai_strength: '핸드', blocker_effect: '🛡️ 블로커:', ai_advice: '조언',
             advice_val: '밸류', advice_ctrl: '팟 컨트롤', advice_giveup: '포기', advice_strong: '강함', advice_bluff: '블러프 캐치', advice_draw: '드로우', advice_nuts: '너츠', advice_snap: '스냅 콜', advice_math: '오즈 확인',
-            mode_mtt: '토너먼트 (MTT)', mode_cash: '캐시 게임 (Cash)', theme_toggle: '테마 전환'
+            mode_mtt: '토너먼트 (MTT)', mode_cash: '캐시 게임 (Cash)', theme_toggle: '테마 전환',
+            invested: '총 투자', revenue: '총 회수', win_rate: '승률', all: '전체'
         }
     };
 
     let curLang = localStorage.getItem('pg_lang') || 'zh-TW';
+    let currentFilter = 'ALL';
 
     const state = { h1: null, h2: null, b1:null, b2:null, b3:null, b4:null, b5:null, oppAction: null };
     let curSel = null;
@@ -381,7 +423,6 @@
         genGrid(); genSelUI(); updateRanges();
         document.getElementById('brDate').valueAsDate = new Date();
         updateNameList(); renderBankrollUI();
-        nextDrill(); 
         if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
     };
 
@@ -572,11 +613,16 @@
     function addBankroll() { 
         let d=document.getElementById('brDate').value, t=document.getElementById('brType').value; 
         let n=document.getElementById('brName').value.trim(); 
-        let b=parseFloat(document.getElementById('brBuyIn').value), p=parseFloat(document.getElementById('brPrize').value); 
-        if(!d||isNaN(b)||isNaN(p)) { alert("請填寫完整資訊"); return; } 
-        bankrollData.push({ id:Date.now(), date:d, type:t, name:n, buyIn:b, prize:p, amount:p-b }); 
+        let b=parseFloat(document.getElementById('brBuyIn').value)||0, p=parseFloat(document.getElementById('brPrize').value)||0;
+        let note = document.getElementById('brNote').value;
+        
+        if(!d) { alert("Date is required"); return; } 
+        
+        bankrollData.push({ id:Date.now(), date:d, type:t, name:n, buyIn:b, prize:p, amount:p-b, note:note }); 
         localStorage.setItem('pokerGodBankroll', JSON.stringify(bankrollData)); 
-        document.getElementById('brName').value=''; document.getElementById('brBuyIn').value=''; document.getElementById('brPrize').value=''; 
+        
+        document.getElementById('brName').value=''; document.getElementById('brBuyIn').value=''; 
+        document.getElementById('brPrize').value=''; document.getElementById('brNote').value='';
         updateNameList(); renderBankrollUI(); 
     }
     
@@ -586,74 +632,121 @@
         localStorage.setItem('pokerGodBankroll',JSON.stringify(bankrollData)); 
         updateNameList(); renderBankrollUI(); 
     }
+
+    function setFilter(filter, el) {
+        currentFilter = filter;
+        document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+        el.classList.add('active');
+        renderBankrollUI();
+    }
     
     function renderBankrollUI() { 
-        // 1. Sort Logic (Same Day Fix: Date then ID)
-        let chartData = [...bankrollData].sort((a,b) => {
+        // 1. Filter Data
+        let filteredData = bankrollData.filter(i => currentFilter === 'ALL' || i.type === currentFilter);
+
+        // 2. Sort Logic (Date + Time)
+        let chartData = [...filteredData].sort((a,b) => {
             const dateA = new Date(a.date);
             const dateB = new Date(b.date);
-            return dateA - dateB || a.id - b.id; // Secondary sort by creation ID
+            return dateA - dateB || a.id - b.id; 
         });
 
-        // 2. Calc Points
-        let tot=0, points=[{x:0, y:0}];
+        // 3. Calc Stats & Points
+        let cumProfit=0, cumInvest=0, totalRevenue=0, winCount=0;
+        let pointsProfit=[{x:0, y:0}], pointsInvest=[{x:0, y:0}];
+        
         chartData.forEach((i, idx) => {
-            tot += i.amount;
-            points.push({x: idx+1, y: tot});
+            cumProfit += i.amount;
+            cumInvest += i.buyIn || 0;
+            totalRevenue += i.prize || 0;
+            if(i.amount > 0) winCount++;
+            
+            pointsProfit.push({x: idx+1, y: cumProfit});
+            pointsInvest.push({x: idx+1, y: cumInvest});
         });
 
-        // 3. Update Big Total Display
-        const el = document.getElementById('bigTotalProfit');
-        el.innerText = (tot>=0?'+':'')+tot; 
-        el.style.color = tot>=0?'var(--accent)':'var(--danger)';
+        // 4. Update Stats UI
+        document.getElementById('statInvested').innerText = cumInvest;
+        document.getElementById('statRevenue').innerText = totalRevenue;
+        document.getElementById('statROI').innerText = cumInvest > 0 ? ((cumProfit / cumInvest) * 100).toFixed(1) + '%' : '0%';
+        document.getElementById('statWinRate').innerText = chartData.length > 0 ? ((winCount / chartData.length) * 100).toFixed(1) + '%' : '0%';
+        
+        document.getElementById('bigTotalProfit').innerText = (cumProfit>=0?'+':'')+cumProfit; 
+        document.getElementById('bigTotalProfit').style.color = cumProfit>=0?'var(--accent)':'var(--danger)';
 
-        // 4. Update List (Newest First)
+        // 5. Update List (Newest First)
         let l=document.getElementById('historyList'); l.innerHTML=''; 
         [...chartData].reverse().forEach((i)=>{ 
             let d=document.createElement('div'); d.className='history-item'; 
-            d.innerHTML=`<div style="flex:1"><div style="font-size:0.9rem;font-weight:bold;color:var(--text-main);">${i.name||'--'}</div><div style="font-size:0.75rem;color:var(--text-muted);">${i.date}•${i.type}</div></div><span class="${i.amount>=0?'pos-val':'neg-val'}">${i.amount>=0?'+':''}${i.amount}</span><button class="btn-delete" onclick="deleteRecord(${i.id})" style="margin-left:10px;">✕</button>`; l.appendChild(d); 
+            let noteHtml = i.note ? `<div style="font-size:0.75rem; color:#aaa; margin-top:2px;">📝 ${i.note}</div>` : '';
+            d.innerHTML=`
+                <div style="flex:1">
+                    <div style="font-size:0.9rem;font-weight:bold;color:var(--text-main);">${i.name||'--'} <span style="font-size:0.7rem;opacity:0.7">(${i.type})</span></div>
+                    <div style="font-size:0.75rem;color:var(--text-muted);">${i.date}</div>
+                    ${noteHtml}
+                </div>
+                <div style="text-align:right">
+                    <span class="${i.amount>=0?'pos-val':'neg-val'}">${i.amount>=0?'+':''}${i.amount}</span>
+                    <button class="btn-delete" onclick="deleteRecord(${i.id})" style="margin-left:5px;">✕</button>
+                </div>`; 
+            l.appendChild(d); 
         }); 
 
-        setTimeout(() => drawChart(points), 50);
+        setTimeout(() => drawChart(pointsProfit, pointsInvest), 50);
     }
     
-    function drawChart(d) { 
+    function drawChart(dataProfit, dataInvest) { 
         let cvs=document.getElementById('bankrollCanvas');
         if(!cvs) return;
         let ctx=cvs.getContext('2d'); 
+        
         cvs.width = cvs.parentElement.clientWidth || 300; 
         cvs.height = 220; 
+        
         let w=cvs.width, h=cvs.height; 
         ctx.clearRect(0,0,w,h); 
         
-        if(d.length < 2) { 
+        if(dataProfit.length < 2) { 
             ctx.fillStyle="#94a3b8"; ctx.font="14px Arial"; ctx.textAlign="center"; 
             ctx.fillText("No Data",w/2,h/2); return; 
         } 
         
-        let max=Math.max(...d.map(p=>p.y)), min=Math.min(...d.map(p=>p.y)); 
+        // Find Scale (Include both Profit and Investment lines)
+        let allY = [...dataProfit.map(p=>p.y), ...dataInvest.map(p=>p.y)];
+        let max=Math.max(...allY), min=Math.min(...allY); 
         let range=max-min; if(range === 0) range = 100;
         
-        // Add Padding (Top/Bottom)
-        let padding = range * 0.1;
-        max += padding; min -= padding;
+        // Add Padding
+        max += range * 0.1; min -= range * 0.1;
         
-        let mapX=i=>20+(i/(d.length-1))*(w-40);
+        let mapX=i=>20+(i/(dataProfit.length-1))*(w-40);
         let mapY=v=>h-(20+((v-min)/(max-min))*(h-40)); 
         
-        ctx.beginPath(); 
-        ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#10b981'; 
-        ctx.lineWidth=3; 
-        ctx.moveTo(mapX(0), mapY(d[0].y)); 
-        for(let i=1;i<d.length;i++) ctx.lineTo(mapX(i), mapY(d[i].y)); 
-        ctx.stroke(); 
-        
-        ctx.fillStyle = ctx.strokeStyle;
-        for(let i=0;i<d.length;i++) {
-            ctx.beginPath();
-            ctx.arc(mapX(i), mapY(d[i].y), 4, 0, Math.PI*2);
-            ctx.fill();
+        // Helper to draw line
+        function drawLine(data, color, isDash=false) {
+            ctx.beginPath(); 
+            ctx.strokeStyle = color; 
+            ctx.lineWidth = isDash ? 2 : 3; 
+            if(isDash) ctx.setLineDash([5, 5]); else ctx.setLineDash([]);
+            
+            ctx.moveTo(mapX(0), mapY(data[0].y)); 
+            for(let i=1;i<data.length;i++) ctx.lineTo(mapX(i), mapY(data[i].y)); 
+            ctx.stroke();
+            
+            // Dots
+            ctx.fillStyle = color;
+            for(let i=0;i<data.length;i++) {
+                ctx.beginPath(); ctx.arc(mapX(i), mapY(data[i].y), isDash?2:4, 0, Math.PI*2); ctx.fill();
+            }
         }
+
+        // Draw Investment Line (Gray/Blue)
+        drawLine(dataInvest, '#64748b', true); // Dashed gray
+
+        // Draw Profit Line (Green/Red)
+        let profitColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+        // If total profit is negative, maybe make line red? (Optional, kept green for consistency)
+        drawLine(dataProfit, profitColor, false);
     }
     
     // --- TRAINER ---
