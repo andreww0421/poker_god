@@ -90,7 +90,7 @@
         .fb-wrong { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444; }
         .trainer-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 20px; }
 
-        /* FAB - Fixed Alignment */
+        /* FAB */
         .fab-wrapper { position: fixed; bottom: 85px; right: 20px; z-index: 150; display: flex; flex-direction: column-reverse; align-items: flex-end; gap: 10px; }
         .fab-btn { width: 50px; height: 50px; border-radius: 50%; background: var(--accent); color: #fff; border: none; font-size: 1.5rem; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; }
         .fab-menu { display: none; flex-direction: column; gap: 8px; margin-bottom: 5px; }
@@ -98,7 +98,7 @@
         .fab-item { 
             background: var(--bg-panel); color: var(--text-main); border: 1px solid var(--border); padding: 10px 16px; border-radius: 8px; cursor: pointer; 
             box-shadow: 0 2px 8px rgba(0,0,0,0.2); font-size: 0.9rem; white-space: nowrap; font-weight: 500;
-            display: flex; align-items: center; justify-content: center; gap: 8px; /* Centered with icon */
+            display: flex; align-items: center; justify-content: center; gap: 8px; 
         }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -114,7 +114,7 @@
         <img src="icon.png" alt="App Logo" class="header-logo" onerror="this.style.display='none'">
         <h1>Poker God <span style="font-size:0.5em; opacity:0.8; background:none; -webkit-text-fill-color: var(--text-main);">PRO</span></h1>
     </div>
-    <div class="version-tag">v5.2</div>
+    <div class="version-tag">v5.3</div>
 </header>
 
 <div class="container">
@@ -369,10 +369,11 @@
 
     window.onload = () => {
         initTheme();
-        updateText(); // I18N Init
+        updateText();
         genGrid(); genSelUI(); updateRanges();
         document.getElementById('brDate').valueAsDate = new Date();
         updateNameList(); renderBankrollUI();
+        nextDrill(); 
         if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
     };
 
@@ -382,8 +383,9 @@
         document.querySelectorAll('.nav-item').forEach(d=>d.classList.remove('active'));
         el.classList.add('active');
         
-        // Fix: Force Trainer reload when switching to tab
+        // Fix: Force logic reload when switching to tabs
         if(id === 'trainer') nextDrill();
+        if(id === 'bankroll') renderBankrollUI(); // Fix chart rendering
     }
 
     // --- I18N FUNCTIONS ---
@@ -561,8 +563,68 @@
     function calcPreview() { let b=parseFloat(document.getElementById('brBuyIn').value)||0; let p=parseFloat(document.getElementById('brPrize').value)||0; let d=p-b; document.getElementById('brProfitPreview').innerText=(d>=0?'+':'')+d; document.getElementById('brProfitPreview').style.color=d>=0?'var(--accent)':'var(--danger)'; }
     function addBankroll() { let d=document.getElementById('brDate').value, t=document.getElementById('brType').value; let n=document.getElementById('brName').value.trim(); let b=parseFloat(document.getElementById('brBuyIn').value), p=parseFloat(document.getElementById('brPrize').value); if(!d||isNaN(b)||isNaN(p)) { alert("請填寫完整資訊"); return; } bankrollData.push({ id:Date.now(), date:d, type:t, name:n, buyIn:b, prize:p, amount:p-b }); localStorage.setItem('pokerGodBankroll', JSON.stringify(bankrollData)); document.getElementById('brName').value=''; document.getElementById('brBuyIn').value=''; document.getElementById('brPrize').value=''; updateNameList(); renderBankrollUI(); }
     function deleteRecord(id) { if(!confirm("Delete?"))return; bankrollData=bankrollData.filter(i=>i.id!==id); localStorage.setItem('pokerGodBankroll',JSON.stringify(bankrollData)); updateNameList(); renderBankrollUI(); }
-    function renderBankrollUI() { let l=document.getElementById('historyList'); l.innerHTML=''; let tot=0, data=[{x:0,y:0}]; bankrollData.forEach((i,idx)=>{ tot += i.amount; data.push({x:idx+1, y:tot}); let d=document.createElement('div'); d.className='history-item'; d.innerHTML=`<div style="flex:1"><div style="font-size:0.9rem;font-weight:bold;color:var(--text-main);">${i.name||'--'}</div><div style="font-size:0.75rem;color:var(--text-muted);">${i.date}•${i.type}</div></div><span class="${i.amount>=0?'pos-val':'neg-val'}">${i.amount>=0?'+':''}${i.amount}</span><button class="btn-delete" onclick="deleteRecord(${i.id})" style="margin-left:10px;">✕</button>`; l.prepend(d); }); document.getElementById('totalProfit').innerText = (tot>=0?'+':'')+tot; document.getElementById('totalProfit').style.color = tot>=0?'var(--accent)':'var(--danger)'; drawChart(data); }
-    function drawChart(d) { let cvs=document.getElementById('bankrollCanvas'), ctx=cvs.getContext('2d'); cvs.width=cvs.parentElement.clientWidth; cvs.height=220; let w=cvs.width, h=cvs.height; ctx.clearRect(0,0,w,h); if(d.length<2) { ctx.fillStyle="#94a3b8"; ctx.font="14px Arial"; ctx.textAlign="center"; ctx.fillText("No Data",w/2,h/2); return; } let max=Math.max(...d.map(p=>p.y)), min=Math.min(...d.map(p=>p.y)); let range=max-min||100; max+=range*0.1; min-=range*0.1; let mapX=i=>20+(i/(d.length-1))*(w-40), mapY=v=>h-(20+((v-min)/(max-min))*(h-40)); ctx.beginPath(); ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(); ctx.lineWidth=3; ctx.moveTo(mapX(0), mapY(d[0].y)); for(let i=1;i<d.length;i++) ctx.lineTo(mapX(i), mapY(d[i].y)); ctx.stroke(); }
+    function renderBankrollUI() { 
+        let l=document.getElementById('historyList'); l.innerHTML=''; 
+        let tot=0, data=[{x:0,y:0}]; 
+        
+        bankrollData.forEach((i,idx)=>{ 
+            tot += i.amount; 
+            data.push({x:idx+1, y:tot}); 
+            let d=document.createElement('div'); d.className='history-item'; 
+            d.innerHTML=`<div style="flex:1"><div style="font-size:0.9rem;font-weight:bold;color:var(--text-main);">${i.name||'--'}</div><div style="font-size:0.75rem;color:var(--text-muted);">${i.date}•${i.type}</div></div><span class="${i.amount>=0?'pos-val':'neg-val'}">${i.amount>=0?'+':''}${i.amount}</span><button class="btn-delete" onclick="deleteRecord(${i.id})" style="margin-left:10px;">✕</button>`; l.prepend(d); 
+        }); 
+        
+        document.getElementById('totalProfit').innerText = (tot>=0?'+':'')+tot; 
+        document.getElementById('totalProfit').style.color = tot>=0?'var(--accent)':'var(--danger)'; 
+        
+        // Ensure drawing happens after DOM update
+        setTimeout(() => drawChart(data), 50);
+    }
+    
+    function drawChart(d) { 
+        let cvs=document.getElementById('bankrollCanvas');
+        if(!cvs) return;
+        let ctx=cvs.getContext('2d'); 
+        
+        // Critical Fix: Force resize to container width
+        cvs.width = cvs.parentElement.clientWidth || 300; 
+        cvs.height = 220; 
+        
+        let w=cvs.width, h=cvs.height; 
+        ctx.clearRect(0,0,w,h); 
+        
+        // If no records (only initial 0,0), show text
+        if(d.length < 2) { 
+            ctx.fillStyle="#94a3b8"; ctx.font="14px Arial"; ctx.textAlign="center"; 
+            ctx.fillText("No Data",w/2,h/2); return; 
+        } 
+        
+        let max=Math.max(...d.map(p=>p.y)), min=Math.min(...d.map(p=>p.y)); 
+        let range=max-min; 
+        if(range === 0) range = 100; // Prevent div by zero
+        
+        // Add padding
+        max+=range*0.1; min-=range*0.1; 
+        
+        let mapX=i=>20+(i/(d.length-1))*(w-40), mapY=v=>h-(20+((v-min)/(max-min))*(h-40)); 
+        
+        ctx.beginPath(); 
+        // Force color fallback
+        ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#10b981'; 
+        ctx.lineWidth=3; 
+        
+        ctx.moveTo(mapX(0), mapY(d[0].y)); 
+        for(let i=1;i<d.length;i++) ctx.lineTo(mapX(i), mapY(d[i].y)); 
+        ctx.stroke(); 
+        
+        // Draw Dots
+        ctx.fillStyle = ctx.strokeStyle;
+        for(let i=0;i<d.length;i++) {
+            ctx.beginPath();
+            ctx.arc(mapX(i), mapY(d[i].y), 3, 0, Math.PI*2);
+            ctx.fill();
+        }
+    }
     
     // --- TRAINER ---
     function nextDrill() { const positions = ['EP','MP','CO','BTN','SB','BB']; const pos = positions[Math.floor(Math.random()*positions.length)]; const stack = Math.random() < 0.3 ? 12 : (Math.random() < 0.6 ? 40 : 100); const r1Idx = Math.floor(Math.random()*13); const r2Idx = Math.floor(Math.random()*13); const s1 = {id:'s', symbol:'♠', class:'suit-s'}; const s2 = (r1Idx===r2Idx || Math.random()<0.23) ? s1 : {id:'h', symbol:'♥', class:'suit-h'}; const r1 = ranks[Math.min(r1Idx, r2Idx)]; const r2 = ranks[Math.max(r1Idx, r2Idx)]; const type = (r1===r2) ? 'pair' : (s1.id===s2.id ? 'suited' : 'offsuit'); trState.current = { r1:14-Math.min(r1Idx,r2Idx), r2:14-Math.max(r1Idx,r2Idx), type, pos, stack }; document.getElementById('trScenario').innerText = `${pos} | ${stack}BB`; renderTrainerCard('trCard1', r1, s1); renderTrainerCard('trCard2', r2, (r1===r2 && s1.id===s2.id) ? {id:'d',symbol:'♦',class:'suit-d'} : s2); document.getElementById('trFeedback').style.display = 'none'; document.getElementById('trNextBtn').style.display = 'none'; }
