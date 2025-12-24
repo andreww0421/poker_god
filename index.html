@@ -79,7 +79,7 @@
         .modal-content { background: var(--bg-panel); padding: 20px; border-radius: 16px; width: 90%; max-width: 350px; border: 1px solid var(--border); max-height: 80vh; overflow-y: auto; }
         .suit-row { display: flex; gap: 5px; margin-bottom: 8px; }
         .rank-btn { flex: 1; padding: 10px 0; background: rgba(125,125,125,0.2); border: 1px solid var(--border); color: var(--text-main); border-radius: 4px; font-weight: bold; }
-        canvas#bankrollCanvas { width: 100%; height: 220px; background: rgba(125,125,125,0.1); border-radius: 8px; margin-bottom: 10px; }
+        canvas#bankrollCanvas { width: 100%; height: 240px; background: rgba(125,125,125,0.1); border-radius: 8px; margin-bottom: 10px; }
         .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
         .history-val { font-weight: bold; font-family: monospace; font-size: 1.1rem; }
         .pos-val { color: var(--accent); } .neg-val { color: var(--danger); }
@@ -131,7 +131,7 @@
         <img src="icon.png" alt="App Logo" class="header-logo" onerror="this.style.display='none'">
         <h1>Poker God <span style="font-size:0.5em; opacity:0.8; background:none; -webkit-text-fill-color: var(--text-main);">PRO</span></h1>
     </div>
-    <div class="version-tag">v5.4.4</div>
+    <div class="version-tag">v5.4.5</div>
 </header>
 
 <div class="container">
@@ -688,7 +688,7 @@
 
         // 3. Calc Stats & Points
         let cumProfit=0, cumInvest=0, totalRevenue=0, winCount=0;
-        let pointsProfit=[{x:0, y:0}];
+        let pointsProfit=[{x:0, y:0, label:'Start'}]; // Start point
         
         chartData.forEach((i, idx) => {
             cumProfit += i.amount;
@@ -696,7 +696,9 @@
             totalRevenue += i.prize || 0;
             if(i.amount > 0) winCount++;
             
-            pointsProfit.push({x: idx+1, y: cumProfit});
+            // Format date for chart (e.g. 12/24)
+            let dateStr = i.date.substring(5).replace('-','/');
+            pointsProfit.push({x: idx+1, y: cumProfit, label: dateStr});
         });
 
         // 4. Update Stats UI
@@ -737,9 +739,14 @@
         let ctx=cvs.getContext('2d'); 
         
         cvs.width = cvs.parentElement.clientWidth || 300; 
-        cvs.height = 220; 
+        cvs.height = 240; 
         
         let w=cvs.width, h=cvs.height; 
+        // Margins for Axes
+        let mLeft=40, mBottom=30, mTop=20, mRight=10;
+        let graphW = w - mLeft - mRight;
+        let graphH = h - mBottom - mTop;
+
         ctx.clearRect(0,0,w,h); 
         
         if(dataProfit.length < 2) { 
@@ -747,48 +754,69 @@
             ctx.fillText("No Data",w/2,h/2); return; 
         } 
         
-        // Find Scale (Ensure 0 is included)
-        let max=Math.max(0, ...dataProfit.map(p=>p.y)), min=Math.min(0, ...dataProfit.map(p=>p.y)); 
+        // Find Scale
+        let ys = dataProfit.map(p=>p.y);
+        let max=Math.max(0, ...ys), min=Math.min(0, ...ys); 
         let range=max-min; if(range === 0) range = 100;
         
         // Add Padding
         max += range * 0.1; min -= range * 0.1;
         
-        let mapX=i=>20+(i/(dataProfit.length-1))*(w-40);
-        let mapY=v=>h-(20+((v-min)/(max-min))*(h-40)); 
+        // Mapping Functions
+        let mapX = i => mLeft + (i / (dataProfit.length-1)) * graphW;
+        let mapY = v => mTop + graphH - ((v - min) / (max - min)) * graphH;
         
-        // Helper to draw line
-        function drawLine(data, color, isDash=false, width=3) {
-            ctx.beginPath(); 
-            ctx.strokeStyle = color; 
-            ctx.lineWidth = width; 
-            if(isDash) ctx.setLineDash([5, 5]); else ctx.setLineDash([]);
+        // --- Draw Y Axis & Grid ---
+        ctx.fillStyle = "#64748b"; ctx.font = "10px sans-serif"; ctx.textAlign = "right";
+        ctx.strokeStyle = "rgba(125,125,125,0.1)"; ctx.lineWidth = 1;
+        
+        let ySteps = 5;
+        for(let i=0; i<=ySteps; i++) {
+            let val = min + (range * (i/ySteps));
+            let yPos = mapY(val);
+            // Grid line
+            ctx.beginPath(); ctx.moveTo(mLeft, yPos); ctx.lineTo(w-mRight, yPos); ctx.stroke();
+            // Label
+            ctx.fillText(Math.round(val), mLeft-5, yPos+3);
+        }
+
+        // --- Draw Zero Line (Break-even) ---
+        let zeroY = mapY(0);
+        if(zeroY >= mTop && zeroY <= h-mBottom) {
+            ctx.beginPath(); ctx.strokeStyle = "#000"; ctx.lineWidth = 1; // Black/Strong line
+            if(document.body.getAttribute('data-theme') === 'dark') ctx.strokeStyle = "#fff";
+            ctx.moveTo(mLeft, zeroY); ctx.lineTo(w-mRight, zeroY); ctx.stroke();
+        }
+
+        // --- Draw Line Chart ---
+        let profitColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
+        ctx.beginPath(); ctx.strokeStyle = profitColor; ctx.lineWidth = 3; ctx.setLineDash([]);
+        
+        ctx.moveTo(mapX(0), mapY(dataProfit[0].y)); 
+        for(let i=1; i<dataProfit.length; i++) ctx.lineTo(mapX(i), mapY(dataProfit[i].y)); 
+        ctx.stroke();
+        
+        // --- Draw Dots & X Labels ---
+        ctx.textAlign = "center";
+        
+        // Determine label skip to avoid crowding
+        let step = Math.ceil(dataProfit.length / 6); 
+
+        for(let i=0; i<dataProfit.length; i++) {
+            let x = mapX(i), y = mapY(dataProfit[i].y);
             
-            ctx.moveTo(mapX(0), mapY(data[0].y)); 
-            for(let i=1;i<data.length;i++) ctx.lineTo(mapX(i), mapY(data[i].y)); 
-            ctx.stroke();
-            
-            // Dots
-            if(!isDash) {
-                 ctx.fillStyle = color;
-                for(let i=0;i<data.length;i++) {
-                    ctx.beginPath(); ctx.arc(mapX(i), mapY(data[i].y), 4, 0, Math.PI*2); ctx.fill();
+            // Dot
+            ctx.beginPath(); ctx.fillStyle = profitColor; 
+            ctx.arc(x, y, 4, 0, Math.PI*2); ctx.fill();
+
+            // Label (only if visible)
+            if(i % step === 0 || i === dataProfit.length-1) {
+                if(dataProfit[i].label) {
+                    ctx.fillStyle = "#94a3b8";
+                    ctx.fillText(dataProfit[i].label, x, h-10);
                 }
             }
         }
-
-        // Draw Zero Line (Break-even line)
-        ctx.beginPath();
-        ctx.strokeStyle = document.body.getAttribute('data-theme') === 'light' ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.2)';
-        ctx.lineWidth = 1;
-        let zeroY = mapY(0);
-        ctx.moveTo(20, zeroY);
-        ctx.lineTo(w-20, zeroY);
-        ctx.stroke();
-
-        // Draw Profit Line (Green/Red)
-        let profitColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
-        drawLine(dataProfit, profitColor, false);
     }
     
     // --- TRAINER ---
