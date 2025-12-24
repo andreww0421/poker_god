@@ -84,6 +84,11 @@
         .history-val { font-weight: bold; font-family: monospace; font-size: 1.1rem; }
         .pos-val { color: var(--accent); } .neg-val { color: var(--danger); }
 
+        /* Total Profit Display */
+        .total-profit-box { text-align: center; padding: 10px; border-top: 1px solid var(--border); margin-top: 10px; }
+        .tp-label { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 5px; display: block; }
+        .tp-value { font-size: 2.2rem; font-weight: 800; letter-spacing: 1px; }
+
         .trainer-stats { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 0.9rem; color: var(--text-muted); }
         .trainer-feedback { text-align: center; margin-top: 15px; padding: 10px; border-radius: 8px; font-weight: bold; display: none; }
         .fb-correct { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; }
@@ -116,10 +121,7 @@
         .stat-label { font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px; }
         .stat-val { font-size: 1.1rem; font-weight: bold; color: var(--text-main); }
         .stat-val.profit { font-size: 1.2rem; }
-
-        .total-profit-box { text-align: center; padding: 15px; margin-top: 5px; border-top: 1px solid var(--border); }
-        .tp-label { font-size: 0.9rem; color: var(--text-muted); display: block; margin-bottom: 5px; }
-        .tp-value { font-size: 2.5rem; font-weight: 800; letter-spacing: 1px; }
+        .span-2 { grid-column: span 2; }
     </style>
 </head>
 <body>
@@ -129,7 +131,7 @@
         <img src="icon.png" alt="App Logo" class="header-logo" onerror="this.style.display='none'">
         <h1>Poker God <span style="font-size:0.5em; opacity:0.8; background:none; -webkit-text-fill-color: var(--text-main);">PRO</span></h1>
     </div>
-    <div class="version-tag">v5.4.3</div>
+    <div class="version-tag">v5.4.4</div>
 </header>
 
 <div class="container">
@@ -242,6 +244,14 @@
             <label data-i18n="bankroll_trend">資金趨勢</label>
             <div class="stats-grid">
                 <div class="stat-card">
+                    <span class="stat-label" data-i18n="total_sessions">總場次</span>
+                    <div class="stat-val" id="statSessions">0</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label" data-i18n="win_rate">勝率</span>
+                    <div class="stat-val" id="statWinRate">0%</div>
+                </div>
+                <div class="stat-card">
                     <span class="stat-label" data-i18n="invested">總投入</span>
                     <div class="stat-val" id="statInvested">0</div>
                 </div>
@@ -249,13 +259,9 @@
                     <span class="stat-label" data-i18n="revenue">總回報</span>
                     <div class="stat-val" id="statRevenue">0</div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card span-2">
                     <span class="stat-label">ROI</span>
                     <div class="stat-val" id="statROI">0%</div>
-                </div>
-                <div class="stat-card">
-                    <span class="stat-label" data-i18n="win_rate">勝率</span>
-                    <div class="stat-val" id="statWinRate">0%</div>
                 </div>
             </div>
 
@@ -269,9 +275,20 @@
         
         <div class="card-panel">
             <label data-i18n="add_record">新增紀錄</label>
-            <div class="row-group"><input type="date" id="brDate" style="flex:2"><select id="brType" style="flex:1"><option>MTT</option><option>Cash</option></select></div>
-            <div class="input-group" style="margin-top:10px;"><input type="text" id="brName" list="brNameList" placeholder="Name"><datalist id="brNameList"></datalist></div>
-            <div class="input-group" style="margin-top:10px;"><input type="text" id="brNote" placeholder="Note (Optional)"></div>
+            <div class="row-group">
+                <input type="date" id="brDate" style="flex:2">
+                <select id="brType" style="flex:1">
+                    <option value="MTT" data-i18n="mode_mtt">MTT</option>
+                    <option value="Cash" data-i18n="mode_cash">Cash</option>
+                </select>
+            </div>
+            <div class="input-group" style="margin-top:10px;">
+                <input type="text" id="brName" list="brNameList" placeholder="Name" data-placeholder-i18n="placeholder_name">
+                <datalist id="brNameList"></datalist>
+            </div>
+            <div class="input-group" style="margin-top:10px;">
+                <input type="text" id="brNote" placeholder="Note (Optional)" data-placeholder-i18n="placeholder_note">
+            </div>
             <div class="row-group" style="margin-top:10px;">
                 <div style="flex:1"><label data-i18n="buyin">買入</label><input type="number" id="brBuyIn" placeholder="0" oninput="calcPreview()"></div>
                 <div style="flex:1"><label data-i18n="prize">獎金</label><input type="number" id="brPrize" placeholder="0" oninput="calcPreview()"></div>
@@ -348,7 +365,8 @@
             ai_situation: '局勢: 面對', ai_strength: '牌力', blocker_effect: '🛡️ 阻擋牌效應:', ai_advice: '建議',
             advice_val: '價值', advice_ctrl: '控池', advice_giveup: '放棄', advice_strong: '強牌', advice_bluff: '抓詐唬', advice_draw: '聽牌', advice_nuts: '堅果牌', advice_snap: '秒接', advice_math: '計算賠率',
             mode_mtt: '錦標賽 (MTT)', mode_cash: '現金桌 (Cash)', theme_toggle: '切換主題',
-            invested: '總投入', revenue: '總回報', win_rate: '勝率', all: '全部'
+            invested: '總投入', revenue: '總回報', win_rate: '勝率', all: '全部', total_sessions: '總場次',
+            placeholder_name: '名稱 (如: 週末錦標賽)', placeholder_note: '備註 (選填)'
         },
         'zh-CN': {
             nav_ranges: '范围表', nav_trainer: '测验', nav_odds: '赔率', nav_postflop: '翻后', nav_bankroll: '资金',
@@ -362,7 +380,8 @@
             ai_situation: '局势: 面对', ai_strength: '牌力', blocker_effect: '🛡️ 阻挡牌效应:', ai_advice: '建议',
             advice_val: '价值', advice_ctrl: '控池', advice_giveup: '放弃', advice_strong: '强牌', advice_bluff: '抓诈唬', advice_draw: '听牌', advice_nuts: '坚果牌', advice_snap: '秒接', advice_math: '计算赔率',
             mode_mtt: '锦标赛 (MTT)', mode_cash: '现金桌 (Cash)', theme_toggle: '切换主题',
-            invested: '总投入', revenue: '总回报', win_rate: '胜率', all: '全部'
+            invested: '总投入', revenue: '总回报', win_rate: '胜率', all: '全部', total_sessions: '总场次',
+            placeholder_name: '名称 (如: 周末锦标赛)', placeholder_note: '备注 (选填)'
         },
         'en': {
             nav_ranges: 'Ranges', nav_trainer: 'Trainer', nav_odds: 'Odds', nav_postflop: 'Postflop', nav_bankroll: 'Bankroll',
@@ -376,7 +395,8 @@
             ai_situation: 'Situation: Vs', ai_strength: 'Hand', blocker_effect: '🛡️ Blockers:', ai_advice: 'Advice',
             advice_val: 'Value', advice_ctrl: 'Pot Control', advice_giveup: 'Give Up', advice_strong: 'Strong', advice_bluff: 'Bluff Catch', advice_draw: 'Draw', advice_nuts: 'Nuts', advice_snap: 'Snap Call', advice_math: 'Check Odds',
             mode_mtt: 'Tournament (MTT)', mode_cash: 'Cash Game', theme_toggle: 'Toggle Theme',
-            invested: 'Invested', revenue: 'Returned', win_rate: 'Win Rate', all: 'All'
+            invested: 'Invested', revenue: 'Returned', win_rate: 'Win Rate', all: 'All', total_sessions: 'Total Sessions',
+            placeholder_name: 'Name (e.g. Sunday Million)', placeholder_note: 'Note (Optional)'
         },
         'ja': {
             nav_ranges: 'レンジ', nav_trainer: '練習', nav_odds: 'オッズ', nav_postflop: 'フロップ後', nav_bankroll: '資金管理',
@@ -390,7 +410,8 @@
             ai_situation: '状況: Vs', ai_strength: 'ハンド', blocker_effect: '🛡️ ブロッカー:', ai_advice: '助言',
             advice_val: 'バリュー', advice_ctrl: 'ポット管理', advice_giveup: '諦める', advice_strong: '強い', advice_bluff: 'ブラフキャッチ', advice_draw: 'ドロー', advice_nuts: 'ナッツ', advice_snap: 'スナップ', advice_math: 'オッズ確認',
             mode_mtt: 'トーナメント (MTT)', mode_cash: 'キャッシュ (Cash)', theme_toggle: 'テーマ切替',
-            invested: '投資額', revenue: '回収額', win_rate: '勝率', all: 'すべて'
+            invested: '投資額', revenue: '回収額', win_rate: '勝率', all: 'すべて', total_sessions: '総セッション数',
+            placeholder_name: '名前 (例: サンデーミリオン)', placeholder_note: 'メモ (任意)'
         },
         'ko': {
             nav_ranges: '레인지', nav_trainer: '트레이너', nav_odds: '오즈', nav_postflop: '포스트플랍', nav_bankroll: '뱅크롤',
@@ -404,7 +425,8 @@
             ai_situation: '상황: Vs', ai_strength: '핸드', blocker_effect: '🛡️ 블로커:', ai_advice: '조언',
             advice_val: '밸류', advice_ctrl: '팟 컨트롤', advice_giveup: '포기', advice_strong: '강함', advice_bluff: '블러프 캐치', advice_draw: '드로우', advice_nuts: '너츠', advice_snap: '스냅 콜', advice_math: '오즈 확인',
             mode_mtt: '토너먼트 (MTT)', mode_cash: '캐시 게임 (Cash)', theme_toggle: '테마 전환',
-            invested: '총 투자', revenue: '총 회수', win_rate: '승률', all: '전체'
+            invested: '총 투자', revenue: '총 회수', win_rate: '승률', all: '전체', total_sessions: '총 세션 수',
+            placeholder_name: '이름 (예: 선데이 밀리언)', placeholder_note: '메모 (선택)'
         }
     };
 
@@ -439,9 +461,22 @@
     // --- I18N FUNCTIONS ---
     function t(key) { return translations[curLang][key] || key; }
     function updateText() {
+        // 1. Standard text
         document.querySelectorAll('[data-i18n]').forEach(el => {
             el.innerText = t(el.getAttribute('data-i18n'));
         });
+        
+        // 2. Placeholder update
+        document.querySelectorAll('[data-placeholder-i18n]').forEach(el => {
+            el.placeholder = t(el.getAttribute('data-placeholder-i18n'));
+        });
+
+        // 3. Dropdown options with specific modes
+        const mttOpt = document.querySelector('#brType option[value="MTT"]');
+        if(mttOpt) mttOpt.innerText = t('mode_mtt');
+        const cashOpt = document.querySelector('#brType option[value="Cash"]');
+        if(cashOpt) cashOpt.innerText = t('mode_cash');
+
         updateRanges(); 
     }
     function openLangModal() { toggleFab(); document.getElementById('langModal').style.display='flex'; }
@@ -653,7 +688,7 @@
 
         // 3. Calc Stats & Points
         let cumProfit=0, cumInvest=0, totalRevenue=0, winCount=0;
-        let pointsProfit=[{x:0, y:0}], pointsInvest=[{x:0, y:0}];
+        let pointsProfit=[{x:0, y:0}];
         
         chartData.forEach((i, idx) => {
             cumProfit += i.amount;
@@ -662,10 +697,10 @@
             if(i.amount > 0) winCount++;
             
             pointsProfit.push({x: idx+1, y: cumProfit});
-            pointsInvest.push({x: idx+1, y: cumInvest});
         });
 
         // 4. Update Stats UI
+        document.getElementById('statSessions').innerText = chartData.length;
         document.getElementById('statInvested').innerText = cumInvest;
         document.getElementById('statRevenue').innerText = totalRevenue;
         document.getElementById('statROI').innerText = cumInvest > 0 ? ((cumProfit / cumInvest) * 100).toFixed(1) + '%' : '0%';
@@ -678,10 +713,11 @@
         let l=document.getElementById('historyList'); l.innerHTML=''; 
         [...chartData].reverse().forEach((i)=>{ 
             let d=document.createElement('div'); d.className='history-item'; 
+            let typeLabel = i.type === 'MTT' ? t('mode_mtt') : t('mode_cash');
             let noteHtml = i.note ? `<div style="font-size:0.75rem; color:#aaa; margin-top:2px;">📝 ${i.note}</div>` : '';
             d.innerHTML=`
                 <div style="flex:1">
-                    <div style="font-size:0.9rem;font-weight:bold;color:var(--text-main);">${i.name||'--'} <span style="font-size:0.7rem;opacity:0.7">(${i.type})</span></div>
+                    <div style="font-size:0.9rem;font-weight:bold;color:var(--text-main);">${i.name||'--'} <span style="font-size:0.7rem;opacity:0.7">(${typeLabel})</span></div>
                     <div style="font-size:0.75rem;color:var(--text-muted);">${i.date}</div>
                     ${noteHtml}
                 </div>
@@ -692,10 +728,10 @@
             l.appendChild(d); 
         }); 
 
-        setTimeout(() => drawChart(pointsProfit, pointsInvest), 50);
+        setTimeout(() => drawChart(pointsProfit), 50);
     }
     
-    function drawChart(dataProfit, dataInvest) { 
+    function drawChart(dataProfit) { 
         let cvs=document.getElementById('bankrollCanvas');
         if(!cvs) return;
         let ctx=cvs.getContext('2d'); 
@@ -711,9 +747,8 @@
             ctx.fillText("No Data",w/2,h/2); return; 
         } 
         
-        // Find Scale (Include both Profit and Investment lines)
-        let allY = [...dataProfit.map(p=>p.y), ...dataInvest.map(p=>p.y)];
-        let max=Math.max(...allY), min=Math.min(...allY); 
+        // Find Scale (Ensure 0 is included)
+        let max=Math.max(0, ...dataProfit.map(p=>p.y)), min=Math.min(0, ...dataProfit.map(p=>p.y)); 
         let range=max-min; if(range === 0) range = 100;
         
         // Add Padding
@@ -723,10 +758,10 @@
         let mapY=v=>h-(20+((v-min)/(max-min))*(h-40)); 
         
         // Helper to draw line
-        function drawLine(data, color, isDash=false) {
+        function drawLine(data, color, isDash=false, width=3) {
             ctx.beginPath(); 
             ctx.strokeStyle = color; 
-            ctx.lineWidth = isDash ? 2 : 3; 
+            ctx.lineWidth = width; 
             if(isDash) ctx.setLineDash([5, 5]); else ctx.setLineDash([]);
             
             ctx.moveTo(mapX(0), mapY(data[0].y)); 
@@ -734,18 +769,25 @@
             ctx.stroke();
             
             // Dots
-            ctx.fillStyle = color;
-            for(let i=0;i<data.length;i++) {
-                ctx.beginPath(); ctx.arc(mapX(i), mapY(data[i].y), isDash?2:4, 0, Math.PI*2); ctx.fill();
+            if(!isDash) {
+                 ctx.fillStyle = color;
+                for(let i=0;i<data.length;i++) {
+                    ctx.beginPath(); ctx.arc(mapX(i), mapY(data[i].y), 4, 0, Math.PI*2); ctx.fill();
+                }
             }
         }
 
-        // Draw Investment Line (Gray/Blue)
-        drawLine(dataInvest, '#64748b', true); // Dashed gray
+        // Draw Zero Line (Break-even line)
+        ctx.beginPath();
+        ctx.strokeStyle = document.body.getAttribute('data-theme') === 'light' ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.2)';
+        ctx.lineWidth = 1;
+        let zeroY = mapY(0);
+        ctx.moveTo(20, zeroY);
+        ctx.lineTo(w-20, zeroY);
+        ctx.stroke();
 
         // Draw Profit Line (Green/Red)
         let profitColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim();
-        // If total profit is negative, maybe make line red? (Optional, kept green for consistency)
         drawLine(dataProfit, profitColor, false);
     }
     
