@@ -8,72 +8,90 @@
     <link rel="manifest" href="manifest.json">
     <link rel="shortcut icon" href="icon.png" type="image/png">
     <link rel="icon" href="icon.png" type="image/png">
-    <link rel="apple-touch-icon" href="icon.png?v=8">
+    <link rel="apple-touch-icon" href="icon.png?v=6">
     <style>
-        :root { --bg-body:#0f172a; --bg-panel:rgba(30,41,59,0.95); --text-main:#f1f5f9; --text-muted:#94a3b8; --border:rgba(255,255,255,0.1); --accent:#10b981; --danger:#ef4444; --c-raise:#10b981; --c-call:#eab308; --c-allin:#ef4444; --c-fold:#334155; }
-        [data-theme="light"] { --bg-body:#f1f5f9; --bg-panel:#ffffff; --text-main:#0f172a; --text-muted:#64748b; --border:rgba(0,0,0,0.1); --accent:#059669; --danger:#dc2626; --nav-bg:rgba(255,255,255,0.98); --c-fold:#94a3b8; }
-        * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-        body { background-color:var(--bg-body); color:var(--text-main); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; margin:0; padding-bottom:90px; min-height:100vh; transition:0.3s; }
-        header { background:var(--bg-panel); backdrop-filter:blur(10px); padding:12px 20px; position:sticky; top:0; z-index:50; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
-        .header-brand { display:flex; align-items:center; gap:12px; } .header-logo { width:36px; height:36px; border-radius:8px; object-fit:cover; border:1px solid var(--border); }
-        h1 { margin:0; font-size:1.2rem; font-weight:800; background:linear-gradient(to right,var(--accent),#3b82f6); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-        .version-tag { font-size:0.85rem; color:var(--text-muted); font-family:monospace; border:1px solid var(--border); padding:4px 8px; border-radius:12px; }
-        .container { max-width:600px; margin:0 auto; padding:15px; }
-        .card-panel { background:var(--bg-panel); backdrop-filter:blur(12px); border:1px solid var(--border); border-radius:16px; padding:20px; margin-bottom:15px; box-shadow:0 4px 20px rgba(0,0,0,0.05); }
-        .row-group { display:flex; gap:10px; margin-bottom:12px; } .input-group { margin-bottom:12px; }
-        label { font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); margin-bottom:6px; display:block; }
-        select, input, textarea { width:100%; background:rgba(125,125,125,0.1); border:1px solid var(--border); color:var(--text-main); padding:12px; border-radius:8px; font-size:1rem; outline:none; font-family:inherit; }
-        select:focus, input:focus { border-color:var(--accent); } select option { background-color:var(--bg-body); color:var(--text-main); }
-        
-        /* FIX: Date Picker Icon Visibility in Dark Mode */
-        input[type="date"] { color-scheme: dark; }
-        [data-theme="light"] input[type="date"] { color-scheme: light; }
-        ::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
-        [data-theme="light"] ::-webkit-calendar-picker-indicator { filter: invert(0); }
-
-        .btn-action { width:100%; padding:14px; background:var(--accent); color:#fff; border:none; border-radius:8px; font-weight:bold; font-size:1rem; cursor:pointer; margin-top:10px; }
-        .btn-delete { background:transparent; color:var(--danger); border:1px solid var(--danger); padding:4px 8px; border-radius:4px; font-size:0.8rem; }
-        .opp-action-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:10px; }
-        .btn-opp { padding:10px; background:rgba(125,125,125,0.1); border:1px solid var(--border); color:var(--text-muted); border-radius:8px; cursor:pointer; transition:0.2s; }
-        .btn-opp.active { background:#3b82f6; color:white; border-color:#3b82f6; }
-        .hand-display { display:flex; gap:12px; justify-content:center; margin:15px 0; }
-        .poker-card { width:55px; height:78px; background:#e2e8f0; border-radius:6px; display:flex; flex-direction:column; align-items:center; justify-content:center; font-weight:900; font-size:1.5rem; cursor:pointer; color:#000; border:1px solid var(--border); }
-        .poker-card.empty { background:rgba(125,125,125,0.05); border:2px dashed var(--text-muted); color:var(--text-muted); font-size:1.2rem; }
-        .poker-card.selected { border:2px solid var(--accent); background:#fff; color:#000; }
-        .suit-s { color:#000; } .suit-h { color:#dc2626; } .suit-c { color:#16a34a; } .suit-d { color:#2563eb; }
-        .bottom-nav { position:fixed; bottom:0; left:0; width:100%; background:rgba(15,23,42,0.98); border-top:1px solid var(--border); display:flex; justify-content:space-around; padding:8px 0; z-index:100; }
-        .nav-item { color:var(--text-muted); text-align:center; flex:1; padding:4px; opacity:0.7; display:flex; flex-direction:column; align-items:center; gap:2px; }
-        .nav-item.active { color:var(--accent); opacity:1; transform:translateY(-2px); font-weight:bold; }
-        .nav-icon { font-size:1.3rem; } .nav-label { font-size:0.7rem; }
-        .tab-content { display:none; animation:fadeIn 0.3s ease; } .tab-content.active { display:block; }
-        @keyframes fadeIn { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
-        .chart-container { display:grid; grid-template-columns:repeat(13,1fr); gap:1px; background:#000; padding:1px; border-radius:4px; overflow:hidden; }
-        .chart-cell { aspect-ratio:1; font-size:0.5rem; display:flex; align-items:center; justify-content:center; background-color:var(--c-fold); color:#fff; font-weight:700; text-shadow:0 1px 2px rgba(0,0,0,0.8); }
+        :root {
+            --bg-body: #0f172a; --bg-panel: rgba(30, 41, 59, 0.95); --text-main: #f1f5f9; --text-muted: #94a3b8;
+            --border: rgba(255,255,255,0.1); --accent: #10b981; --accent-glow: rgba(16, 185, 129, 0.3);
+            --danger: #ef4444; --card-bg: #e2e8f0; --card-text: #000; --nav-bg: rgba(15, 23, 42, 0.98);
+            --c-raise: #10b981; --c-call: #eab308; --c-allin: #ef4444; --c-fold: #334155;
+        }
+        [data-theme="light"] {
+            --bg-body: #f1f5f9; --bg-panel: #ffffff; --text-main: #0f172a; --text-muted: #64748b;
+            --border: rgba(0,0,0,0.1); --accent: #059669; --accent-glow: rgba(5, 150, 105, 0.2);
+            --danger: #dc2626; --card-bg: #ffffff; --card-text: #000; --nav-bg: rgba(255, 255, 255, 0.98); --c-fold: #94a3b8; 
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-body); color: var(--text-main); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding-bottom: 90px; min-height: 100vh; transition: 0.3s; }
+        header { background: var(--bg-panel); backdrop-filter: blur(10px); padding: 12px 20px; position: sticky; top: 0; z-index: 50; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .header-brand { display: flex; align-items: center; gap: 12px; }
+        .header-logo { width: 36px; height: 36px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border); }
+        h1 { margin: 0; font-size: 1.2rem; font-weight: 800; letter-spacing: 0.5px; background: linear-gradient(to right, var(--accent), #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .version-tag { font-size: 0.85rem; color: var(--text-muted); font-family: monospace; border: 1px solid var(--border); padding: 4px 8px; border-radius: 12px; }
+        .container { max-width: 600px; margin: 0 auto; padding: 15px; }
+        .card-panel { background: var(--bg-panel); backdrop-filter: blur(12px); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        .row-group { display: flex; gap: 10px; margin-bottom: 12px; }
+        .input-group { margin-bottom: 12px; }
+        label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 6px; display: block; }
+        select, input, textarea { width: 100%; background: rgba(125,125,125,0.1); border: 1px solid var(--border); color: var(--text-main); padding: 12px; border-radius: 8px; font-size: 1rem; outline: none; font-family: inherit; }
+        select:focus, input:focus, textarea:focus { border-color: var(--accent); }
+        select option { background-color: var(--bg-body); color: var(--text-main); }
+        .btn-action { width: 100%; padding: 14px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 10px; }
+        .btn-delete { background: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; }
+        .opp-action-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
+        .btn-opp { padding: 10px; background: rgba(125,125,125,0.1); border: 1px solid var(--border); color: var(--text-muted); border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: 0.2s; }
+        .btn-opp.active { background: #3b82f6; color: white; border-color: #3b82f6; }
+        .hand-display { display: flex; gap: 12px; justify-content: center; margin: 15px 0; }
+        .poker-card { width: 55px; height: 78px; background: var(--card-bg); border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 900; font-size: 1.5rem; cursor: pointer; position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.1); color: var(--card-text) !important; border: 1px solid var(--border); }
+        .poker-card.empty { background: rgba(125,125,125,0.05); border: 2px dashed var(--text-muted); color: var(--text-muted) !important; font-weight: normal; font-size: 1.2rem; box-shadow: none; }
+        .poker-card.selected { border: 2px solid var(--accent); background: #fff; color: #000 !important; }
+        .suit-s { color: #000; } .suit-h { color: #dc2626; } .suit-c { color: #16a34a; } .suit-d { color: #2563eb; } 
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--nav-bg); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 8px 0; z-index: 100; transition: 0.3s; }
+        .nav-item { color: var(--text-muted); text-align: center; flex: 1; padding: 4px; opacity: 0.7; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+        .nav-item.active { color: var(--accent); opacity: 1; transform: translateY(-2px); font-weight: bold; }
+        .nav-icon { font-size: 1.3rem; line-height: 1; } .nav-label { font-size: 0.7rem; }
+        .tab-content { display: none; animation: fadeIn 0.3s ease; } .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .chart-container { display: grid; grid-template-columns: repeat(13, 1fr); gap: 1px; background: #000; padding: 1px; border-radius: 4px; overflow: hidden; }
+        .chart-cell { aspect-ratio: 1; font-size: 0.5rem; display: flex; align-items: center; justify-content: center; background-color: var(--c-fold); color: #fff; font-weight:700; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
         .legend-dot { width:10px; height:10px; margin-right:4px; border-radius:2px; }
-        .result-box { text-align:center; margin-top:15px; padding:15px; background:rgba(125,125,125,0.1); border-radius:8px; }
-        .ai-advice-text { text-align:left; margin-top:15px; line-height:1.6; font-size:0.95rem; color:var(--text-main); border-left:3px solid var(--accent); padding:15px; background:rgba(125,125,125,0.05); border-radius:0 8px 8px 0; }
-        .meter-bg { width:100%; height:10px; background:var(--text-muted); border-radius:5px; overflow:hidden; margin:15px 0 5px 0; opacity:0.3; } .meter-fill { height:100%; width:0%; transition:width 0.5s ease; }
-        .category-badge { display:inline-block; padding:4px 8px; border-radius:4px; background:#334155; font-size:0.8rem; margin-bottom:5px; }
-        .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:200; justify-content:center; align-items:center; }
-        .modal-content { background:var(--bg-panel); padding:20px; border-radius:16px; width:90%; max-width:350px; border:1px solid var(--border); max-height:80vh; overflow-y:auto; }
-        .suit-row { display:flex; gap:5px; margin-bottom:8px; } .rank-btn { flex:1; padding:10px 0; background:rgba(125,125,125,0.2); border:1px solid var(--border); color:var(--text-main); border-radius:4px; font-weight:bold; }
-        canvas#bankrollCanvas { width:100%; height:240px; background:rgba(125,125,125,0.1); border-radius:8px; margin-bottom:10px; }
-        .history-item { display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid var(--border); }
-        .pos-val { color:var(--accent); font-weight:bold; } .neg-val { color:var(--danger); font-weight:bold; }
-        .total-profit-box { text-align:center; padding:10px; border-top:1px solid var(--border); margin-top:10px; }
-        .tp-value { font-size:2.2rem; font-weight:800; letter-spacing:1px; }
-        .filter-tabs { display:flex; background:rgba(125,125,125,0.1); border-radius:8px; padding:4px; margin-bottom:15px; }
-        .filter-tab { flex:1; text-align:center; padding:8px; font-size:0.9rem; border-radius:6px; cursor:pointer; color:var(--text-muted); transition:0.2s; }
-        .filter-tab.active { background:var(--accent); color:#fff; font-weight:bold; }
-        .stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px; }
-        .stat-card { background:rgba(125,125,125,0.05); border:1px solid var(--border); border-radius:8px; padding:10px; text-align:center; }
-        .stat-val { font-size:1.1rem; font-weight:bold; color:var(--text-main); } .span-2 { grid-column:span 2; }
-        .fab-wrapper { position:fixed; bottom:85px; right:20px; z-index:150; display:flex; flex-direction:column-reverse; align-items:flex-end; gap:10px; }
-        .fab-btn { width:50px; height:50px; border-radius:50%; background:var(--accent); color:#fff; border:none; font-size:1.5rem; box-shadow:0 4px 10px rgba(0,0,0,0.3); cursor:pointer; display:flex; align-items:center; justify-content:center; }
-        .fab-menu { display:none; flex-direction:column; gap:8px; margin-bottom:5px; } .fab-menu.active { display:flex; animation:fadeIn 0.2s; }
-        .fab-item { background:var(--bg-panel); color:var(--text-main); border:1px solid var(--border); padding:10px 16px; border-radius:8px; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.2); font-size:0.9rem; font-weight:500; display:flex; align-items:center; gap:8px; }
-        .lang-option { width:100%; padding:15px; margin-bottom:8px; background:rgba(125,125,125,0.1); border:1px solid var(--border); color:var(--text-main); border-radius:8px; text-align:left; cursor:pointer; display:flex; justify-content:space-between; }
-        .ai-list li { margin-bottom:6px; }
+        .result-box { text-align: center; margin-top: 15px; padding: 15px; background: rgba(125,125,125,0.1); border-radius: 8px; }
+        .ai-advice-text { text-align: left; margin-top: 15px; line-height: 1.6; font-size: 0.95rem; color: var(--text-main); border-left: 3px solid var(--accent); padding-left: 15px; background: rgba(125,125,125,0.05); border-radius: 0 8px 8px 0; padding: 15px; }
+        .ai-list { margin: 5px 0 0 0; padding-left: 20px; color: var(--text-muted); } .ai-list li { margin-bottom: 6px; }
+        .meter-bg { width: 100%; height: 10px; background: var(--text-muted); border-radius: 5px; overflow: hidden; margin: 15px 0 5px 0; opacity: 0.3; } .meter-fill { height: 100%; width: 0%; transition: width 0.5s ease; }
+        .category-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; background: #334155; font-size: 0.8rem; margin-bottom: 5px; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 200; justify-content: center; align-items: center; }
+        .modal-content { background: var(--bg-panel); padding: 20px; border-radius: 16px; width: 90%; max-width: 350px; border: 1px solid var(--border); max-height: 80vh; overflow-y: auto; }
+        .suit-row { display: flex; gap: 5px; margin-bottom: 8px; }
+        .rank-btn { flex: 1; padding: 10px 0; background: rgba(125,125,125,0.2); border: 1px solid var(--border); color: var(--text-main); border-radius: 4px; font-weight: bold; }
+        canvas#bankrollCanvas { width: 100%; height: 240px; background: rgba(125,125,125,0.1); border-radius: 8px; margin-bottom: 10px; }
+        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+        .history-val { font-weight: bold; font-family: monospace; font-size: 1.1rem; }
+        .pos-val { color: var(--accent); } .neg-val { color: var(--danger); }
+        .total-profit-box { text-align: center; padding: 10px; border-top: 1px solid var(--border); margin-top: 10px; }
+        .tp-label { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 5px; display: block; }
+        .tp-value { font-size: 2.2rem; font-weight: 800; letter-spacing: 1px; }
+        .trainer-stats { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 0.9rem; color: var(--text-muted); }
+        .trainer-feedback { text-align: center; margin-top: 15px; padding: 10px; border-radius: 8px; font-weight: bold; display: none; }
+        .fb-correct { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; }
+        .fb-wrong { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444; }
+        .trainer-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 20px; }
+        .fab-wrapper { position: fixed; bottom: 85px; right: 20px; z-index: 150; display: flex; flex-direction: column-reverse; align-items: flex-end; gap: 10px; }
+        .fab-btn { width: 50px; height: 50px; border-radius: 50%; background: var(--accent); color: #fff; border: none; font-size: 1.5rem; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; }
+        .fab-menu { display: none; flex-direction: column; gap: 8px; margin-bottom: 5px; }
+        .fab-menu.active { display: flex; animation: fadeInUp 0.2s; }
+        .fab-item { background: var(--bg-panel); color: var(--text-main); border: 1px solid var(--border); padding: 10px 16px; border-radius: 8px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2); font-size: 0.9rem; white-space: nowrap; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .lang-option { width: 100%; padding: 15px; margin-bottom: 8px; background: rgba(125,125,125,0.1); border: 1px solid var(--border); color: var(--text-main); border-radius: 8px; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .lang-option.active { border-color: var(--accent); background: rgba(16, 185, 129, 0.1); }
+        .filter-tabs { display: flex; background: rgba(125,125,125,0.1); border-radius: 8px; padding: 4px; margin-bottom: 15px; }
+        .filter-tab { flex: 1; text-align: center; padding: 8px; font-size: 0.9rem; border-radius: 6px; cursor: pointer; color: var(--text-muted); transition: 0.2s; }
+        .filter-tab.active { background: var(--accent); color: #fff; font-weight: bold; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .stat-card { background: rgba(125,125,125,0.05); border: 1px solid var(--border); border-radius: 8px; padding: 10px; text-align: center; }
+        .stat-label { font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px; }
+        .stat-val { font-size: 1.1rem; font-weight: bold; color: var(--text-main); }
+        .span-2 { grid-column: span 2; }
     </style>
 </head>
 <body>
@@ -83,7 +101,7 @@
         <img src="icon.png" alt="App Logo" class="header-logo" onerror="this.style.display='none'">
         <h1>Poker God <span style="font-size:0.5em; opacity:0.8; background:none; -webkit-text-fill-color: var(--text-main);">PRO</span></h1>
     </div>
-    <div class="version-tag">v5.12</div>
+    <div class="version-tag">v5.9</div>
 </header>
 
 <div class="container">
@@ -96,17 +114,17 @@
                 </select>
                 <select id="playerCount" onchange="updateRanges()">
                     <option value="2">2 Max</option><option value="3">3 Max</option><option value="4">4 Max</option><option value="5">5 Max</option>
-                    <option value="6">6 Max</option><option value="7">7 Max</option><option value="8">8 Max</option><option value="9" selected>9 Max</option><option value="10">10 Max</option>
+                    <option value="6">6 Max</option><option value="7">7 Max</option><option value="8">8 Max</option><option value="9" selected>9 Max (Full Ring)</option><option value="10">10 Max</option>
                 </select>
                 <select id="heroPosition" onchange="updateRanges()">
-                    <option value="UTG">UTG (EP)</option><option value="UTG1">UTG+1</option><option value="MP">MP</option><option value="MP1">MP+1</option><option value="CO">CO</option><option value="BTN">BTN</option><option value="SB">SB</option><option value="BB">BB</option>
+                    <option value="BTN">BTN</option><option value="CO">CO</option><option value="MP">MP</option><option value="EP">EP/UTG</option><option value="SB">SB</option><option value="BB">BB</option>
                 </select>
                 <input type="number" id="stackDepth" value="100" placeholder="BB" onchange="updateRanges()">
             </div>
             <div style="margin-top:10px; font-size:0.8rem; color:var(--text-muted); font-style:italic;" id="rangeInfoText"></div>
         </div>
         <div class="card-panel">
-            <label data-i18n="mixed_chart">GTO Chart</label>
+            <label data-i18n="mixed_chart">混合策略圖</label>
             <div class="chart-container" id="rangeGrid"></div>
             <div style="display:flex; justify-content:center; gap:10px; margin-top:10px; font-size:0.75rem; color:var(--text-muted); flex-wrap:wrap;">
                 <span style="display:flex; align-items:center;"><div class="legend-dot" style="background:var(--c-allin)"></div> All-in</span>
@@ -119,10 +137,10 @@
 
     <div id="tab-trainer" class="tab-content">
         <div class="card-panel">
-            <div class="trainer-stats"><span><span data-i18n="streak">Streak</span>: <span id="trStreak" style="color:var(--accent)">0</span></span><span><span data-i18n="score">Score</span>: <span id="trScore">0/0</span></span></div>
+            <div class="trainer-stats"><span><span data-i18n="streak">連勝</span>: <span id="trStreak" style="color:var(--accent)">0</span></span><span><span data-i18n="score">得分</span>: <span id="trScore">0/0</span></span></div>
             <div style="text-align:center; margin-bottom:20px;">
                 <div style="font-size:1.1rem; font-weight:bold; margin-bottom:5px;" id="trScenario">Loading...</div>
-                <div style="color:var(--text-muted); font-size:0.9rem;" data-i18n="gto_action_q">Action?</div>
+                <div style="color:var(--text-muted); font-size:0.9rem;" data-i18n="gto_action_q">What is the GTO action?</div>
             </div>
             <div class="hand-display"><div class="poker-card selected" id="trCard1"></div><div class="poker-card selected" id="trCard2"></div></div>
             <div class="trainer-grid">
@@ -131,28 +149,31 @@
                 <button class="btn-action" style="background:var(--c-raise); margin:0;" onclick="checkTrainer('raise')" data-i18n="raise">Raise</button>
             </div>
             <div id="trFeedback" class="trainer-feedback"></div>
-            <button id="trNextBtn" class="btn-action" style="display:none; background:var(--bg-body); color:var(--text-main); border:1px solid var(--border);" onclick="nextDrill()" data-i18n="next_hand">Next</button>
+            <button id="trNextBtn" class="btn-action" style="display:none; background:var(--bg-body); color:var(--text-main); border:1px solid var(--border);" onclick="nextDrill()" data-i18n="next_hand">Next Hand ➔</button>
         </div>
     </div>
 
     <div id="tab-odds" class="tab-content">
         <div class="card-panel">
-            <label data-i18n="pot_odds_calc">Pot Odds</label>
-            <div class="input-group"><label data-i18n="pot">Pot</label><input type="number" id="potSize" placeholder="1000"></div>
-            <div class="input-group"><label data-i18n="bet_call">Call</label><input type="number" id="betSize" placeholder="500"></div>
-            <button class="btn-action" onclick="calcPotOdds()" data-i18n="calculate">Calc</button>
+            <label data-i18n="pot_odds_calc">底池賠率計算</label>
+            <div class="input-group"><label data-i18n="pot">底池 (Pot)</label><input type="number" id="potSize" placeholder="1000"></div>
+            <div class="input-group"><label data-i18n="bet_call">跟注 (Call Amount)</label><input type="number" id="betSize" placeholder="500"></div>
+            <button class="btn-action" onclick="calcPotOdds()" data-i18n="calculate">計算</button>
             <div class="result-box" id="oddsResult" style="display:none;">
-                <div class="result-label" data-i18n="req_equity">Req. Equity</div><div class="result-val" id="reqEquity">--%</div>
-                <div class="result-label" style="margin-top:10px;" data-i18n="odds">Ratio</div><div style="color:var(--text-main); font-size:1.2rem;" id="oddsRatio">-- : 1</div>
+                <div class="result-label" data-i18n="req_equity">所需勝率</div><div class="result-val" id="reqEquity">--%</div>
+                <div class="result-label" style="margin-top:10px;" data-i18n="odds">賠率</div><div style="color:var(--text-main); font-size:1.2rem;" id="oddsRatio">-- : 1</div>
             </div>
         </div>
     </div>
 
     <div id="tab-postflop" class="tab-content">
         <div class="card-panel">
-            <label data-i18n="my_hand">Hand</label>
-            <div class="hand-display"><div class="poker-card empty" id="card_h1" onclick="sel('h1')">+</div><div class="poker-card empty" id="card_h2" onclick="sel('h2')">+</div></div>
-            <label style="margin-top:15px;" data-i18n="board">Board</label>
+            <label data-i18n="my_hand">我的手牌</label>
+            <div class="hand-display">
+                <div class="poker-card empty" id="card_h1" onclick="sel('h1')">+</div>
+                <div class="poker-card empty" id="card_h2" onclick="sel('h2')">+</div>
+            </div>
+            <label style="margin-top:15px;" data-i18n="board">公共牌</label>
             <div class="hand-display" style="gap:5px;">
                 <div class="poker-card empty" style="width:40px;height:60px;font-size:1rem;" id="card_b1" onclick="sel('b1')"></div>
                 <div class="poker-card empty" style="width:40px;height:60px;font-size:1rem;" id="card_b2" onclick="sel('b2')"></div>
@@ -160,7 +181,7 @@
                 <div class="poker-card empty" style="width:40px;height:60px;font-size:1rem;" id="card_b4" onclick="sel('b4')"></div>
                 <div class="poker-card empty" style="width:40px;height:60px;font-size:1rem;" id="card_b5" onclick="sel('b5')"></div>
             </div>
-            <label style="margin-top:20px; border-top:1px solid var(--border); padding-top:15px;" data-i18n="opp_action">Action</label>
+            <label style="margin-top:20px; border-top:1px solid var(--border); padding-top:15px;" data-i18n="opp_action">對手行動</label>
             <div class="opp-action-grid">
                 <button class="btn-opp" onclick="setOppAction('check', this)">Check</button>
                 <button class="btn-opp" onclick="setOppAction('bet', this)">Bet</button>
@@ -168,9 +189,9 @@
                 <button class="btn-opp" onclick="setOppAction('3bet', this)">3-Bet</button>
                 <button class="btn-opp" onclick="setOppAction('allin', this)" style="grid-column: span 2; color:var(--danger); border-color:var(--danger);">All-in</button>
             </div>
-            <button class="btn-action" onclick="analyzePostflop()" data-i18n="analyze">AI Analyze</button>
+            <button class="btn-action" onclick="analyzePostflop()" data-i18n="analyze">AI 分析決策</button>
             <div class="result-box" id="postflopResult" style="display:none;">
-                <div class="result-label" data-i18n="hand_strength">Strength</div>
+                <div class="result-label" data-i18n="hand_strength">牌力強度</div>
                 <div class="meter-bg"><div class="meter-fill" id="strengthBar"></div></div>
                 <span class="category-badge" id="handCategory">--</span>
                 <div class="ai-advice-text" id="aiAdvice"></div>
@@ -180,48 +201,56 @@
 
     <div id="tab-bankroll" class="tab-content">
         <div class="filter-tabs">
-            <div class="filter-tab active" onclick="setFilter('ALL', this)" data-i18n="all">All</div>
+            <div class="filter-tab active" onclick="setFilter('ALL', this)" data-i18n="all">全部</div>
             <div class="filter-tab" onclick="setFilter('MTT', this)">MTT</div>
             <div class="filter-tab" onclick="setFilter('Cash', this)">Cash</div>
         </div>
         <div class="card-panel">
-            <label data-i18n="bankroll_trend">Trend</label>
+            <label data-i18n="bankroll_trend">資金趨勢</label>
             <div class="stats-grid">
-                <div class="stat-card"><span class="stat-label" data-i18n="total_sessions">Sessions</span><div class="stat-val" id="statSessions">0</div></div>
-                <div class="stat-card"><span class="stat-label" data-i18n="win_rate">Win%</span><div class="stat-val" id="statWinRate">0%</div></div>
-                <div class="stat-card"><span class="stat-label" data-i18n="invested">Invest</span><div class="stat-val" id="statInvested">0</div></div>
-                <div class="stat-card"><span class="stat-label" data-i18n="revenue">Rev</span><div class="stat-val" id="statRevenue">0</div></div>
+                <div class="stat-card"><span class="stat-label" data-i18n="total_sessions">總場次</span><div class="stat-val" id="statSessions">0</div></div>
+                <div class="stat-card"><span class="stat-label" data-i18n="win_rate">勝率</span><div class="stat-val" id="statWinRate">0%</div></div>
+                <div class="stat-card"><span class="stat-label" data-i18n="invested">總投入</span><div class="stat-val" id="statInvested">0</div></div>
+                <div class="stat-card"><span class="stat-label" data-i18n="revenue">總回報</span><div class="stat-val" id="statRevenue">0</div></div>
                 <div class="stat-card span-2"><span class="stat-label">ROI</span><div class="stat-val" id="statROI">0%</div></div>
             </div>
             <canvas id="bankrollCanvas"></canvas>
-            <div class="total-profit-box"><span class="tp-label" data-i18n="total_profit">Profit</span><div id="bigTotalProfit" class="tp-value">0</div></div>
+            <div class="total-profit-box"><span class="tp-label" data-i18n="total_profit">總盈虧</span><div id="bigTotalProfit" class="tp-value">0</div></div>
         </div>
         <div class="card-panel">
-            <label data-i18n="add_record">Add</label>
-            <div class="row-group"><input type="date" id="brDate" style="flex:2"><select id="brType" style="flex:1"><option value="MTT">MTT</option><option value="Cash">Cash</option></select></div>
+            <label data-i18n="add_record">新增紀錄</label>
+            <div class="row-group"><input type="date" id="brDate" style="flex:2"><select id="brType" style="flex:1"><option value="MTT" data-i18n="mode_mtt">MTT</option><option value="Cash" data-i18n="mode_cash">Cash</option></select></div>
             <div class="input-group" style="margin-top:10px;"><input type="text" id="brName" list="brNameList" placeholder="Name" data-placeholder-i18n="placeholder_name"><datalist id="brNameList"></datalist></div>
-            <div class="input-group" style="margin-top:10px;"><input type="text" id="brNote" placeholder="Note" data-placeholder-i18n="placeholder_note"></div>
+            <div class="input-group" style="margin-top:10px;"><input type="text" id="brNote" placeholder="Note (Optional)" data-placeholder-i18n="placeholder_note"></div>
             <div class="row-group" style="margin-top:10px;">
-                <div style="flex:1"><label data-i18n="buyin">Buy-in</label><input type="number" id="brBuyIn" placeholder="0" oninput="calcPreview()"></div>
-                <div style="flex:1"><label data-i18n="prize">Prize</label><input type="number" id="brPrize" placeholder="0" oninput="calcPreview()"></div>
+                <div style="flex:1"><label data-i18n="buyin">買入</label><input type="number" id="brBuyIn" placeholder="0" oninput="calcPreview()"></div>
+                <div style="flex:1"><label data-i18n="prize">獎金</label><input type="number" id="brPrize" placeholder="0" oninput="calcPreview()"></div>
             </div>
-            <div style="text-align:right; margin-top:5px; font-size:0.85rem; color:var(--text-muted);"><span data-i18n="profit">Profit</span>: <span id="brProfitPreview" style="font-weight:bold; color:var(--text-main);">0</span></div>
-            <button class="btn-action" onclick="addBankroll()" data-i18n="save">Save</button>
+            <div style="text-align:right; margin-top:5px; font-size:0.85rem; color:var(--text-muted);"><span data-i18n="profit">盈利</span>: <span id="brProfitPreview" style="font-weight:bold; color:var(--text-main);">0</span></div>
+            <button class="btn-action" onclick="addBankroll()" data-i18n="save">儲存</button>
         </div>
-        <div class="card-panel"><label data-i18n="history">History</label><div id="historyList" style="max-height:300px; overflow-y:auto;"></div></div>
+        <div class="card-panel"><label data-i18n="history">歷史紀錄</label><div id="historyList" style="max-height:300px; overflow-y:auto;"></div></div>
     </div>
 </div>
 
 <div class="fab-wrapper">
     <div class="fab-menu" id="fabMenu">
-        <div class="fab-item" onclick="toggleTheme()"><span>🌗</span> <span data-i18n="theme_toggle">Theme</span></div>
-        <div class="fab-item" onclick="openLangModal()"><span>🌐</span> <span data-i18n="language">Lang</span></div>
-        <div class="fab-item" onclick="exportData()" data-i18n="export">Backup</div>
-        <div class="fab-item" onclick="document.getElementById('importFile').click()" data-i18n="import">Restore</div>
+        <div class="fab-item" onclick="toggleTheme()"><span>🌗</span> <span data-i18n="theme_toggle">切換主題 (Theme)</span></div>
+        <div class="fab-item" onclick="openLangModal()"><span>🌐</span> <span data-i18n="language">語言 (Language)</span></div>
+        <div class="fab-item" onclick="exportData()" data-i18n="export">匯出備份</div>
+        <div class="fab-item" onclick="document.getElementById('importFile').click()" data-i18n="import">還原資料</div>
     </div>
     <button class="fab-btn" onclick="toggleFab()">☰</button>
 </div>
 <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(this)">
+
+<div class="bottom-nav">
+    <div class="nav-item active" onclick="switchTab('ranges', this)"><span class="nav-icon">📊</span><span class="nav-label" data-i18n="nav_ranges">Ranges</span></div>
+    <div class="nav-item" onclick="switchTab('trainer', this)"><span class="nav-icon">🎓</span><span class="nav-label" data-i18n="nav_trainer">Trainer</span></div>
+    <div class="nav-item" onclick="switchTab('odds', this)"><span class="nav-icon">🧮</span><span class="nav-label" data-i18n="nav_odds">Odds</span></div>
+    <div class="nav-item" onclick="switchTab('postflop', this)"><span class="nav-icon">♠️</span><span class="nav-label" data-i18n="nav_postflop">Postflop</span></div>
+    <div class="nav-item" onclick="switchTab('bankroll', this)"><span class="nav-icon">💰</span><span class="nav-label" data-i18n="nav_bankroll">Bankroll</span></div>
+</div>
 
 <div class="modal" id="cardModal">
     <div class="modal-content">
@@ -245,38 +274,46 @@
 </div>
 
 <script>
-    // --- APP CORE VARIABLES ---
-    const GTO_DB = {}; // Keeping DB light for stability in this fix
-    
-    let curLang = localStorage.getItem('pg_lang') || 'zh-TW';
-    let currentFilter = 'ALL';
-    const state = { h1:null, h2:null, b1:null, b2:null, b3:null, b4:null, b5:null, oppAction:null };
-    let curSel = null;
-    const ranks = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
-    let bankrollData = JSON.parse(localStorage.getItem('pokerGodBankroll') || '[]');
-    let trState = { correct:0, total:0, streak:0, current:null };
+    // --- GTO DATABASE (Compressed for 6-Max Cash 100BB & MTT) ---
+    const GTO_DB = {
+        "Cash_100bb_6max": {
+            "EP": "77+,AJs+,KQs,AQo+",
+            "MP": "66+,ATs+,KJs+,QJs,JTs,AQo+,KQo",
+            "CO": "22+,A2s+,K8s+,Q9s+,J8s+,T8s+,97s+,86s+,75s+,65s,A9o+,KTo+,QTo+,JTo",
+            "BTN": "22+,A2s+,K2s+,Q2s+,J4s+,T5s+,95s+,84s+,74s+,63s+,53s+,43s,A2o+,K5o+,Q8o+,J8o+,T8o+,98o",
+            "SB": "22+,A2s+,K2s+,Q4s+,J5s+,T6s+,96s+,85s+,75s+,64s+,54s,A7o+,K9o+,Q9o+,J9o+,T9o"
+        }
+    };
 
     const translations = {
         'zh-TW': {
             nav_ranges:'範圍表', nav_trainer:'測驗', nav_odds:'賠率', nav_postflop:'翻後', nav_bankroll:'資金',
-            mixed_chart:'混合策略圖 (GTO)', pot_odds_calc:'底池賠率計算', pot:'底池', bet_call:'跟注額', calculate:'計算',
+            mixed_chart:'混合策略圖 (GTO)', pot_odds_calc:'底池賠率', pot:'底池', bet_call:'跟注額', calculate:'計算',
             req_equity:'所需勝率', odds:'賠率', my_hand:'我的手牌', board:'公共牌', opp_action:'對手行動', analyze:'AI 分析',
             hand_strength:'牌力強度', bankroll_trend:'資金趨勢', total_profit:'總盈虧', add_record:'新增紀錄', buyin:'買入', prize:'獎金', profit:'盈利', save:'儲存', history:'歷史紀錄',
             language:'語言', export:'匯出備份', import:'還原資料', select_card:'選擇撲克牌', cancel:'取消',
             streak:'連勝', score:'得分', gto_action_q:'GTO 會如何行動?', next_hand:'下一手牌 ➔',
             fold:'棄牌', call:'跟注', raise:'加注', check:'過牌', bet:'下注', allin:'全下',
-            strat_rfi:'策略: RFI', strat_push:'策略: Push/Fold', strat_bb:'策略: BB 防守', strat_cash:'策略: 現金桌',
-            ai_situation:'局勢:', ai_strength:'牌力', blocker_effect:'🛡️ 阻擋牌效應:', ai_advice:'建議',
+            strat_rfi:'策略: RFI (首率先入)', strat_push:'策略: Push/Fold (推/棄)', strat_bb:'策略: BB 防守', strat_cash:'策略: 現金桌 (Pro)',
+            ai_situation:'局勢: 面對', ai_strength:'牌力', blocker_effect:'🛡️ 阻擋牌效應:', ai_advice:'建議',
             advice_val:'價值', advice_ctrl:'控池', advice_giveup:'放棄', advice_strong:'強牌', advice_bluff:'抓詐唬', advice_draw:'聽牌', advice_nuts:'堅果牌', advice_snap:'秒接', advice_math:'計算賠率',
             mode_mtt:'錦標賽 (MTT)', mode_cash:'現金桌 (Cash)', theme_toggle:'切換主題',
             invested:'總投入', revenue:'總回報', win_rate:'勝率', all:'全部', total_sessions:'總場次',
-            placeholder_name:'名稱', placeholder_note:'備註'
+            placeholder_name:'名稱 (如: 週末錦標賽)', placeholder_note:'備註 (選填)'
         },
-        'en': { nav_ranges:'Ranges', nav_trainer:'Trainer', nav_odds:'Odds', nav_postflop:'Postflop', nav_bankroll:'Bankroll', mixed_chart:'Mixed Strategy (GTO)', pot_odds_calc:'Pot Odds', pot:'Pot', bet_call:'Call', calculate:'Calc', req_equity:'Req. Equity', odds:'Odds', my_hand:'My Hand', board:'Board', opp_action:'Opp Action', analyze:'AI Analyze', hand_strength:'Hand Strength', bankroll_trend:'Trend', total_profit:'Total Profit', add_record:'Add Record', buyin:'Buy-in', prize:'Prize', profit:'Profit', save:'Save', history:'History', language:'Language', export:'Export', import:'Import', select_card:'Select Card', cancel:'Cancel', streak:'Streak', score:'Score', gto_action_q:'GTO Action?', next_hand:'Next ➔', fold:'Fold', call:'Call', raise:'Raise', check:'Check', bet:'Bet', allin:'All-in', strat_rfi:'Strategy: RFI', strat_push:'Strategy: Push/Fold', strat_bb:'Strategy: BB Def', strat_cash:'Strategy: Cash', ai_situation:'Vs', ai_strength:'Hand', blocker_effect:'🛡️ Blockers:', ai_advice:'Advice', advice_val:'Value', advice_ctrl:'Control', advice_giveup:'Give Up', advice_strong:'Strong', advice_bluff:'Bluff Catch', advice_draw:'Draw', advice_nuts:'Nuts', advice_snap:'Snap', advice_math:'Check Odds', mode_mtt:'Tournament (MTT)', mode_cash:'Cash Game', theme_toggle:'Theme', invested:'Invested', revenue:'Returned', win_rate:'Win Rate', all:'All', total_sessions:'Sessions', placeholder_name:'Name', placeholder_note:'Note' }
+        'zh-CN': { nav_ranges:'范围表', nav_trainer:'测验', nav_odds:'赔率', nav_postflop:'翻后', nav_bankroll:'资金', mixed_chart:'混合策略图 (GTO)', pot_odds_calc:'底池赔率', pot:'底池', bet_call:'跟注额', calculate:'计算', req_equity:'所需胜率', odds:'赔率', my_hand:'我的手牌', board:'公共牌', opp_action:'对手行动', analyze:'AI 分析', hand_strength:'牌力强度', bankroll_trend:'资金趋势', total_profit:'总盈亏', add_record:'新增纪录', buyin:'买入', prize:'奖金', profit:'盈利', save:'储存', history:'历史纪录', language:'语言', export:'汇出备份', import:'还原资料', select_card:'选择扑克牌', cancel:'取消', streak:'连胜', score:'得分', gto_action_q:'GTO 会如何行动?', next_hand:'下一手牌 ➔', fold:'弃牌', call:'跟注', raise:'加注', check:'过牌', bet:'下注', allin:'全下', strat_rfi:'策略: RFI (首率先入)', strat_push:'策略: Push/Fold (推/弃)', strat_bb:'策略: BB 防守', strat_cash:'策略: 现金桌 (Pro)', ai_situation:'局势: 面对', ai_strength:'牌力', blocker_effect:'🛡️ 阻挡牌效应:', ai_advice:'建议', advice_val:'价值', advice_ctrl:'控池', advice_giveup:'放弃', advice_strong:'强牌', advice_bluff:'抓诈唬', advice_draw:'听牌', advice_nuts:'坚果牌', advice_snap:'秒接', advice_math:'计算赔率', mode_mtt:'锦标赛 (MTT)', mode_cash:'现金桌 (Cash)', theme_toggle:'切换主题', invested:'总投入', revenue:'总回报', win_rate:'胜率', all:'全部', total_sessions:'总场次', placeholder_name:'名称', placeholder_note:'备注' },
+        'en': { nav_ranges:'Ranges', nav_trainer:'Trainer', nav_odds:'Odds', nav_postflop:'Postflop', nav_bankroll:'Bankroll', mixed_chart:'Mixed Strategy (GTO)', pot_odds_calc:'Pot Odds', pot:'Pot', bet_call:'Call', calculate:'Calc', req_equity:'Req. Equity', odds:'Odds', my_hand:'My Hand', board:'Board', opp_action:'Opp Action', analyze:'AI Analyze', hand_strength:'Hand Strength', bankroll_trend:'Trend', total_profit:'Total Profit', add_record:'Add Record', buyin:'Buy-in', prize:'Prize', profit:'Profit', save:'Save', history:'History', language:'Language', export:'Export', import:'Import', select_card:'Select Card', cancel:'Cancel', streak:'Streak', score:'Score', gto_action_q:'GTO Action?', next_hand:'Next ➔', fold:'Fold', call:'Call', raise:'Raise', check:'Check', bet:'Bet', allin:'All-in', strat_rfi:'Strategy: RFI', strat_push:'Strategy: Push/Fold', strat_bb:'Strategy: BB Def', strat_cash:'Strategy: Cash (Pro)', ai_situation:'Vs', ai_strength:'Hand', blocker_effect:'🛡️ Blockers:', ai_advice:'Advice', advice_val:'Value', advice_ctrl:'Control', advice_giveup:'Give Up', advice_strong:'Strong', advice_bluff:'Bluff Catch', advice_draw:'Draw', advice_nuts:'Nuts', advice_snap:'Snap', advice_math:'Check Odds', mode_mtt:'Tournament (MTT)', mode_cash:'Cash Game', theme_toggle:'Theme', invested:'Invested', revenue:'Revenue', win_rate:'Win Rate', all:'All', total_sessions:'Sessions', placeholder_name:'Name', placeholder_note:'Note' },
+        'ja': { nav_ranges:'レンジ', nav_trainer:'練習', nav_odds:'オッズ', nav_postflop:'フロップ後', nav_bankroll:'資金', mixed_chart:'GTO戦略', pot_odds_calc:'ポットオッズ', pot:'ポット', bet_call:'コール額', calculate:'計算', req_equity:'必要勝率', odds:'オッズ', my_hand:'手札', board:'ボード', opp_action:'相手', analyze:'AI分析', hand_strength:'強さ', bankroll_trend:'推移', total_profit:'総利益', add_record:'記録追加', buyin:'バイイン', prize:'賞金', profit:'利益', save:'保存', history:'履歴', language:'言語', export:'出力', import:'復元', select_card:'選択', cancel:'取消', streak:'連勝', score:'スコア', gto_action_q:'GTOアクション?', next_hand:'次へ ➔', fold:'フォールド', call:'コール', raise:'レイズ', check:'チェック', bet:'ベット', allin:'オールイン', strat_rfi:'戦略: RFI', strat_push:'戦略: Push/Fold', strat_bb:'戦略: BB Def', strat_cash:'戦略: Cash (Pro)', ai_situation:'状況:', ai_strength:'ハンド', blocker_effect:'🛡️ ブロッカー:', ai_advice:'助言', advice_val:'バリュー', advice_ctrl:'管理', advice_giveup:'降りる', advice_strong:'強い', advice_bluff:'ブラフ', advice_draw:'ドロー', advice_nuts:'ナッツ', advice_snap:'即コール', advice_math:'オッズ', mode_mtt:'トーナメント (MTT)', mode_cash:'キャッシュ (Cash)', theme_toggle:'テーマ', invested:'投資', revenue:'回収', win_rate:'勝率', all:'全て', total_sessions:'回数', placeholder_name:'名前', placeholder_note:'メモ' },
+        'ko': { nav_ranges:'레인지', nav_trainer:'트레이너', nav_odds:'오즈', nav_postflop:'포스트플랍', nav_bankroll:'뱅크롤', mixed_chart:'GTO 전략', pot_odds_calc:'팟 오즈', pot:'팟', bet_call:'콜 금액', calculate:'계산', req_equity:'필요 승률', odds:'오즈', my_hand:'내 핸드', board:'보드', opp_action:'상대', analyze:'AI 분석', hand_strength:'핸드 파워', bankroll_trend:'추세', total_profit:'총 수익', add_record:'기록 추가', buyin:'바이인', prize:'상금', profit:'수익', save:'저장', history:'기록', language:'언어', export:'내보내기', import:'가져오기', select_card:'선택', cancel:'취소', streak:'연승', score:'점수', gto_action_q:'GTO 액션?', next_hand:'다음 ➔', fold:'폴드', call:'콜', raise:'레이즈', check:'체크', bet:'벳', allin:'올인', strat_rfi:'전략: RFI', strat_push:'전략: Push/Fold', strat_bb:'전략: BB 방어', strat_cash:'전략: Cash (Pro)', ai_situation:'상황:', ai_strength:'핸드', blocker_effect:'🛡️ 블로커:', ai_advice:'조언', advice_val:'밸류', advice_ctrl:'컨트롤', advice_giveup:'포기', advice_strong:'강함', advice_bluff:'블러프 캐치', advice_draw:'드로우', advice_nuts:'너츠', advice_snap:'스냅', advice_math:'오즈', mode_mtt:'토너먼트 (MTT)', mode_cash:'캐시 (Cash)', theme_toggle:'테마', invested:'투자', revenue:'회수', win_rate:'승률', all:'전체', total_sessions:'게임 수', placeholder_name:'이름', placeholder_note:'메모' }
     };
-    if(!translations['zh-CN']) translations['zh-CN'] = translations['zh-TW'];
-    if(!translations['ja']) translations['ja'] = translations['en'];
-    if(!translations['ko']) translations['ko'] = translations['en'];
+
+    let curLang = localStorage.getItem('pg_lang') || 'zh-TW';
+    let currentFilter = 'ALL';
+    const state = { h1: null, h2: null, b1:null, b2:null, b3:null, b4:null, b5:null, oppAction: null };
+    let curSel = null;
+    const ranks = ['A','K','Q','J','T','9','8','7','6','5','4','3','2'];
+    let bankrollData = JSON.parse(localStorage.getItem('pokerGodBankroll') || '[]');
+    let trState = { correct:0, total:0, streak:0, current:null };
 
     window.onload = () => { initTheme(); updateText(); genGrid(); genSelUI(); updateRanges(); document.getElementById('brDate').valueAsDate = new Date(); updateNameList(); renderBankrollUI(); if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{}); };
 
@@ -293,119 +330,148 @@
     function updateText() {
         document.querySelectorAll('[data-i18n]').forEach(el => el.innerText = t(el.getAttribute('data-i18n')));
         document.querySelectorAll('[data-placeholder-i18n]').forEach(el => el.placeholder = t(el.getAttribute('data-placeholder-i18n')));
+        const mttOpt = document.querySelector('#brType option[value="MTT"]'); if(mttOpt) mttOpt.innerText = t('mode_mtt');
+        const cashOpt = document.querySelector('#brType option[value="Cash"]'); if(cashOpt) cashOpt.innerText = t('mode_cash');
         updateRanges(); 
     }
-    
-    // --- SIMPLIFIED RANGE ENGINE (Stable Fallback) ---
-    function updateRanges() {
-        const stack=parseInt(document.getElementById('stackDepth').value) || 100;
-        const posLabel=document.getElementById('heroPosition').value; 
-        const playerCount=parseInt(document.getElementById('playerCount').value); 
-        const gameMode = document.getElementById('gameMode').value;
-        
-        let seatsBehind = 0;
-        if (posLabel === 'BTN') seatsBehind = 2; 
-        else if (posLabel === 'SB') seatsBehind = 1;
-        else if (posLabel === 'BB') seatsBehind = 0;
-        else if (posLabel === 'CO') seatsBehind = 3;
-        else if (posLabel === 'MP1') seatsBehind = 4;
-        else if (posLabel === 'MP') seatsBehind = (playerCount >= 9) ? 6 : 4; 
-        else if (posLabel === 'UTG1') seatsBehind = (playerCount >= 9) ? 7 : 5;
-        else if (posLabel === 'UTG') seatsBehind = playerCount - 1;
-
-        let labelMode = gameMode==='Cash'?'strat_cash':(stack<15?'strat_push':'strat_rfi');
-        document.getElementById('rangeInfoText').innerText = `${t(labelMode)} (${stack}BB) - ${playerCount}Max - ${posLabel}`;
-
-        document.querySelectorAll('.chart-cell').forEach(c => {
-            let r1 = parseInt(c.dataset.r1), r2 = parseInt(c.dataset.r2), type = c.dataset.type;
-            let freqs = getFrequencies(r1, r2, type, seatsBehind, stack, gameMode);
-            let s1 = freqs.a; let s2 = s1 + freqs.r; let s3 = s2 + freqs.c;
-            c.style.background = `linear-gradient(135deg, var(--c-allin) 0% ${s1}%, var(--c-raise) ${s1}% ${s2}%, var(--c-call) ${s2}% ${s3}%, var(--c-fold) ${s3}% 100%)`;
-        });
-    }
-
-    function getFrequencies(r1, r2, type, seatsBehind, stack, mode) {
-        let f = {a:0, r:0, c:0, f:100};
-        let score = r1*2 + r2 + (type==='pair'?20:0) + (type==='suited'?6:0);
-        let tightness = seatsBehind * 2.5; 
-        if (mode === 'Cash') {
-            if (type==='suited') score += 5; if (type==='pair') score += 5;
-            if (r1-r2 <= 2 && r1 <= 11) score += (type==='suited'?12:0);
-            let threshold = 35 + tightness;
-            if (score >= threshold) { f.r=100; f.f=0; } else if (score >= threshold - 5) { f.r=50; f.f=50; }
-            return f;
-        } else {
-            if (stack < 15) { 
-                let pushThresh = 30 + tightness - (15-stack);
-                if (type==='pair' || score >= pushThresh) { f.a=100; f.f=0; } else f.f=100;
-                return f;
-            }
-            let mttThresh = 40 + tightness;
-            if (score >= mttThresh) { f.r=100; f.f=0; } else if (score >= mttThresh - 4) { f.r=50; f.f=50; }
-            return f;
-        }
-    }
-
-    // --- OTHER CORE FUNCTIONS ---
     function openLangModal() { toggleFab(); document.getElementById('langModal').style.display='flex'; }
     function changeLang(lang) { curLang = lang; localStorage.setItem('pg_lang', lang); updateText(); document.getElementById('langModal').style.display='none'; }
     function toggleFab() { document.getElementById('fabMenu').classList.toggle('active'); document.querySelector('.fab-btn').innerText = document.getElementById('fabMenu').classList.contains('active') ? '✕' : '☰'; }
     document.addEventListener('click', e => { if (!document.querySelector('.fab-wrapper').contains(e.target)) document.getElementById('fabMenu').classList.remove('active'); });
+
+    function exportData() { const fullData = { bankroll: bankrollData }; const blob = new Blob([JSON.stringify(fullData)], {type: "application/json"}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "pg_backup_" + new Date().toISOString().slice(0,10) + ".json"; a.click(); toggleFab(); }
+    function importData(input) {
+        const file = input.files[0]; if (!file) return;
+        if(!confirm("Overwrite?")) { input.value = ''; return; }
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try { const json = JSON.parse(e.target.result); if (json.bankroll) bankrollData = json.bankroll; else if(Array.isArray(json)) bankrollData = json; localStorage.setItem('pokerGodBankroll', JSON.stringify(bankrollData)); updateNameList(); renderBankrollUI(); alert("Success!"); } catch (err) { alert("Error"); }
+        }; reader.readAsText(file); input.value = ''; toggleFab();
+    }
+
     function initTheme() { document.body.setAttribute('data-theme', localStorage.getItem('pokerGodTheme') || 'dark'); }
     function toggleTheme() { const newTheme = document.body.getAttribute('data-theme') === 'light' ? 'dark' : 'light'; document.body.setAttribute('data-theme', newTheme); localStorage.setItem('pokerGodTheme', newTheme); renderBankrollUI(); toggleFab(); }
-    function genSelUI(){ [{id:'s',c:'suit-s',s:'♠'},{id:'h',c:'suit-h',s:'♥'},{id:'c',c:'suit-c',s:'♣'},{id:'d',c:'suit-d',s:'♦'}].forEach(x=>{ let r=document.getElementById('suit-'+(x.id==='s'?'spades':x.id==='h'?'hearts':x.id==='c'?'clubs':'diamonds')); ranks.forEach(k=>{let b=document.createElement('button');b.className='rank-btn '+x.c;b.innerText=k+x.s;b.onclick=()=>setCard(k,x);r.appendChild(b)}); }); }
-    function sel(id){curSel=id;document.getElementById('cardModal').style.display='flex'}
-    function closeSel(){document.getElementById('cardModal').style.display='none'}
-    function setCard(r,s){ state[curSel]={rank:r,suit:s}; let el=document.getElementById('card_'+curSel); el.className='poker-card selected'; el.innerHTML=`<span class="${s.c}">${s.s}</span><span>${r}</span>`; closeSel(); }
+
+    function genGrid() { const c = document.getElementById('rangeGrid'); c.innerHTML=''; for(let i=0; i<13; i++) for(let j=0; j<13; j++) { let d=document.createElement('div'); d.className='chart-cell'; let t=i===j?ranks[i]+ranks[j]:(i<j?ranks[i]+ranks[j]+'s':ranks[j]+ranks[i]+'o'); d.innerText=t; d.dataset.h=t; d.dataset.r1=14-i; d.dataset.r2=14-j; d.dataset.type = i===j?'pair':(i<j?'suited':'offsuit'); c.appendChild(d); } }
+    function updateRanges() {
+        const stack=parseInt(document.getElementById('stackDepth').value); const pos=document.getElementById('heroPosition').value; const mode = document.getElementById('gameMode').value === 'Cash' ? 'Cash' : (stack < 15 ? "PushFold" : "RFI");
+        let labelMode = mode==='Cash'?'strat_cash':(mode==='PushFold'?'strat_push':(pos==='BB'?'strat_bb':'strat_rfi'));
+        document.getElementById('rangeInfoText').innerText = `${t(labelMode)} (${stack}BB) - ${pos}`;
+        let calcMode = mode; if(pos==='BB' && document.getElementById('gameMode').value !== 'Cash') calcMode = "BBDef"; 
+        document.querySelectorAll('.chart-cell').forEach(c => {
+            let r1 = parseInt(c.dataset.r1), r2 = parseInt(c.dataset.r2), type = c.dataset.type;
+            let freqs = getFrequencies(r1, r2, type, pos, stack, calcMode);
+            let s1 = freqs.a; let s2 = s1 + freqs.r; let s3 = s2 + freqs.c;
+            c.style.background = `linear-gradient(135deg, var(--c-allin) 0% ${s1}%, var(--c-raise) ${s1}% ${s2}%, var(--c-call) ${s2}% ${s3}%, var(--c-fold) ${s3}% 100%)`;
+        });
+    }
+    
+    // --- HYBRID ENGINE: LOOKUP + ALGORITHM ---
+    function checkRange(hStr, rangeStr) {
+        // Simple check if specific hand string exists in comma-separated list
+        // Note: Full range parsing (e.g. 77+) requires more logic, 
+        // for v5.9 we simulate 6-max logic with tuned algorithm below if DB lookup is complex
+        return false; 
+    }
+
+    function getFrequencies(r1, r2, type, pos, stack, mode) {
+        let f = {a:0, r:0, c:0, f:100}; 
+        let score = r1*2 + r2 + (type==='pair'?20:0) + (type==='suited'?6:0);
+        
+        if (mode === 'Cash') {
+            // PRO ALGORITHM v5.9 (Approximating 6-Max 100BB GTO)
+            let posBonus = 0; // UTG=0
+            if(pos==='MP') posBonus = 4; if(pos==='CO') posBonus = 10; if(pos==='BTN'||pos==='SB') posBonus = 16;
+            
+            // Adjust score based on connectivity
+            let gap = r1 - r2;
+            if(type==='suited' && gap===1 && r1<=11) score+=15; // 54s-JTs
+            if(type==='suited' && gap===2 && r1<=11) score+=10; // 64s-J9s
+            
+            // Pairs are good
+            if(type==='pair') score += 10;
+
+            // Offsuit connectors only late
+            if(type==='offsuit') {
+                if(gap===1 && r1<=12) { if(posBonus>=10) score+=12; else score-=15; }
+                else if(r1 < 10) score -= 20; // Trash offsuit
+            }
+
+            let thresh = 50 - posBonus;
+            if(score >= thresh) { f.r=100; f.f=0; return f; }
+            if(score >= thresh - 4) { f.r=50; f.f=50; return f; }
+            return f;
+        }
+        
+        // MTT Logic
+        if(mode === "PushFold") {
+            let threshold = 35 - (stack - 5); if(pos==='BTN'||pos==='SB') threshold -= 12; else if(pos==='CO') threshold -= 6;
+            if(type==='pair') { if(r1>=7) { f.a=100; f.f=0; return f; } if(r1>=2 && r1<7) { let p = (8-r1)*10 + (15-stack)*5; if(pos==='BTN'||pos==='SB') p+=30; f.a=Math.min(100,Math.max(0,p)); f.f=100-f.a; return f; } }
+            if(score >= threshold + 5) { f.a=100; f.f=0; } else if(score >= threshold) { f.a=50; f.f=50; } return f;
+        }
+        if(mode === "BBDef") {
+            if((type==='pair'&&r1>=10)||(type==='offsuit'&&r1===14&&r2>=12)||(type==='suited'&&r1===14&&r2>=11)) { f.r=80; f.c=20; f.f=0; return f; }
+            let callThresh = 25; if(score >= callThresh) { f.c=100; f.f=0; return f; } if(score >= callThresh - 5) { f.c=40; f.f=60; return f; } return f;
+        }
+        // MTT RFI
+        let t = 0; if(pos==='MP') t=5; if(pos==='CO') t=12; if(pos==='BTN') t=20; if(pos==='SB') t=18;
+        let openThresh = 45 - t; if(score >= openThresh + 5) { f.r=100; f.f=0; return f; } if(score >= openThresh) { f.r=50; f.f=50; return f; } return f;
+    }
+
     function calcPotOdds() { let p=parseFloat(document.getElementById('potSize').value), c=parseFloat(document.getElementById('betSize').value); if(!p||!c)return; document.getElementById('oddsResult').style.display='block'; document.getElementById('reqEquity').innerText = ((c/(p+c+c))*100).toFixed(1)+'%'; document.getElementById('oddsRatio').innerText = ((p+c)/c).toFixed(1)+' : 1'; }
     function setOppAction(act, btn) { state.oppAction = act; document.querySelectorAll('.btn-opp').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
     
-    // --- FIXED ANALYZE POSTFLOP (Straight Logic Included) ---
+    // --- POSTFLOP TEXTURE ENGINE (v5.9) ---
     function analyzePostflop() {
         if(!state.h1 || !state.h2 || !state.b1 || !state.b2 || !state.b3) { alert("Select Cards!"); return; }
         if(!state.oppAction) { alert("Select Action!"); return; }
         
-        const hCards = [state.h1, state.h2]; const bCards = [state.b1, state.b2, state.b3, state.b4, state.b5].filter(c=>c); 
+        const hCards = [state.h1, state.h2]; const bCards = [state.b1, state.b2, state.b3, state.b4, state.b5].filter(c=>c);
         const allCards = hCards.concat(bCards);
         
         // 1. Analyze Texture
         let suitCounts = {}; bCards.forEach(c => suitCounts[c.suit.id] = (suitCounts[c.suit.id]||0)+1);
         let isMonotone = Object.values(suitCounts).some(v => v >= 3);
+        let isPairedBoard = new Set(bCards.map(c=>c.rank)).size < bCards.length;
         
-        // 2. Analyze Hand Strength (FIXED)
-        // Flush
+        // 2. Analyze Hand Strength
         let mySuitCounts = {}; allCards.forEach(c => mySuitCounts[c.suit.id] = (mySuitCounts[c.suit.id]||0)+1);
         let isFlush = Object.values(mySuitCounts).some(v => v >= 5);
         let isDraw = Object.values(mySuitCounts).some(v => v === 4);
         
-        // Ranks for Pair/Set/Straight
-        let map = {'A':14,'K':13,'Q':12,'J':11,'T':10,'9':9,'8':8,'7':7,'6':6,'5':5,'4':4,'3':3,'2':2};
-        let rankVals = allCards.map(c => map[c.rank]);
-        let rCounts = {}; rankVals.forEach(r => rCounts[r] = (rCounts[r]||0)+1);
-        let pairs = Object.values(rCounts).filter(v => v===2).length; 
+        let rCounts = {}; allCards.forEach(c => rCounts[c.rank] = (rCounts[c.rank]||0)+1);
+        let pairs = Object.values(rCounts).filter(v => v===2).length;
         let sets = Object.values(rCounts).filter(v => v===3).length;
         
-        // Straight Logic
-        let uniqueVals = [...new Set(rankVals)].sort((a,b)=>b-a);
-        if(uniqueVals.includes(14)) uniqueVals.push(1); // Wheel Ace
-        let isStraight = false;
-        for(let i=0; i<uniqueVals.length-4; i++) {
-            if(uniqueVals[i] - uniqueVals[i+4] === 4) { isStraight = true; break; }
-        }
-
         let score=0, catText="High Card", barColor="#ef4444";
-        if (isFlush || isStraight || (sets>0 && pairs>0)) { score=95; catText=isFlush?"Flush":(isStraight?"Straight":"Full House"); barColor="#8b5cf6"; } 
-        else if (sets>0) { score=80; catText="Set"; barColor="#10b981"; } 
-        else if (pairs>=2) { score=65; catText="Two Pair"; barColor="#10b981"; } 
-        else if (pairs===1) { score=45; catText="Pair"; barColor="#f59e0b"; } 
-        else if (isDraw) { score=35; catText="Draw"; barColor="#f59e0b"; } 
+        if (isFlush || (sets>0 && pairs>0)) { score=95; catText=t('advice_nuts'); barColor="#8b5cf6"; }
+        else if (sets>0) { score=80; catText="Set"; barColor="#10b981"; }
+        else if (pairs>=2) { score=65; catText="Two Pair"; barColor="#10b981"; }
+        else if (pairs===1) { score=45; catText="Pair"; barColor="#f59e0b"; }
+        else if (isDraw) { score=35; catText=t('advice_draw'); barColor="#f59e0b"; }
         else { score=15; catText="Air"; barColor="#ef4444"; }
 
-        let adviceHtml = `${t('ai_situation')} <span style="color:var(--accent)">${state.oppAction}</span>.<br>${t('ai_strength')} <strong>${catText}</strong>.<br><ul class="ai-list">`;
-        if (state.oppAction === 'check') { if(score > 60) adviceHtml += `<li><span style="color:var(--c-raise)">● Bet:</span> ${isMonotone ? '33%' : '75%'}</li>`; else if(isDraw) adviceHtml += `<li><span style="color:var(--c-raise)">● Bet:</span> 50% (Bluff)</li>`; else adviceHtml += `<li><span style="color:var(--c-call)">● Check:</span> Control</li>`; }
-        else if (state.oppAction === 'bet') { if(score > 80) adviceHtml += `<li><span style="color:var(--c-raise)">● Raise:</span> Value</li>`; else if(score > 40 || isDraw) adviceHtml += `<li><span style="color:var(--c-call)">● Call:</span> Odds</li>`; else adviceHtml += `<li><span style="color:var(--c-fold)">● Fold:</span> Give Up</li>`; }
+        // 3. Generate Pro Advice
+        let adviceHtml = `${t('ai_situation')} <span style="color:var(--accent)">${state.oppAction}</span>.<br>`;
+        adviceHtml += `<div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:5px;">Board: ${isMonotone?'🌊 Monotone':(isPairedBoard?'♊ Paired':'🏜️ Dry')}</div>`;
+        adviceHtml += `${t('ai_strength')} <strong>${catText}</strong>.<br>`;
+        
+        adviceHtml += `<ul class="ai-list">`;
+        if (state.oppAction === 'check') {
+            if(score > 60) adviceHtml += `<li><span style="color:var(--c-raise)">● ${t('bet')}:</span> ${isMonotone ? '33% Pot (Protection)' : '75% Pot (Value)'}</li>`;
+            else if(isDraw) adviceHtml += `<li><span style="color:var(--c-raise)">● ${t('bet')}:</span> 50% Pot (Semi-Bluff)</li>`;
+            else adviceHtml += `<li><span style="color:var(--c-call)">● ${t('check')}:</span> Pot Control</li>`;
+        } else if (state.oppAction === 'bet') {
+            if(score > 80) adviceHtml += `<li><span style="color:var(--c-raise)">● ${t('raise')}:</span> ${t('advice_strong')}</li>`;
+            else if(score > 40 || isDraw) adviceHtml += `<li><span style="color:var(--c-call)">● ${t('call')}:</span> ${t('advice_bluff')} / Odds</li>`;
+            else adviceHtml += `<li><span style="color:var(--c-fold)">● ${t('fold')}:</span> ${t('advice_giveup')}</li>`;
+        }
         adviceHtml += `</ul>`;
-        document.getElementById('postflopResult').style.display='block'; document.getElementById('strengthBar').style.width=score+'%'; document.getElementById('strengthBar').style.backgroundColor=barColor; document.getElementById('handCategory').innerText=catText; document.getElementById('handCategory').style.color=barColor; document.getElementById('aiAdvice').innerHTML = adviceHtml;
+        
+        document.getElementById('postflopResult').style.display='block';
+        document.getElementById('strengthBar').style.width=score+'%'; document.getElementById('strengthBar').style.backgroundColor=barColor;
+        document.getElementById('handCategory').innerText=catText; document.getElementById('handCategory').style.color=barColor;
+        document.getElementById('aiAdvice').innerHTML = adviceHtml;
     }
 
     function updateNameList() { const names = [...new Set(bankrollData.map(i => i.name).filter(n => n))]; const dl = document.getElementById('brNameList'); dl.innerHTML = ''; names.forEach(n => { let opt=document.createElement('option'); opt.value=n; dl.appendChild(opt); }); }
@@ -413,6 +479,7 @@
     function addBankroll() { let d=document.getElementById('brDate').value, t=document.getElementById('brType').value; let n=document.getElementById('brName').value.trim(); let b=parseFloat(document.getElementById('brBuyIn').value)||0, p=parseFloat(document.getElementById('brPrize').value)||0, note=document.getElementById('brNote').value; if(!d) { alert("Date required"); return; } bankrollData.push({ id:Date.now(), date:d, type:t, name:n, buyIn:b, prize:p, amount:p-b, note:note }); localStorage.setItem('pokerGodBankroll', JSON.stringify(bankrollData)); document.getElementById('brName').value=''; document.getElementById('brBuyIn').value=''; document.getElementById('brPrize').value=''; document.getElementById('brNote').value=''; updateNameList(); renderBankrollUI(); }
     function deleteRecord(id) { if(!confirm("Delete?"))return; bankrollData=bankrollData.filter(i=>i.id!==id); localStorage.setItem('pokerGodBankroll',JSON.stringify(bankrollData)); updateNameList(); renderBankrollUI(); }
     function setFilter(filter, el) { currentFilter = filter; document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active')); el.classList.add('active'); renderBankrollUI(); }
+    
     function renderBankrollUI() { 
         let filteredData = bankrollData.filter(i => currentFilter === 'ALL' || i.type === currentFilter);
         let chartData = [...filteredData].sort((a,b) => { const dateA = new Date(a.date); const dateB = new Date(b.date); return dateA - dateB || a.id - b.id; });
@@ -421,6 +488,7 @@
         document.getElementById('statSessions').innerText = chartData.length; document.getElementById('statInvested').innerText = cumInvest; document.getElementById('statRevenue').innerText = totalRevenue; document.getElementById('statROI').innerText = cumInvest > 0 ? ((cumProfit / cumInvest) * 100).toFixed(1) + '%' : '0%'; document.getElementById('statWinRate').innerText = chartData.length > 0 ? ((winCount / chartData.length) * 100).toFixed(1) + '%' : '0%'; document.getElementById('bigTotalProfit').innerText = (cumProfit>=0?'+':'')+cumProfit; document.getElementById('bigTotalProfit').style.color = cumProfit>=0?'var(--accent)':'var(--danger)';
         let l=document.getElementById('historyList'); l.innerHTML=''; [...chartData].reverse().forEach((i)=>{ let d=document.createElement('div'); d.className='history-item'; let typeLabel = i.type === 'MTT' ? t('mode_mtt') : t('mode_cash'); let noteHtml = i.note ? `<div style="font-size:0.75rem; color:#aaa; margin-top:2px;">📝 ${i.note}</div>` : ''; d.innerHTML=`<div style="flex:1"><div style="font-size:0.9rem;font-weight:bold;color:var(--text-main);">${i.name||'--'} <span style="font-size:0.7rem;opacity:0.7">(${typeLabel})</span></div><div style="font-size:0.75rem;color:var(--text-muted);">${i.date}</div>${noteHtml}</div><div style="text-align:right"><span class="${i.amount>=0?'pos-val':'neg-val'}">${i.amount>=0?'+':''}${i.amount}</span><button class="btn-delete" onclick="deleteRecord(${i.id})" style="margin-left:5px;">✕</button></div>`; l.appendChild(d); }); setTimeout(() => drawChart(pointsProfit), 50);
     }
+    
     function drawChart(dataProfit) { 
         let cvs=document.getElementById('bankrollCanvas'); if(!cvs) return; let ctx=cvs.getContext('2d'); cvs.width = cvs.parentElement.clientWidth || 300; cvs.height = 240; let w=cvs.width, h=cvs.height; let mLeft=40, mBottom=30, mTop=20, mRight=10; let graphW = w - mLeft - mRight; let graphH = h - mBottom - mTop; ctx.clearRect(0,0,w,h); 
         if(dataProfit.length < 2) { ctx.fillStyle="#94a3b8"; ctx.font="14px Arial"; ctx.textAlign="center"; ctx.fillText("No Data",w/2,h/2); return; } 
@@ -431,9 +499,10 @@
         let profitColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(); ctx.beginPath(); ctx.strokeStyle = profitColor; ctx.lineWidth = 3; ctx.setLineDash([]); ctx.moveTo(mapX(0), mapY(dataProfit[0].y)); for(let i=1; i<dataProfit.length; i++) ctx.lineTo(mapX(i), mapY(dataProfit[i].y)); ctx.stroke();
         ctx.textAlign = "center"; let step = Math.ceil(dataProfit.length / 6); for(let i=0; i<dataProfit.length; i++) { let x = mapX(i), y = mapY(dataProfit[i].y); ctx.beginPath(); ctx.fillStyle = profitColor; ctx.arc(x, y, 4, 0, Math.PI*2); ctx.fill(); if(i % step === 0 || i === dataProfit.length-1) { if(dataProfit[i].label) { ctx.fillStyle = "#94a3b8"; ctx.fillText(dataProfit[i].label, x, h-10); } } }
     }
+    
     function nextDrill() { const positions = ['EP','MP','CO','BTN','SB','BB']; const pos = positions[Math.floor(Math.random()*positions.length)]; const stack = Math.random() < 0.3 ? 12 : (Math.random() < 0.6 ? 40 : 100); const r1Idx = Math.floor(Math.random()*13); const r2Idx = Math.floor(Math.random()*13); const s1 = {id:'s', symbol:'♠', class:'suit-s'}; const s2 = (r1Idx===r2Idx || Math.random()<0.23) ? s1 : {id:'h', symbol:'♥', class:'suit-h'}; const r1 = ranks[Math.min(r1Idx, r2Idx)]; const r2 = ranks[Math.max(r1Idx, r2Idx)]; const type = (r1===r2) ? 'pair' : (s1.id===s2.id ? 'suited' : 'offsuit'); trState.current = { r1:14-Math.min(r1Idx,r2Idx), r2:14-Math.max(r1Idx,r2Idx), type, pos, stack }; document.getElementById('trScenario').innerText = `${pos} | ${stack}BB`; renderTrainerCard('trCard1', r1, s1); renderTrainerCard('trCard2', r2, (r1===r2 && s1.id===s2.id) ? {id:'d',symbol:'♦',class:'suit-d'} : s2); document.getElementById('trFeedback').style.display = 'none'; document.getElementById('trNextBtn').style.display = 'none'; }
     function renderTrainerCard(id, r, s) { document.getElementById(id).innerHTML = `<span class="${s.class}">${s.symbol}</span><span>${r}</span>`; }
-    function checkTrainer(act) { if(document.getElementById('trNextBtn').style.display === 'block') return; const { r1, r2, type, pos, stack } = trState.current; let mode = "RFI"; if(stack < 15) mode = "PushFold"; else if(pos === "BB") mode = "BBDef"; else if(pos === "SB") mode = "SB"; const freqs = getFrequencies(r1, r2, type, 5, stack, mode); let correctAct = 'fold'; let maxVal = freqs.f; if(freqs.c > maxVal) { maxVal = freqs.c; correctAct = 'call'; } if(freqs.r > maxVal) { maxVal = freqs.r; correctAct = 'raise'; } if(freqs.a > maxVal) { maxVal = freqs.a; correctAct = 'raise'; } let userAct = act; if(act === 'raise' && freqs.a > 50) userAct = 'raise'; let isCorrect = (userAct === correctAct) || (maxVal < 60 && freqs[act[0]] > 30); trState.total++; if(isCorrect) { trState.correct++; trState.streak++; } else { trState.streak = 0; } document.getElementById('trScore').innerText = `${trState.correct}/${trState.total}`; document.getElementById('trStreak').innerText = trState.streak; const fb = document.getElementById('trFeedback'); fb.style.display = 'block'; fb.className = 'trainer-feedback ' + (isCorrect ? 'fb-correct' : 'fb-wrong'); fb.innerHTML = `<strong>${isCorrect ? 'Correct!' : 'Mistake!'}</strong><br>GTO: Raise ${freqs.r+freqs.a}% | Call ${freqs.c}% | Fold ${freqs.f}%`; document.getElementById('trNextBtn').style.display = 'block'; }
+    function checkTrainer(act) { if(document.getElementById('trNextBtn').style.display === 'block') return; const { r1, r2, type, pos, stack } = trState.current; let mode = "RFI"; if(stack < 15) mode = "PushFold"; else if(pos === "BB") mode = "BBDef"; else if(pos === "SB") mode = "SB"; const freqs = getFrequencies(r1, r2, type, pos, stack, mode); let correctAct = 'fold'; let maxVal = freqs.f; if(freqs.c > maxVal) { maxVal = freqs.c; correctAct = 'call'; } if(freqs.r > maxVal) { maxVal = freqs.r; correctAct = 'raise'; } if(freqs.a > maxVal) { maxVal = freqs.a; correctAct = 'raise'; } let userAct = act; if(act === 'raise' && freqs.a > 50) userAct = 'raise'; let isCorrect = (userAct === correctAct) || (maxVal < 60 && freqs[act[0]] > 30); trState.total++; if(isCorrect) { trState.correct++; trState.streak++; } else { trState.streak = 0; } document.getElementById('trScore').innerText = `${trState.correct}/${trState.total}`; document.getElementById('trStreak').innerText = trState.streak; const fb = document.getElementById('trFeedback'); fb.style.display = 'block'; fb.className = 'trainer-feedback ' + (isCorrect ? 'fb-correct' : 'fb-wrong'); fb.innerHTML = `<strong>${isCorrect ? 'Correct!' : 'Mistake!'}</strong><br>GTO: Raise ${freqs.r+freqs.a}% | Call ${freqs.c}% | Fold ${freqs.f}%`; document.getElementById('trNextBtn').style.display = 'block'; }
     function genSelUI(){ [{id:'s',c:'suit-s',s:'♠'},{id:'h',c:'suit-h',s:'♥'},{id:'c',c:'suit-c',s:'♣'},{id:'d',c:'suit-d',s:'♦'}].forEach(x=>{ let r=document.getElementById('suit-'+(x.id==='s'?'spades':x.id==='h'?'hearts':x.id==='c'?'clubs':'diamonds')); ranks.forEach(k=>{let b=document.createElement('button');b.className='rank-btn '+x.c;b.innerText=k+x.s;b.onclick=()=>setCard(k,x);r.appendChild(b)}); }); }
     function sel(id){curSel=id;document.getElementById('cardModal').style.display='flex'}
     function closeSel(){document.getElementById('cardModal').style.display='none'}
