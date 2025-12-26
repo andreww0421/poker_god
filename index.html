@@ -9,7 +9,7 @@
     <link rel="manifest" href="manifest.json">
     <link rel="shortcut icon" href="icon.png" type="image/png">
     <link rel="icon" href="icon.png" type="image/png">
-    <link rel="apple-touch-icon" href="icon.png?v=7">
+    <link rel="apple-touch-icon" href="icon.png?v=10">
     
     <style>
         :root {
@@ -45,9 +45,7 @@
         /* --- [FIX] 日期選擇器圖示修復 --- */
         input[type="date"] { color-scheme: dark; }
         [data-theme="light"] input[type="date"] { color-scheme: light; }
-        /* 強制反轉圖示顏色 (黑變白) */
         ::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
-        /* 淺色模式下恢復原狀 */
         [data-theme="light"] ::-webkit-calendar-picker-indicator { filter: invert(0); }
         /* -------------------------------- */
 
@@ -64,7 +62,18 @@
         .poker-card.selected { border: 2px solid var(--accent); background: #fff; color: #000 !important; }
         .suit-s { color: #000; } .suit-h { color: #dc2626; } .suit-c { color: #16a34a; } .suit-d { color: #2563eb; } 
 
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--nav-bg); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 8px 0; z-index: 100; transition: 0.3s; }
+        /* --- [FIX] 導航列層級修復 --- */
+        .bottom-nav { 
+            position: fixed; bottom: 0; left: 0; width: 100%; 
+            background: var(--nav-bg); 
+            border-top: 1px solid var(--border); 
+            display: flex; justify-content: space-around; 
+            padding: 8px 0; 
+            z-index: 100; /* 改回 100，讓 Modal (200) 可以蓋住它 */
+            transition: 0.3s; 
+        }
+        /* -------------------------- */
+
         .nav-item { color: var(--text-muted); text-align: center; flex: 1; padding: 4px; opacity: 0.7; display: flex; flex-direction: column; align-items: center; gap: 2px; }
         .nav-item.active { color: var(--accent); opacity: 1; transform: translateY(-2px); font-weight: bold; }
         .nav-icon { font-size: 1.3rem; line-height: 1; } .nav-label { font-size: 0.7rem; }
@@ -129,7 +138,7 @@
         <img src="icon.png" alt="App Logo" class="header-logo" onerror="this.style.display='none'">
         <h1>Poker God <span style="font-size:0.5em; opacity:0.8; background:none; -webkit-text-fill-color: var(--text-main);">PRO</span></h1>
     </div>
-    <div class="version-tag">v5.9.1</div>
+    <div class="version-tag">v5.9.3</div>
 </header>
 
 <div class="container">
@@ -142,7 +151,7 @@
                 </select>
                 <select id="playerCount" onchange="updateRanges()">
                     <option value="2">2 Max</option><option value="3">3 Max</option><option value="4">4 Max</option><option value="5">5 Max</option>
-                    <option value="6">6 Max</option><option value="7">7 Max</option><option value="8">8 Max</option><option value="9" selected>9 Max</option><option value="10">10 Max</option>
+                    <option value="6">6 Max</option><option value="7">7 Max</option><option value="8">8 Max</option><option value="9" selected>9 Max (Full Ring)</option><option value="10">10 Max</option>
                 </select>
                 <select id="heroPosition" onchange="updateRanges()">
                     <option value="BTN">BTN</option><option value="CO">CO</option><option value="MP">MP</option><option value="EP">EP/UTG</option><option value="SB">SB</option><option value="BB">BB</option>
@@ -272,6 +281,14 @@
 </div>
 <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(this)">
 
+<div class="bottom-nav">
+    <div class="nav-item active" onclick="switchTab('ranges', this)"><span class="nav-icon">📊</span><span class="nav-label" data-i18n="nav_ranges">Ranges</span></div>
+    <div class="nav-item" onclick="switchTab('trainer', this)"><span class="nav-icon">🎓</span><span class="nav-label" data-i18n="nav_trainer">Trainer</span></div>
+    <div class="nav-item" onclick="switchTab('odds', this)"><span class="nav-icon">🧮</span><span class="nav-label" data-i18n="nav_odds">Odds</span></div>
+    <div class="nav-item" onclick="switchTab('postflop', this)"><span class="nav-icon">♠️</span><span class="nav-label" data-i18n="nav_postflop">Postflop</span></div>
+    <div class="nav-item" onclick="switchTab('bankroll', this)"><span class="nav-icon">💰</span><span class="nav-label" data-i18n="nav_bankroll">Bankroll</span></div>
+</div>
+
 <div class="modal" id="cardModal">
     <div class="modal-content">
         <h3 style="margin:0 0 15px 0; color:var(--text-main);" data-i18n="select_card">Select Card</h3>
@@ -294,7 +311,7 @@
 </div>
 
 <script>
-    // --- GTO DATABASE (v5.9 Data) ---
+    // --- GTO DATABASE (Compressed for 6-Max Cash 100BB & MTT) ---
     const GTO_DB = {
         "Cash_100bb_6max": {
             "EP": "77+,AJs+,KQs,AQo+,66,ATs,KJs,QJs,JTs", 
@@ -415,9 +432,14 @@
                 let baseR1 = 14 - ranks.indexOf(base[0]);
                 let baseR2 = 14 - ranks.indexOf(base[1]);
                 let baseType = base.length === 2 ? 'pair' : (base.includes('s') ? 'suited' : 'offsuit');
+                
                 if (type !== baseType) continue;
-                if (type === 'pair') { if (r1 >= baseR1) return true; } 
-                else { if (r1 === baseR1 && r2 >= baseR2) return true; }
+                
+                if (type === 'pair') {
+                    if (r1 >= baseR1) return true;
+                } else {
+                    if (r1 === baseR1 && r2 >= baseR2) return true;
+                }
             }
         }
         return false;
@@ -519,9 +541,10 @@
         let adviceHtml = `${t('ai_situation')} <span style="color:var(--accent)">${state.oppAction}</span>.<br>`;
         adviceHtml += `<div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:5px;">Board: ${isMonotone?'🌊 Monotone':'🏜️ Dry'}</div>`;
         adviceHtml += `${t('ai_strength')} <strong>${catText}</strong>.<br>`;
+        
         adviceHtml += `<ul class="ai-list">`;
         if (state.oppAction === 'check') {
-            if(score > 60) adviceHtml += `<li><span style="color:var(--c-raise)">● ${t('bet')}:</span> ${isMonotone ? '33% Pot' : '75% Pot'}</li>`;
+            if(score > 60) adviceHtml += `<li><span style="color:var(--c-raise)">● ${t('bet')}:</span> ${isMonotone ? '33% Pot (Protection)' : '75% Pot (Value)'}</li>`;
             else if(isDraw) adviceHtml += `<li><span style="color:var(--c-raise)">● ${t('bet')}:</span> 50% Pot (Semi-Bluff)</li>`;
             else adviceHtml += `<li><span style="color:var(--c-call)">● ${t('check')}:</span> Pot Control</li>`;
         } else if (state.oppAction === 'bet') {
