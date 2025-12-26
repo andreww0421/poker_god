@@ -36,6 +36,14 @@
         select, input, textarea { width: 100%; background: rgba(125,125,125,0.1); border: 1px solid var(--border); color: var(--text-main); padding: 12px; border-radius: 8px; font-size: 1rem; outline: none; font-family: inherit; }
         select:focus, input:focus, textarea:focus { border-color: var(--accent); }
         select option { background-color: var(--bg-body); color: var(--text-main); }
+        
+        /* --- 修復：深色模式下的日期選擇器圖示 --- */
+        input[type="date"] { color-scheme: dark; }
+        [data-theme="light"] input[type="date"] { color-scheme: light; }
+        ::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
+        [data-theme="light"] ::-webkit-calendar-picker-indicator { filter: invert(0); }
+        /* -------------------------------------- */
+
         .btn-action { width: 100%; padding: 14px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 10px; }
         .btn-delete { background: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; }
         .opp-action-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
@@ -101,7 +109,7 @@
         <img src="icon.png" alt="App Logo" class="header-logo" onerror="this.style.display='none'">
         <h1>Poker God <span style="font-size:0.5em; opacity:0.8; background:none; -webkit-text-fill-color: var(--text-main);">PRO</span></h1>
     </div>
-    <div class="version-tag">v5.9</div>
+    <div class="version-tag">v5.9.1</div>
 </header>
 
 <div class="container">
@@ -288,8 +296,8 @@
     const translations = {
         'zh-TW': {
             nav_ranges:'範圍表', nav_trainer:'測驗', nav_odds:'賠率', nav_postflop:'翻後', nav_bankroll:'資金',
-            mixed_chart:'混合策略圖 (GTO)', pot_odds_calc:'底池賠率', pot:'底池', bet_call:'跟注額', calculate:'計算',
-            req_equity:'所需勝率', odds:'賠率', my_hand:'我的手牌', board:'公共牌', opp_action:'對手行動', analyze:'AI 分析',
+            mixed_chart:'混合策略圖 (GTO)', pot_odds_calc:'底池賠率計算', pot:'底池', bet_call:'跟注額', calculate:'計算',
+            req_equity:'所需勝率', odds:'賠率', my_hand:'我的手牌', board:'公共牌', opp_action:'對手行動', analyze:'AI 分析決策',
             hand_strength:'牌力強度', bankroll_trend:'資金趨勢', total_profit:'總盈虧', add_record:'新增紀錄', buyin:'買入', prize:'獎金', profit:'盈利', save:'儲存', history:'歷史紀錄',
             language:'語言', export:'匯出備份', import:'還原資料', select_card:'選擇撲克牌', cancel:'取消',
             streak:'連勝', score:'得分', gto_action_q:'GTO 會如何行動?', next_hand:'下一手牌 ➔',
@@ -358,52 +366,74 @@
         let labelMode = mode==='Cash'?'strat_cash':(mode==='PushFold'?'strat_push':(pos==='BB'?'strat_bb':'strat_rfi'));
         document.getElementById('rangeInfoText').innerText = `${t(labelMode)} (${stack}BB) - ${pos}`;
         let calcMode = mode; if(pos==='BB' && document.getElementById('gameMode').value !== 'Cash') calcMode = "BBDef"; 
+        
+        // Determine correct DB key
+        let dbKey = "";
+        if (mode === 'Cash') dbKey = "Cash_100bb_6max";
+        else if (mode === 'RFI') dbKey = "MTT_Deep_6max";
+
         document.querySelectorAll('.chart-cell').forEach(c => {
             let r1 = parseInt(c.dataset.r1), r2 = parseInt(c.dataset.r2), type = c.dataset.type;
-            let freqs = getFrequencies(r1, r2, type, pos, stack, calcMode);
+            // 1. Try DB Lookup
+            let freqs = null;
+            if (dbKey && GTO_DB[dbKey] && GTO_DB[dbKey][pos]) {
+                const rangeStr = GTO_DB[dbKey][pos];
+                if (checkRange(r1, r2, type, rangeStr)) freqs = {a:0, r:100, c:0, f:0};
+                else freqs = {a:0, r:0, c:0, f:100};
+            } 
+            // 2. Fallback to Algo
+            if (!freqs) freqs = getFrequencies(r1, r2, type, pos, stack, calcMode);
+            
             let s1 = freqs.a; let s2 = s1 + freqs.r; let s3 = s2 + freqs.c;
             c.style.background = `linear-gradient(135deg, var(--c-allin) 0% ${s1}%, var(--c-raise) ${s1}% ${s2}%, var(--c-call) ${s2}% ${s3}%, var(--c-fold) ${s3}% 100%)`;
         });
     }
     
-    // --- HYBRID ENGINE: LOOKUP + ALGORITHM ---
-    function checkRange(hStr, rangeStr) {
-        // Simple check if specific hand string exists in comma-separated list
-        // Note: Full range parsing (e.g. 77+) requires more logic, 
-        // for v5.9 we simulate 6-max logic with tuned algorithm below if DB lookup is complex
-        return false; 
+    // --- RANGE PARSER (v5.9) ---
+    function checkRange(r1, r2, type, rangeStr) {
+        // rangeStr format: "77+,AJs+,KQs,AQo+,66"
+        let parts = rangeStr.split(',');
+        let myHand = "";
+        if (type === 'pair') myHand = ranks[14-r1] + ranks[14-r1];
+        else if (type === 'suited') myHand = ranks[14-r1] + ranks[14-r2] + 's';
+        else myHand = ranks[14-r1] + ranks[14-r2] + 'o';
+
+        for (let p of parts) {
+            p = p.trim();
+            if (p === myHand) return true;
+            if (p.includes('+')) {
+                let base = p.replace('+','');
+                let baseR1 = 14 - ranks.indexOf(base[0]);
+                let baseR2 = 14 - ranks.indexOf(base[1]);
+                let baseType = base.length === 2 ? 'pair' : (base.includes('s') ? 'suited' : 'offsuit');
+                
+                if (type !== baseType) continue;
+                
+                if (type === 'pair') {
+                    if (r1 >= baseR1) return true;
+                } else {
+                    if (r1 === baseR1 && r2 >= baseR2) return true;
+                }
+            }
+        }
+        return false;
     }
 
     function getFrequencies(r1, r2, type, pos, stack, mode) {
+        // Fallback Algorithm
         let f = {a:0, r:0, c:0, f:100}; 
         let score = r1*2 + r2 + (type==='pair'?20:0) + (type==='suited'?6:0);
         
         if (mode === 'Cash') {
-            // PRO ALGORITHM v5.9 (Approximating 6-Max 100BB GTO)
-            let posBonus = 0; // UTG=0
-            if(pos==='MP') posBonus = 4; if(pos==='CO') posBonus = 10; if(pos==='BTN'||pos==='SB') posBonus = 16;
-            
-            // Adjust score based on connectivity
-            let gap = r1 - r2;
-            if(type==='suited' && gap===1 && r1<=11) score+=15; // 54s-JTs
-            if(type==='suited' && gap===2 && r1<=11) score+=10; // 64s-J9s
-            
-            // Pairs are good
-            if(type==='pair') score += 10;
-
-            // Offsuit connectors only late
-            if(type==='offsuit') {
-                if(gap===1 && r1<=12) { if(posBonus>=10) score+=12; else score-=15; }
-                else if(r1 < 10) score -= 20; // Trash offsuit
-            }
-
-            let thresh = 50 - posBonus;
+            let t = 0; if(pos==='CO') t=4; if(pos==='MP') t=8; if(pos==='EP') t=12; 
+            if(type==='suited') { let gap = r1-r2; if(gap===1 && r1<=11) score+=15; if(gap===2 && r1<=11) score+=10; }
+            if(type==='offsuit') { let gap = r1-r2; if(gap===1 && r1<=11) { if(pos==='CO'||pos==='BTN'||pos==='SB') score+=12; else score-=10; } }
+            if(type==='suited') score += 5; if(type==='pair') score += 8; 
+            let thresh = 40 - (10 - t); 
             if(score >= thresh) { f.r=100; f.f=0; return f; }
-            if(score >= thresh - 4) { f.r=50; f.f=50; return f; }
+            if(score >= thresh - 3) { f.r=50; f.f=50; return f; }
             return f;
         }
-        
-        // MTT Logic
         if(mode === "PushFold") {
             let threshold = 35 - (stack - 5); if(pos==='BTN'||pos==='SB') threshold -= 12; else if(pos==='CO') threshold -= 6;
             if(type==='pair') { if(r1>=7) { f.a=100; f.f=0; return f; } if(r1>=2 && r1<7) { let p = (8-r1)*10 + (15-stack)*5; if(pos==='BTN'||pos==='SB') p+=30; f.a=Math.min(100,Math.max(0,p)); f.f=100-f.a; return f; } }
@@ -413,7 +443,6 @@
             if((type==='pair'&&r1>=10)||(type==='offsuit'&&r1===14&&r2>=12)||(type==='suited'&&r1===14&&r2>=11)) { f.r=80; f.c=20; f.f=0; return f; }
             let callThresh = 25; if(score >= callThresh) { f.c=100; f.f=0; return f; } if(score >= callThresh - 5) { f.c=40; f.f=60; return f; } return f;
         }
-        // MTT RFI
         let t = 0; if(pos==='MP') t=5; if(pos==='CO') t=12; if(pos==='BTN') t=20; if(pos==='SB') t=18;
         let openThresh = 45 - t; if(score >= openThresh + 5) { f.r=100; f.f=0; return f; } if(score >= openThresh) { f.r=50; f.f=50; return f; } return f;
     }
@@ -421,7 +450,7 @@
     function calcPotOdds() { let p=parseFloat(document.getElementById('potSize').value), c=parseFloat(document.getElementById('betSize').value); if(!p||!c)return; document.getElementById('oddsResult').style.display='block'; document.getElementById('reqEquity').innerText = ((c/(p+c+c))*100).toFixed(1)+'%'; document.getElementById('oddsRatio').innerText = ((p+c)/c).toFixed(1)+' : 1'; }
     function setOppAction(act, btn) { state.oppAction = act; document.querySelectorAll('.btn-opp').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
     
-    // --- POSTFLOP TEXTURE ENGINE (v5.9) ---
+    // --- POSTFLOP TEXTURE ENGINE (v5.9.1 REPAIRED) ---
     function analyzePostflop() {
         if(!state.h1 || !state.h2 || !state.b1 || !state.b2 || !state.b3) { alert("Select Cards!"); return; }
         if(!state.oppAction) { alert("Select Action!"); return; }
@@ -434,22 +463,70 @@
         let isMonotone = Object.values(suitCounts).some(v => v >= 3);
         let isPairedBoard = new Set(bCards.map(c=>c.rank)).size < bCards.length;
         
-        // 2. Analyze Hand Strength
+        // --- 2. Advanced Hand Strength Evaluator ---
+        
+        // Rank Map
+        let map = {'A':14,'K':13,'Q':12,'J':11,'T':10,'9':9,'8':8,'7':7,'6':6,'5':5,'4':4,'3':3,'2':2};
+        
+        // Flush Check
         let mySuitCounts = {}; allCards.forEach(c => mySuitCounts[c.suit.id] = (mySuitCounts[c.suit.id]||0)+1);
-        let isFlush = Object.values(mySuitCounts).some(v => v >= 5);
+        let flushSuit = Object.keys(mySuitCounts).find(s => mySuitCounts[s] >= 5);
+        let isFlush = !!flushSuit;
         let isDraw = Object.values(mySuitCounts).some(v => v === 4);
-        
-        let rCounts = {}; allCards.forEach(c => rCounts[c.rank] = (rCounts[c.rank]||0)+1);
-        let pairs = Object.values(rCounts).filter(v => v===2).length;
-        let sets = Object.values(rCounts).filter(v => v===3).length;
-        
+
+        // Straight Check Helper
+        function hasStraight(cards) {
+            let ranks = cards.map(c => map[c.rank]);
+            let uniqueRanks = [...new Set(ranks)].sort((a,b) => b-a);
+            
+            // Check regular straights
+            for (let i = 0; i <= uniqueRanks.length - 5; i++) {
+                if (uniqueRanks[i] - uniqueRanks[i+4] === 4) return { has: true, high: uniqueRanks[i] };
+            }
+            // Check Wheel (A-2-3-4-5) -> 14, 5, 4, 3, 2
+            if (uniqueRanks.includes(14) && uniqueRanks.includes(2) && uniqueRanks.includes(3) && uniqueRanks.includes(4) && uniqueRanks.includes(5)) {
+                return { has: true, high: 5 };
+            }
+            return { has: false };
+        }
+
+        let straightRes = hasStraight(allCards);
+        let isStraight = straightRes.has;
+
+        // Straight Flush Check
+        let isStraightFlush = false;
+        let isRoyal = false;
+        if (isFlush) {
+            let flushCards = allCards.filter(c => c.suit.id === flushSuit);
+            let sfRes = hasStraight(flushCards);
+            if (sfRes.has) {
+                isStraightFlush = true;
+                if (sfRes.high === 14) isRoyal = true;
+            }
+        }
+
+        // Pairs / Trips / Quads
+        let rankCounts = {}; allCards.forEach(c => rankCounts[c.rank] = (rankCounts[c.rank]||0)+1);
+        let counts = Object.values(rankCounts);
+        let quads = counts.filter(c => c === 4).length;
+        let trips = counts.filter(c => c === 3).length;
+        let pairs = counts.filter(c => c === 2).length;
+        let isFullHouse = (trips > 0 && (pairs > 0 || trips > 1)); // 3+2 or 3+3
+
+        // Scoring Logic
         let score=0, catText="High Card", barColor="#ef4444";
-        if (isFlush || (sets>0 && pairs>0)) { score=95; catText=t('advice_nuts'); barColor="#8b5cf6"; }
-        else if (sets>0) { score=80; catText="Set"; barColor="#10b981"; }
-        else if (pairs>=2) { score=65; catText="Two Pair"; barColor="#10b981"; }
-        else if (pairs===1) { score=45; catText="Pair"; barColor="#f59e0b"; }
+        
+        if (isRoyal) { score=100; catText="Royal Flush"; barColor="#8b5cf6"; }
+        else if (isStraightFlush) { score=98; catText="Straight Flush"; barColor="#8b5cf6"; }
+        else if (quads > 0) { score=95; catText="Four of a Kind"; barColor="#8b5cf6"; }
+        else if (isFullHouse) { score=90; catText="Full House"; barColor="#10b981"; }
+        else if (isFlush) { score=85; catText="Flush"; barColor="#10b981"; }
+        else if (isStraight) { score=80; catText="Straight"; barColor="#10b981"; }
+        else if (trips > 0) { score=70; catText="Set / Trips"; barColor="#10b981"; }
+        else if (pairs >= 2) { score=60; catText="Two Pair"; barColor="#10b981"; }
+        else if (pairs === 1) { score=45; catText="Pair"; barColor="#f59e0b"; }
         else if (isDraw) { score=35; catText=t('advice_draw'); barColor="#f59e0b"; }
-        else { score=15; catText="Air"; barColor="#ef4444"; }
+        else { score=15; catText="Air (High Card)"; barColor="#ef4444"; }
 
         // 3. Generate Pro Advice
         let adviceHtml = `${t('ai_situation')} <span style="color:var(--accent)">${state.oppAction}</span>.<br>`;
