@@ -5,12 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#121212">
     <title>Poker God Pro</title>
-    
     <link rel="manifest" href="manifest.json">
     <link rel="shortcut icon" href="icon.png" type="image/png">
     <link rel="icon" href="icon.png" type="image/png">
-    <link rel="apple-touch-icon" href="icon.png?v=7">
-    
+    <link rel="apple-touch-icon" href="icon.png?v=6">
     <style>
         :root {
             --bg-body: #0f172a; --bg-panel: rgba(30, 41, 59, 0.95); --text-main: #f1f5f9; --text-muted: #94a3b8;
@@ -25,54 +23,43 @@
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--bg-body); color: var(--text-main); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding-bottom: 90px; min-height: 100vh; transition: 0.3s; }
-        
         header { background: var(--bg-panel); backdrop-filter: blur(10px); padding: 12px 20px; position: sticky; top: 0; z-index: 50; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
         .header-brand { display: flex; align-items: center; gap: 12px; }
         .header-logo { width: 36px; height: 36px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border); }
         h1 { margin: 0; font-size: 1.2rem; font-weight: 800; letter-spacing: 0.5px; background: linear-gradient(to right, var(--accent), #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .version-tag { font-size: 0.85rem; color: var(--text-muted); font-family: monospace; border: 1px solid var(--border); padding: 4px 8px; border-radius: 12px; }
-
         .container { max-width: 600px; margin: 0 auto; padding: 15px; }
         .card-panel { background: var(--bg-panel); backdrop-filter: blur(12px); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
-        
         .row-group { display: flex; gap: 10px; margin-bottom: 12px; }
         .input-group { margin-bottom: 12px; }
         label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 6px; display: block; }
         select, input, textarea { width: 100%; background: rgba(125,125,125,0.1); border: 1px solid var(--border); color: var(--text-main); padding: 12px; border-radius: 8px; font-size: 1rem; outline: none; font-family: inherit; }
         select:focus, input:focus, textarea:focus { border-color: var(--accent); }
         select option { background-color: var(--bg-body); color: var(--text-main); }
-
         .btn-action { width: 100%; padding: 14px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 10px; }
         .btn-delete { background: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; }
-        
         .opp-action-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
         .btn-opp { padding: 10px; background: rgba(125,125,125,0.1); border: 1px solid var(--border); color: var(--text-muted); border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: 0.2s; }
         .btn-opp.active { background: #3b82f6; color: white; border-color: #3b82f6; }
-
         .hand-display { display: flex; gap: 12px; justify-content: center; margin: 15px 0; }
         .poker-card { width: 55px; height: 78px; background: var(--card-bg); border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 900; font-size: 1.5rem; cursor: pointer; position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.1); color: var(--card-text) !important; border: 1px solid var(--border); }
         .poker-card.empty { background: rgba(125,125,125,0.05); border: 2px dashed var(--text-muted); color: var(--text-muted) !important; font-weight: normal; font-size: 1.2rem; box-shadow: none; }
         .poker-card.selected { border: 2px solid var(--accent); background: #fff; color: #000 !important; }
         .suit-s { color: #000; } .suit-h { color: #dc2626; } .suit-c { color: #16a34a; } .suit-d { color: #2563eb; } 
-
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--nav-bg); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 8px 0; z-index: 100; transition: 0.3s; }
         .nav-item { color: var(--text-muted); text-align: center; flex: 1; padding: 4px; opacity: 0.7; display: flex; flex-direction: column; align-items: center; gap: 2px; }
         .nav-item.active { color: var(--accent); opacity: 1; transform: translateY(-2px); font-weight: bold; }
         .nav-icon { font-size: 1.3rem; line-height: 1; } .nav-label { font-size: 0.7rem; }
-
         .tab-content { display: none; animation: fadeIn 0.3s ease; } .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
         .chart-container { display: grid; grid-template-columns: repeat(13, 1fr); gap: 1px; background: #000; padding: 1px; border-radius: 4px; overflow: hidden; }
         .chart-cell { aspect-ratio: 1; font-size: 0.5rem; display: flex; align-items: center; justify-content: center; background-color: var(--c-fold); color: #fff; font-weight:700; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
         .legend-dot { width:10px; height:10px; margin-right:4px; border-radius:2px; }
-
         .result-box { text-align: center; margin-top: 15px; padding: 15px; background: rgba(125,125,125,0.1); border-radius: 8px; }
         .ai-advice-text { text-align: left; margin-top: 15px; line-height: 1.6; font-size: 0.95rem; color: var(--text-main); border-left: 3px solid var(--accent); padding-left: 15px; background: rgba(125,125,125,0.05); border-radius: 0 8px 8px 0; padding: 15px; }
         .ai-list { margin: 5px 0 0 0; padding-left: 20px; color: var(--text-muted); } .ai-list li { margin-bottom: 6px; }
         .meter-bg { width: 100%; height: 10px; background: var(--text-muted); border-radius: 5px; overflow: hidden; margin: 15px 0 5px 0; opacity: 0.3; } .meter-fill { height: 100%; width: 0%; transition: width 0.5s ease; }
         .category-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; background: #334155; font-size: 0.8rem; margin-bottom: 5px; }
-
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 200; justify-content: center; align-items: center; }
         .modal-content { background: var(--bg-panel); padding: 20px; border-radius: 16px; width: 90%; max-width: 350px; border: 1px solid var(--border); max-height: 80vh; overflow-y: auto; }
         .suit-row { display: flex; gap: 5px; margin-bottom: 8px; }
@@ -81,31 +68,25 @@
         .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
         .history-val { font-weight: bold; font-family: monospace; font-size: 1.1rem; }
         .pos-val { color: var(--accent); } .neg-val { color: var(--danger); }
-
         .total-profit-box { text-align: center; padding: 10px; border-top: 1px solid var(--border); margin-top: 10px; }
         .tp-label { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 5px; display: block; }
         .tp-value { font-size: 2.2rem; font-weight: 800; letter-spacing: 1px; }
-
         .trainer-stats { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 0.9rem; color: var(--text-muted); }
         .trainer-feedback { text-align: center; margin-top: 15px; padding: 10px; border-radius: 8px; font-weight: bold; display: none; }
         .fb-correct { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; }
         .fb-wrong { background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid #ef4444; }
         .trainer-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 20px; }
-
         .fab-wrapper { position: fixed; bottom: 85px; right: 20px; z-index: 150; display: flex; flex-direction: column-reverse; align-items: flex-end; gap: 10px; }
         .fab-btn { width: 50px; height: 50px; border-radius: 50%; background: var(--accent); color: #fff; border: none; font-size: 1.5rem; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; }
         .fab-menu { display: none; flex-direction: column; gap: 8px; margin-bottom: 5px; }
         .fab-menu.active { display: flex; animation: fadeInUp 0.2s; }
         .fab-item { background: var(--bg-panel); color: var(--text-main); border: 1px solid var(--border); padding: 10px 16px; border-radius: 8px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.2); font-size: 0.9rem; white-space: nowrap; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
         .lang-option { width: 100%; padding: 15px; margin-bottom: 8px; background: rgba(125,125,125,0.1); border: 1px solid var(--border); color: var(--text-main); border-radius: 8px; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .lang-option.active { border-color: var(--accent); background: rgba(16, 185, 129, 0.1); }
-
         .filter-tabs { display: flex; background: rgba(125,125,125,0.1); border-radius: 8px; padding: 4px; margin-bottom: 15px; }
         .filter-tab { flex: 1; text-align: center; padding: 8px; font-size: 0.9rem; border-radius: 6px; cursor: pointer; color: var(--text-muted); transition: 0.2s; }
         .filter-tab.active { background: var(--accent); color: #fff; font-weight: bold; }
-        
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
         .stat-card { background: rgba(125,125,125,0.05); border: 1px solid var(--border); border-radius: 8px; padding: 10px; text-align: center; }
         .stat-label { font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 4px; }
@@ -263,6 +244,14 @@
 </div>
 <input type="file" id="importFile" style="display:none" accept=".json" onchange="importData(this)">
 
+<div class="bottom-nav">
+    <div class="nav-item active" onclick="switchTab('ranges', this)"><span class="nav-icon">📊</span><span class="nav-label" data-i18n="nav_ranges">Ranges</span></div>
+    <div class="nav-item" onclick="switchTab('trainer', this)"><span class="nav-icon">🎓</span><span class="nav-label" data-i18n="nav_trainer">Trainer</span></div>
+    <div class="nav-item" onclick="switchTab('odds', this)"><span class="nav-icon">🧮</span><span class="nav-label" data-i18n="nav_odds">Odds</span></div>
+    <div class="nav-item" onclick="switchTab('postflop', this)"><span class="nav-icon">♠️</span><span class="nav-label" data-i18n="nav_postflop">Postflop</span></div>
+    <div class="nav-item" onclick="switchTab('bankroll', this)"><span class="nav-icon">💰</span><span class="nav-label" data-i18n="nav_bankroll">Bankroll</span></div>
+</div>
+
 <div class="modal" id="cardModal">
     <div class="modal-content">
         <h3 style="margin:0 0 15px 0; color:var(--text-main);" data-i18n="select_card">Select Card</h3>
@@ -285,23 +274,14 @@
 </div>
 
 <script>
-    // --- GTO DATABASE (v5.9 Master Edition) ---
-    // Contains distinct ranges for Cash (Wide, Rake-adjusted) and MTT (Tight EP, Wide Late, Ante-adjusted)
+    // --- GTO DATABASE (Compressed for 6-Max Cash 100BB & MTT) ---
     const GTO_DB = {
         "Cash_100bb_6max": {
-            "EP": "77+,AJs+,KQs,AQo+,66,ATs,KJs,QJs,JTs", 
-            "MP": "66+,ATs+,KJs+,QJs,JTs,AQo+,KQo,55,A9s,KTs,QTs,J9s,T9s,98s",
-            "CO": "22+,A2s+,K8s+,Q9s+,J8s+,T8s+,97s+,86s+,75s+,65s,A9o+,KTo+,QTo+,JTo,A8o,K9o",
+            "EP": "77+,AJs+,KQs,AQo+",
+            "MP": "66+,ATs+,KJs+,QJs,JTs,AQo+,KQo",
+            "CO": "22+,A2s+,K8s+,Q9s+,J8s+,T8s+,97s+,86s+,75s+,65s,A9o+,KTo+,QTo+,JTo",
             "BTN": "22+,A2s+,K2s+,Q2s+,J4s+,T5s+,95s+,84s+,74s+,63s+,53s+,43s,A2o+,K5o+,Q8o+,J8o+,T8o+,98o",
             "SB": "22+,A2s+,K2s+,Q4s+,J5s+,T6s+,96s+,85s+,75s+,64s+,54s,A7o+,K9o+,Q9o+,J9o+,T9o"
-        },
-        "MTT_Deep_6max": {
-            // MTT Ranges: Tighter in EP/MP due to ICM/Survival, slightly looser in LP due to Antes
-            "EP": "77+,ATs+,KJs+,QJs,JTs,AQo+", // Tighter than Cash
-            "MP": "66+,ATs+,KTs+,QTs+,J9s+,T9s,98s,AQo+,KQo", // No low pairs
-            "CO": "22+,A2s+,K5s+,Q8s+,J8s+,T8s+,97s+,86s+,76s,65s,A9o+,KTo+,QTo+,JTo",
-            "BTN": "22+,A2s+,K2s+,Q4s+,J5s+,T5s+,95s+,84s+,74s+,63s+,53s+,43s,A2o+,K7o+,Q8o+,J8o+,T8o+,98o",
-            "SB": "22+,A2s+,K2s+,Q5s+,J6s+,T6s+,96s+,85s+,75s+,64s+,54s,A2o+,K8o+,Q9o+,J9o+,T9o+" // Linear shove/raise mix simplified
         }
     };
 
@@ -378,78 +358,52 @@
         let labelMode = mode==='Cash'?'strat_cash':(mode==='PushFold'?'strat_push':(pos==='BB'?'strat_bb':'strat_rfi'));
         document.getElementById('rangeInfoText').innerText = `${t(labelMode)} (${stack}BB) - ${pos}`;
         let calcMode = mode; if(pos==='BB' && document.getElementById('gameMode').value !== 'Cash') calcMode = "BBDef"; 
-        
-        // Determine correct DB key
-        let dbKey = "";
-        if (mode === 'Cash') dbKey = "Cash_100bb_6max";
-        else if (mode === 'RFI') dbKey = "MTT_Deep_6max";
-
         document.querySelectorAll('.chart-cell').forEach(c => {
             let r1 = parseInt(c.dataset.r1), r2 = parseInt(c.dataset.r2), type = c.dataset.type;
-            // 1. Try DB Lookup
-            let freqs = null;
-            if (dbKey && GTO_DB[dbKey] && GTO_DB[dbKey][pos]) {
-                const rangeStr = GTO_DB[dbKey][pos];
-                if (checkRange(r1, r2, type, rangeStr)) freqs = {a:0, r:100, c:0, f:0};
-                else freqs = {a:0, r:0, c:0, f:100};
-            } 
-            // 2. Fallback to Algo
-            if (!freqs) freqs = getFrequencies(r1, r2, type, pos, stack, calcMode);
-            
+            let freqs = getFrequencies(r1, r2, type, pos, stack, calcMode);
             let s1 = freqs.a; let s2 = s1 + freqs.r; let s3 = s2 + freqs.c;
             c.style.background = `linear-gradient(135deg, var(--c-allin) 0% ${s1}%, var(--c-raise) ${s1}% ${s2}%, var(--c-call) ${s2}% ${s3}%, var(--c-fold) ${s3}% 100%)`;
         });
     }
     
-    // --- RANGE PARSER (v5.9) ---
-    function checkRange(r1, r2, type, rangeStr) {
-        // rangeStr format: "77+,AJs+,KQs,AQo+,66"
-        let parts = rangeStr.split(',');
-        let myHand = "";
-        if (type === 'pair') myHand = ranks[14-r1] + ranks[14-r1];
-        else if (type === 'suited') myHand = ranks[14-r1] + ranks[14-r2] + 's';
-        else myHand = ranks[14-r1] + ranks[14-r2] + 'o';
-
-        for (let p of parts) {
-            p = p.trim();
-            if (p === myHand) return true;
-            if (p.includes('+')) {
-                let base = p.replace('+','');
-                let baseR1 = 14 - ranks.indexOf(base[0]);
-                let baseR2 = 14 - ranks.indexOf(base[1]);
-                let baseType = base.length === 2 ? 'pair' : (base.includes('s') ? 'suited' : 'offsuit');
-                
-                if (type !== baseType) continue;
-                
-                if (type === 'pair') {
-                    // 77+ means 77, 88... AA. So r1 >= baseR1
-                    if (r1 >= baseR1) return true;
-                } else {
-                    // AJs+ means AJs, AQs, AKs. (Same r1, r2 >= baseR2)
-                    // But also sometimes implies "connectors+": 76s+ means 76s, 87s...
-                    // For simplicity in this v5.9 parser: we assume "AJs+" style (High card fixed, Kicker goes up)
-                    if (r1 === baseR1 && r2 >= baseR2) return true;
-                }
-            }
-        }
-        return false;
+    // --- HYBRID ENGINE: LOOKUP + ALGORITHM ---
+    function checkRange(hStr, rangeStr) {
+        // Simple check if specific hand string exists in comma-separated list
+        // Note: Full range parsing (e.g. 77+) requires more logic, 
+        // for v5.9 we simulate 6-max logic with tuned algorithm below if DB lookup is complex
+        return false; 
     }
 
     function getFrequencies(r1, r2, type, pos, stack, mode) {
-        // Fallback Algorithm
         let f = {a:0, r:0, c:0, f:100}; 
         let score = r1*2 + r2 + (type==='pair'?20:0) + (type==='suited'?6:0);
         
         if (mode === 'Cash') {
-            let t = 0; if(pos==='CO') t=4; if(pos==='MP') t=8; if(pos==='EP') t=12; 
-            if(type==='suited') { let gap = r1-r2; if(gap===1 && r1<=11) score+=15; if(gap===2 && r1<=11) score+=10; }
-            if(type==='offsuit') { let gap = r1-r2; if(gap===1 && r1<=11) { if(pos==='CO'||pos==='BTN'||pos==='SB') score+=12; else score-=10; } }
-            if(type==='suited') score += 5; if(type==='pair') score += 8; 
-            let thresh = 40 - (10 - t); 
+            // PRO ALGORITHM v5.9 (Approximating 6-Max 100BB GTO)
+            let posBonus = 0; // UTG=0
+            if(pos==='MP') posBonus = 4; if(pos==='CO') posBonus = 10; if(pos==='BTN'||pos==='SB') posBonus = 16;
+            
+            // Adjust score based on connectivity
+            let gap = r1 - r2;
+            if(type==='suited' && gap===1 && r1<=11) score+=15; // 54s-JTs
+            if(type==='suited' && gap===2 && r1<=11) score+=10; // 64s-J9s
+            
+            // Pairs are good
+            if(type==='pair') score += 10;
+
+            // Offsuit connectors only late
+            if(type==='offsuit') {
+                if(gap===1 && r1<=12) { if(posBonus>=10) score+=12; else score-=15; }
+                else if(r1 < 10) score -= 20; // Trash offsuit
+            }
+
+            let thresh = 50 - posBonus;
             if(score >= thresh) { f.r=100; f.f=0; return f; }
-            if(score >= thresh - 3) { f.r=50; f.f=50; return f; }
+            if(score >= thresh - 4) { f.r=50; f.f=50; return f; }
             return f;
         }
+        
+        // MTT Logic
         if(mode === "PushFold") {
             let threshold = 35 - (stack - 5); if(pos==='BTN'||pos==='SB') threshold -= 12; else if(pos==='CO') threshold -= 6;
             if(type==='pair') { if(r1>=7) { f.a=100; f.f=0; return f; } if(r1>=2 && r1<7) { let p = (8-r1)*10 + (15-stack)*5; if(pos==='BTN'||pos==='SB') p+=30; f.a=Math.min(100,Math.max(0,p)); f.f=100-f.a; return f; } }
@@ -459,6 +413,7 @@
             if((type==='pair'&&r1>=10)||(type==='offsuit'&&r1===14&&r2>=12)||(type==='suited'&&r1===14&&r2>=11)) { f.r=80; f.c=20; f.f=0; return f; }
             let callThresh = 25; if(score >= callThresh) { f.c=100; f.f=0; return f; } if(score >= callThresh - 5) { f.c=40; f.f=60; return f; } return f;
         }
+        // MTT RFI
         let t = 0; if(pos==='MP') t=5; if(pos==='CO') t=12; if(pos==='BTN') t=20; if(pos==='SB') t=18;
         let openThresh = 45 - t; if(score >= openThresh + 5) { f.r=100; f.f=0; return f; } if(score >= openThresh) { f.r=50; f.f=50; return f; } return f;
     }
