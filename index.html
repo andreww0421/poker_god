@@ -29,7 +29,8 @@
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                 <select id="gameMode" onchange="updateRanges()">
                     <option value="MTT" data-i18n="mode_mtt">MTT</option>
-                    <option value="Cash" data-i18n="mode_cash">Cash</option>
+                    <option value="Cash" data-i18n="mode_cash">Cash (RFI)</option>
+                    <option value="Cash_vs_3Bet">Cash (Face 3-Bet)</option>
                 </select>
                 <select id="playerCount" onchange="updateRanges()">
                     <option value="2">2 Max</option><option value="3">3 Max</option><option value="4">4 Max</option><option value="5">5 Max</option>
@@ -201,3 +202,4 @@
 <script src="app.js"></script>
 </body>
 </html>
+
