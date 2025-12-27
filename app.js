@@ -1,5 +1,5 @@
 // =========================================================
-//  POKER GOD PRO v6.1 - MULTILINGUAL MASTER
+//  POKER GOD PRO v6.1.1 - DISPLAY FIX
 // =========================================================
 
 // --- GTO DATABASE ---
@@ -34,7 +34,7 @@ const GTO_DB = {
     }
 };
 
-// --- TRANSLATIONS (Expanded for Bilingual Poker Terms) ---
+// --- TRANSLATIONS (Fixed Missing Keys) ---
 const translations = {
     'en': {
         // UI
@@ -61,8 +61,9 @@ const translations = {
         hand_trips: 'Set / Trips', hand_two_pair: 'Two Pair', hand_pair: 'Pair', 
         hand_flush_draw: 'Flush Draw', hand_draw: 'Draw', hand_high_card: 'High Card',
 
-        // Poker Terms (Actions)
+        // Poker Terms (Actions) - [FIXED] Added missing 3bet/allin
         act_bet: 'Bet', act_raise: 'Raise', act_call: 'Call', act_check: 'Check', act_fold: 'Fold',
+        act_3bet: '3-Bet', act_allin: 'All-in',
 
         // Poker Terms (Advice Concepts)
         adv_value: 'Value', adv_protection: 'Protection', adv_polarized: 'Polarized Value', adv_trap: 'Trap',
@@ -90,7 +91,10 @@ const translations = {
         hand_full_house: '葫蘆', hand_flush: '同花', hand_straight: '順子', 
         hand_trips: '三條', hand_two_pair: '兩對', hand_pair: '對子', 
         hand_flush_draw: '同花聽牌', hand_draw: '聽牌', hand_high_card: '高牌',
+        // [FIXED] Added missing
         act_bet: '下注', act_raise: '加注', act_call: '跟注', act_check: '過牌', act_fold: '棄牌',
+        act_3bet: '3-Bet', act_allin: '全下',
+
         adv_value: '價值', adv_protection: '保護', adv_polarized: '極化價值', adv_trap: '設陷阱',
         adv_pot_control: '控池', adv_showdown: '攤牌價值', adv_semi_bluff: '半詐唬', 
         adv_bluff_catch: '抓詐唬', adv_odds: '賠率', adv_give_up: '放棄', adv_not_enough_equity: '勝率不足',
@@ -112,7 +116,10 @@ const translations = {
         hand_full_house: '葫芦', hand_flush: '同花', hand_straight: '顺子', 
         hand_trips: '三条', hand_two_pair: '两对', hand_pair: '对子', 
         hand_flush_draw: '同花听牌', hand_draw: '听牌', hand_high_card: '高牌',
+        // [FIXED] Added missing
         act_bet: '下注', act_raise: '加注', act_call: '跟注', act_check: '过牌', act_fold: '弃牌',
+        act_3bet: '3-Bet', act_allin: '全下',
+
         adv_value: '价值', adv_protection: '保护', adv_polarized: '极化', adv_trap: '陷阱',
         adv_pot_control: '控池', adv_showdown: '摊牌', adv_semi_bluff: '半诈唬', 
         adv_bluff_catch: '抓诈唬', adv_odds: '赔率', adv_give_up: '放弃', adv_not_enough_equity: '胜率不足',
@@ -134,7 +141,10 @@ const translations = {
         hand_full_house: 'フルハウス', hand_flush: 'フラッシュ', hand_straight: 'ストレート', 
         hand_trips: 'スリーカード', hand_two_pair: 'ツーペア', hand_pair: 'ワンペア', 
         hand_flush_draw: 'フラッシュドロー', hand_draw: 'ドロー', hand_high_card: 'ハイカード',
+        // [FIXED] Added missing
         act_bet: 'ベット', act_raise: 'レイズ', act_call: 'コール', act_check: 'チェック', act_fold: 'フォールド',
+        act_3bet: '3-Bet', act_allin: 'オールイン',
+
         adv_value: 'バリュー', adv_protection: 'プロテクション', adv_polarized: 'ポラライズ', adv_trap: 'トラップ',
         adv_pot_control: 'ポットコントロール', adv_showdown: 'ショーダウン値', adv_semi_bluff: 'セミブラフ', 
         adv_bluff_catch: 'ブラフキャッチ', adv_odds: 'オッズ', adv_give_up: '諦める', adv_not_enough_equity: '勝率不足',
@@ -156,7 +166,10 @@ const translations = {
         hand_full_house: '풀 하우스', hand_flush: '플러쉬', hand_straight: '스트레이트', 
         hand_trips: '트리플', hand_two_pair: '투 페어', hand_pair: '원 페어', 
         hand_flush_draw: '플러쉬 드로우', hand_draw: '드로우', hand_high_card: '하이 카드',
+        // [FIXED] Added missing
         act_bet: '벳', act_raise: '레이즈', act_call: '콜', act_check: '체크', act_fold: '폴드',
+        act_3bet: '3-Bet', act_allin: '올인',
+
         adv_value: '밸류', adv_protection: '프로텍션', adv_polarized: '폴라라이즈', adv_trap: '트랩',
         adv_pot_control: '팟 컨트롤', adv_showdown: '쇼다운', adv_semi_bluff: '세미 블러프', 
         adv_bluff_catch: '블러프 캐치', adv_odds: '오즈', adv_give_up: '포기', adv_not_enough_equity: '승률 부족',
@@ -173,11 +186,10 @@ let bankrollData = JSON.parse(localStorage.getItem('pokerGodBankroll') || '[]');
 let trState = { correct:0, total:0, streak:0, current:null };
 let hapticEnabled = localStorage.getItem('pg_haptic') !== 'false';
 
-// --- [NEW] HELPER: POKER TERM TRANSLATOR ---
-// 如果是非英文，返回 "本地語言 (English)"；否則只返回 "English"
+// --- HELPER: POKER TERM TRANSLATOR ---
 function pt(key) {
     const term = t(key);
-    // 如果不是英文，且該 key 在英文翻譯中有定義
+    // If not English, append English term in parenthesis
     if (curLang !== 'en' && translations['en'][key]) {
         return `${term} <span style="font-size:0.85em; opacity:0.7;">(${translations['en'][key]})</span>`;
     }
@@ -319,7 +331,7 @@ function getFrequencies(r1, r2, type, pos, stack, mode) {
 function calcPotOdds() { let p=parseFloat(document.getElementById('potSize').value), c=parseFloat(document.getElementById('betSize').value); if(!p||!c)return; document.getElementById('oddsResult').style.display='block'; document.getElementById('reqEquity').innerText = ((c/(p+c+c))*100).toFixed(1)+'%'; document.getElementById('oddsRatio').innerText = ((p+c)/c).toFixed(1)+' : 1'; }
 function setOppAction(act, btn) { state.oppAction = act; document.querySelectorAll('.btn-opp').forEach(b => b.classList.remove('active')); btn.classList.add('active'); triggerHaptic(10); }
 
-// --- [UPDATED] POSTFLOP ENGINE WITH BILINGUAL TERMS ---
+// --- [FIXED] POSTFLOP ENGINE WITH DISPLAY FIX ---
 function analyzePostflop() {
     if(!state.h1 || !state.h2 || !state.b1 || !state.b2 || !state.b3) { alert("Select Cards!"); return; }
     if(!state.oppAction) { alert("Select Action!"); return; }
@@ -381,10 +393,12 @@ function analyzePostflop() {
     else if (isFlushDraw) { score=35; catKey="hand_flush_draw"; barColor="#3b82f6"; } 
     else { score=15; catKey="hand_high_card"; barColor="#ef4444"; }
 
+    // Use pt() to show bilingual terms
     let adviceHtml = `${t('ai_situation')} <span style="color:var(--accent)">${pt('act_'+state.oppAction)}</span>.<br>`;
     
     let textureText = isMonotone ? '🌊 Monotone' : (isPairedBoard ? '♊ Paired' : (isConnected ? '🔗 Connected' : '🏜️ Dry'));
     adviceHtml += `<div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:5px;">${t('ai_texture')}: ${textureText}</div>`;
+    // [FIX] Use pt() for category
     adviceHtml += `${t('ai_strength')} <strong>${pt(catKey)}</strong>.<br>`;
     
     adviceHtml += `<ul class="ai-list" style="margin-top:10px;">`;
@@ -404,12 +418,19 @@ function analyzePostflop() {
         if(score >= 80) adviceHtml += `<li><span style="color:var(--c-raise)">● ${pt('act_raise')}:</span> ${pt('adv_value')} (3x)</li>`;
         else if(score >= 45 || isFlushDraw) adviceHtml += `<li><span style="color:var(--c-call)">● ${pt('act_call')}:</span> ${pt('adv_bluff_catch')} / ${pt('adv_odds')}</li>`;
         else adviceHtml += `<li><span style="color:var(--c-fold)">● ${pt('act_fold')}:</span> ${pt('adv_not_enough_equity')}</li>`;
+    } else if (state.oppAction === 'raise' || state.oppAction === '3bet' || state.oppAction === 'allin') {
+        // [NEW] Logic for facing raise/3bet/allin
+        if(score >= 85) adviceHtml += `<li><span style="color:var(--c-allin)">● ${pt('act_allin')}:</span> ${pt('adv_value')}</li>`;
+        else if(score >= 60) adviceHtml += `<li><span style="color:var(--c-call)">● ${pt('act_call')}:</span> ${pt('adv_bluff_catch')}</li>`;
+        else adviceHtml += `<li><span style="color:var(--c-fold)">● ${pt('act_fold')}:</span> ${pt('adv_give_up')}</li>`;
     }
     adviceHtml += `</ul>`;
     
     document.getElementById('postflopResult').style.display='block';
     document.getElementById('strengthBar').style.width=score+'%'; document.getElementById('strengthBar').style.backgroundColor=barColor;
-    document.getElementById('handCategory').innerText=pt(catKey); document.getElementById('handCategory').style.color=barColor;
+    // [FIX] Use innerHTML to render the <span> inside pt()
+    document.getElementById('handCategory').innerHTML = pt(catKey); 
+    document.getElementById('handCategory').style.color=barColor;
     document.getElementById('aiAdvice').innerHTML = adviceHtml;
 }
 
