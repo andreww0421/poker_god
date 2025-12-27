@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#121212">
     <title>Poker God Pro</title>
     
@@ -20,7 +20,7 @@
         <img src="icon.png" alt="App Logo" class="header-logo" onerror="this.style.display='none'">
         <h1>Poker God <span style="font-size:0.5em; opacity:0.8; background:none; -webkit-text-fill-color: var(--text-main);">PRO</span></h1>
     </div>
-    <div class="version-tag">v5.9.5</div>
+    <div class="version-tag">v5.9.6</div>
 </header>
 
 <div class="container">
@@ -159,6 +159,7 @@
 
 <div class="fab-wrapper">
     <div class="fab-menu" id="fabMenu">
+        <div class="fab-item" onclick="toggleHaptic()"><span id="hapticIcon">📳</span> <span id="hapticLabel" data-i18n="haptic_on">震動 (On)</span></div>
         <div class="fab-item" onclick="toggleTheme()"><span>🌗</span> <span data-i18n="theme_toggle">切換主題 (Theme)</span></div>
         <div class="fab-item" onclick="openLangModal()"><span>🌐</span> <span data-i18n="language">語言 (Language)</span></div>
         <div class="fab-item" onclick="exportData()" data-i18n="export">匯出備份</div>
