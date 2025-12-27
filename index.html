@@ -9,7 +9,7 @@
     <link rel="manifest" href="manifest.json">
     <link rel="shortcut icon" href="icon.png" type="image/png">
     <link rel="icon" href="icon.png" type="image/png">
-    <link rel="apple-touch-icon" href="icon.png?v=10">
+    <link rel="apple-touch-icon" href="icon.png?v=11">
     
     <link rel="stylesheet" href="style.css">
 </head>
@@ -20,7 +20,7 @@
         <img src="icon.png" alt="App Logo" class="header-logo" onerror="this.style.display='none'">
         <h1>Poker God <span style="font-size:0.5em; opacity:0.8; background:none; -webkit-text-fill-color: var(--text-main);">PRO</span></h1>
     </div>
-    <div class="version-tag">v5.9.3</div>
+    <div class="version-tag">v5.9.5</div>
 </header>
 
 <div class="container">
@@ -108,7 +108,12 @@
                 <button class="btn-opp" onclick="setOppAction('3bet', this)">3-Bet</button>
                 <button class="btn-opp" onclick="setOppAction('allin', this)" style="grid-column: span 2; color:var(--danger); border-color:var(--danger);">All-in</button>
             </div>
-            <button class="btn-action" onclick="analyzePostflop()" data-i18n="analyze">AI 分析決策</button>
+            
+            <div style="display:flex; gap:10px;">
+                <button class="btn-action" onclick="analyzePostflop()" data-i18n="analyze" style="flex:3;">AI 分析決策</button>
+                <button class="btn-action" onclick="resetPostflop()" style="flex:1; background:var(--c-fold);">↺</button>
+            </div>
+
             <div class="result-box" id="postflopResult" style="display:none;">
                 <div class="result-label" data-i18n="hand_strength">牌力強度</div>
                 <div class="meter-bg"><div class="meter-fill" id="strengthBar"></div></div>
