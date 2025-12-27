@@ -28,12 +28,19 @@ select, input, textarea { width: 100%; background: rgba(125,125,125,0.1); border
 select:focus, input:focus, textarea:focus { border-color: var(--accent); }
 select option { background-color: var(--bg-body); color: var(--text-main); }
 
-/* --- [FIX] 日期選擇器圖示修復 --- */
-input[type="date"] { color-scheme: dark; }
-[data-theme="light"] input[type="date"] { color-scheme: light; }
-::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
-[data-theme="light"] ::-webkit-calendar-picker-indicator { filter: invert(0); }
-/* -------------------------------- */
+/* --- 日期選擇器樣式修復 --- */
+input[type="date"] {
+    /* 移除 color-scheme 設定以手動控制 */
+}
+::-webkit-calendar-picker-indicator { 
+    filter: invert(1); /* 預設反轉為白色 (深色模式適用) */
+    cursor: pointer; 
+    opacity: 0.7;
+}
+[data-theme="light"] ::-webkit-calendar-picker-indicator { 
+    filter: invert(0); /* 淺色模式恢復黑色 */
+}
+/* ------------------------- */
 
 .btn-action { width: 100%; padding: 14px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 10px; }
 .btn-delete { background: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; }
@@ -48,17 +55,15 @@ input[type="date"] { color-scheme: dark; }
 .poker-card.selected { border: 2px solid var(--accent); background: #fff; color: #000 !important; }
 .suit-s { color: #000; } .suit-h { color: #dc2626; } .suit-c { color: #16a34a; } .suit-d { color: #2563eb; } 
 
-/* --- [FIX] 導航列層級修復 --- */
 .bottom-nav { 
     position: fixed; bottom: 0; left: 0; width: 100%; 
     background: var(--nav-bg); 
     border-top: 1px solid var(--border); 
     display: flex; justify-content: space-around; 
     padding: 8px 0; 
-    z-index: 100; /* 改回 100，讓 Modal (200) 可以蓋住它 */
+    z-index: 100; 
     transition: 0.3s; 
 }
-/* -------------------------- */
 
 .nav-item { color: var(--text-muted); text-align: center; flex: 1; padding: 4px; opacity: 0.7; display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .nav-item.active { color: var(--accent); opacity: 1; transform: translateY(-2px); font-weight: bold; }
