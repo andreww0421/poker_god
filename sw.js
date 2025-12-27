@@ -1,7 +1,9 @@
-const CACHE_NAME = 'poker-god-v5.9.2-force-update'; // 改名以強制更新
+const CACHE_NAME = 'poker-god-v5.9.5-complete'; // 更新版本號以清除舊快取
 const ASSETS = [
   './',
   './index.html',
+  './style.css',  // 新增
+  './app.js',     // 新增
   './manifest.json',
   './icon.png'
 ];
@@ -29,7 +31,7 @@ self.addEventListener('activate', (e) => {
   e.waitUntil(self.clients.claim());
 });
 
-// Fetch: 網路優先策略 (Network First) - 避免再次卡死在舊版
+// Fetch: 網路優先策略 (Network First) - 確保每次都嘗試抓新版
 self.addEventListener('fetch', (e) => {
   e.respondWith(
     fetch(e.request).catch(() => {
