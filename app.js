@@ -1,4 +1,4 @@
-// --- GTO DATABASE (Compressed for 6-Max Cash 100BB & MTT) ---
+// --- GTO DATABASE ---
 const GTO_DB = {
     "Cash_100bb_6max": {
         "EP": "77+,AJs+,KQs,AQo+,66,ATs,KJs,QJs,JTs", 
@@ -90,27 +90,37 @@ function updateRanges() {
     document.getElementById('rangeInfoText').innerText = `${t(labelMode)} (${stack}BB) - ${pos}`;
     let calcMode = mode; if(pos==='BB' && document.getElementById('gameMode').value !== 'Cash') calcMode = "BBDef"; 
     
+    // Determine correct DB key
     let dbKey = "";
     if (mode === 'Cash') dbKey = "Cash_100bb_6max";
     else if (mode === 'RFI') dbKey = "MTT_Deep_9max";
 
     document.querySelectorAll('.chart-cell').forEach(c => {
         let r1 = parseInt(c.dataset.r1), r2 = parseInt(c.dataset.r2), type = c.dataset.type;
+        // 1. Try DB Lookup
         let freqs = null;
         if (dbKey && GTO_DB[dbKey] && GTO_DB[dbKey][pos]) {
             const rangeStr = GTO_DB[dbKey][pos];
             if (checkRange(r1, r2, type, rangeStr)) freqs = {a:0, r:100, c:0, f:0};
             else freqs = {a:0, r:0, c:0, f:100};
         } 
+        // 2. Fallback to Algo
         if (!freqs) freqs = getFrequencies(r1, r2, type, pos, stack, calcMode);
+        
         let s1 = freqs.a; let s2 = s1 + freqs.r; let s3 = s2 + freqs.c;
         c.style.background = `linear-gradient(135deg, var(--c-allin) 0% ${s1}%, var(--c-raise) ${s1}% ${s2}%, var(--c-call) ${s2}% ${s3}%, var(--c-fold) ${s3}% 100%)`;
     });
 }
 
+// --- RANGE PARSER (v5.9) ---
 function checkRange(r1, r2, type, rangeStr) {
+    // rangeStr format: "77+,AJs+,KQs,AQo+,66"
     let parts = rangeStr.split(',');
-    let myHand = type === 'pair' ? ranks[14-r1]+ranks[14-r1] : ranks[14-r1]+ranks[14-r2]+(type==='suited'?'s':'o');
+    let myHand = "";
+    if (type === 'pair') myHand = ranks[14-r1] + ranks[14-r1];
+    else if (type === 'suited') myHand = ranks[14-r1] + ranks[14-r2] + 's';
+    else myHand = ranks[14-r1] + ranks[14-r2] + 'o';
+
     for (let p of parts) {
         p = p.trim();
         if (p === myHand) return true;
@@ -119,22 +129,32 @@ function checkRange(r1, r2, type, rangeStr) {
             let baseR1 = 14 - ranks.indexOf(base[0]);
             let baseR2 = 14 - ranks.indexOf(base[1]);
             let baseType = base.length === 2 ? 'pair' : (base.includes('s') ? 'suited' : 'offsuit');
+            
             if (type !== baseType) continue;
-            if (type === 'pair') { if (r1 >= baseR1) return true; } 
-            else { if (r1 === baseR1 && r2 >= baseR2) return true; }
+            
+            if (type === 'pair') {
+                if (r1 >= baseR1) return true;
+            } else {
+                if (r1 === baseR1 && r2 >= baseR2) return true;
+            }
         }
     }
     return false;
 }
 
 function getFrequencies(r1, r2, type, pos, stack, mode) {
-    let f = {a:0, r:0, c:0, f:100}; let score = r1*2 + r2 + (type==='pair'?20:0) + (type==='suited'?6:0);
+    // Fallback Algorithm
+    let f = {a:0, r:0, c:0, f:100}; 
+    let score = r1*2 + r2 + (type==='pair'?20:0) + (type==='suited'?6:0);
+    
     if (mode === 'Cash') {
         let t = 0; if(pos==='CO') t=4; if(pos==='MP') t=8; if(pos==='EP') t=12; 
         if(type==='suited') { let gap = r1-r2; if(gap===1 && r1<=11) score+=15; if(gap===2 && r1<=11) score+=10; }
         if(type==='offsuit') { let gap = r1-r2; if(gap===1 && r1<=11) { if(pos==='CO'||pos==='BTN'||pos==='SB') score+=12; else score-=10; } }
         if(type==='suited') score += 5; if(type==='pair') score += 8; 
-        let thresh = 40 - (10 - t); if(score >= thresh) { f.r=100; f.f=0; } else if(score >= thresh - 3) { f.r=50; f.f=50; }
+        let thresh = 40 - (10 - t); 
+        if(score >= thresh) { f.r=100; f.f=0; return f; }
+        if(score >= thresh - 3) { f.r=50; f.f=50; return f; }
         return f;
     }
     if(mode === "PushFold") {
@@ -167,6 +187,7 @@ function analyzePostflop() {
     // 1. Analyze Texture
     let suitCounts = {}; bCards.forEach(c => suitCounts[c.suit.id] = (suitCounts[c.suit.id]||0)+1);
     let isMonotone = Object.values(suitCounts).some(v => v >= 3);
+    let isPairedBoard = new Set(bCards.map(c=>c.rank)).size < bCards.length;
     
     // 2. Analyze Hand Strength
     let mySuitCounts = {}; allCards.forEach(c => mySuitCounts[c.suit.id] = (mySuitCounts[c.suit.id]||0)+1);
@@ -178,6 +199,7 @@ function analyzePostflop() {
     function checkStraight(rankList) {
         let unique = [...new Set(rankList)].sort((a,b) => b-a);
         if(unique.includes(14)) unique.push(1); // Wheel Ace
+        // Fixed Loop: Ensure we don't go out of bounds
         for(let i=0; i <= unique.length - 5; i++) {
             if(unique[i] - unique[i+4] === 4) return { isSt: true, high: unique[i] };
         }
@@ -242,6 +264,22 @@ function analyzePostflop() {
     document.getElementById('aiAdvice').innerHTML = adviceHtml;
 }
 
+// [NEW] 重置按鈕邏輯
+function resetPostflop() {
+    state.h1 = null; state.h2 = null;
+    state.b1 = null; state.b2 = null; state.b3 = null; state.b4 = null; state.b5 = null;
+    state.oppAction = null;
+    
+    ['h1','h2','b1','b2','b3','b4','b5'].forEach(id => {
+        let el = document.getElementById('card_'+id);
+        el.className = 'poker-card empty';
+        el.innerHTML = (id.startsWith('h') ? '+' : '');
+    });
+    
+    document.querySelectorAll('.btn-opp').forEach(b => b.classList.remove('active'));
+    document.getElementById('postflopResult').style.display = 'none';
+}
+
 function updateNameList() { const names = [...new Set(bankrollData.map(i => i.name).filter(n => n))]; const dl = document.getElementById('brNameList'); dl.innerHTML = ''; names.forEach(n => { let opt=document.createElement('option'); opt.value=n; dl.appendChild(opt); }); }
 function calcPreview() { let b=parseFloat(document.getElementById('brBuyIn').value)||0; let p=parseFloat(document.getElementById('brPrize').value)||0; let d=p-b; document.getElementById('brProfitPreview').innerText=(d>=0?'+':'')+d; document.getElementById('brProfitPreview').style.color=d>=0?'var(--accent)':'var(--danger)'; }
 function addBankroll() { let d=document.getElementById('brDate').value, t=document.getElementById('brType').value; let n=document.getElementById('brName').value.trim(); let b=parseFloat(document.getElementById('brBuyIn').value)||0, p=parseFloat(document.getElementById('brPrize').value)||0, note=document.getElementById('brNote').value; if(!d) { alert("Date required"); return; } bankrollData.push({ id:Date.now(), date:d, type:t, name:n, buyIn:b, prize:p, amount:p-b, note:note }); localStorage.setItem('pokerGodBankroll', JSON.stringify(bankrollData)); document.getElementById('brName').value=''; document.getElementById('brBuyIn').value=''; document.getElementById('brPrize').value=''; document.getElementById('brNote').value=''; updateNameList(); renderBankrollUI(); }
@@ -257,15 +295,101 @@ function renderBankrollUI() {
     let l=document.getElementById('historyList'); l.innerHTML=''; [...chartData].reverse().forEach((i)=>{ let d=document.createElement('div'); d.className='history-item'; let typeLabel = i.type === 'MTT' ? t('mode_mtt') : t('mode_cash'); let noteHtml = i.note ? `<div style="font-size:0.75rem; color:#aaa; margin-top:2px;">📝 ${i.note}</div>` : ''; d.innerHTML=`<div style="flex:1"><div style="font-size:0.9rem;font-weight:bold;color:var(--text-main);">${i.name||'--'} <span style="font-size:0.7rem;opacity:0.7">(${typeLabel})</span></div><div style="font-size:0.75rem;color:var(--text-muted);">${i.date}</div>${noteHtml}</div><div style="text-align:right"><span class="${i.amount>=0?'pos-val':'neg-val'}">${i.amount>=0?'+':''}${i.amount}</span><button class="btn-delete" onclick="deleteRecord(${i.id})" style="margin-left:5px;">✕</button></div>`; l.appendChild(d); }); setTimeout(() => drawChart(pointsProfit), 50);
 }
 
+// [UPDATED] High DPI Chart Fix
 function drawChart(dataProfit) { 
-    let cvs=document.getElementById('bankrollCanvas'); if(!cvs) return; let ctx=cvs.getContext('2d'); cvs.width = cvs.parentElement.clientWidth || 300; cvs.height = 240; let w=cvs.width, h=cvs.height; let mLeft=40, mBottom=30, mTop=20, mRight=10; let graphW = w - mLeft - mRight; let graphH = h - mBottom - mTop; ctx.clearRect(0,0,w,h); 
-    if(dataProfit.length < 2) { ctx.fillStyle="#94a3b8"; ctx.font="14px Arial"; ctx.textAlign="center"; ctx.fillText("No Data",w/2,h/2); return; } 
-    let ys = dataProfit.map(p=>p.y); let max=Math.max(0, ...ys), min=Math.min(0, ...ys); let range=max-min; if(range === 0) range = 100; max += range * 0.1; min -= range * 0.1; 
-    let mapX=i=>mLeft + (i / (dataProfit.length-1)) * graphW; let mapY=v=>mTop + graphH - ((v - min) / (max - min)) * graphH; 
-    ctx.fillStyle = "#64748b"; ctx.font = "10px sans-serif"; ctx.textAlign = "right"; ctx.strokeStyle = "rgba(125,125,125,0.1)"; ctx.lineWidth = 1; let ySteps = 5; for(let i=0; i<=ySteps; i++) { let val = min + (range * (i/ySteps)); let yPos = mapY(val); ctx.beginPath(); ctx.moveTo(mLeft, yPos); ctx.lineTo(w-mRight, yPos); ctx.stroke(); ctx.fillText(Math.round(val), mLeft-5, yPos+3); }
-    let zeroY = mapY(0); if(zeroY >= mTop && zeroY <= h-mBottom) { ctx.beginPath(); ctx.strokeStyle = document.body.getAttribute('data-theme') === 'light' ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.2)'; ctx.lineWidth = 1; ctx.moveTo(mLeft, zeroY); ctx.lineTo(w-mRight, zeroY); ctx.stroke(); }
-    let profitColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(); ctx.beginPath(); ctx.strokeStyle = profitColor; ctx.lineWidth = 3; ctx.setLineDash([]); ctx.moveTo(mapX(0), mapY(dataProfit[0].y)); for(let i=1; i<dataProfit.length; i++) ctx.lineTo(mapX(i), mapY(dataProfit[i].y)); ctx.stroke();
-    ctx.textAlign = "center"; let step = Math.ceil(dataProfit.length / 6); for(let i=0; i<dataProfit.length; i++) { let x = mapX(i), y = mapY(dataProfit[i].y); ctx.beginPath(); ctx.fillStyle = profitColor; ctx.arc(x, y, 4, 0, Math.PI*2); ctx.fill(); if(i % step === 0 || i === dataProfit.length-1) { if(dataProfit[i].label) { ctx.fillStyle = "#94a3b8"; ctx.fillText(dataProfit[i].label, x, h-10); } } }
+    let cvs = document.getElementById('bankrollCanvas'); 
+    if(!cvs) return; 
+    let ctx = cvs.getContext('2d'); 
+    
+    // --- High DPI Fix ---
+    let dpr = window.devicePixelRatio || 1;
+    let rect = cvs.getBoundingClientRect();
+    
+    cvs.width = rect.width * dpr;
+    cvs.height = 240 * dpr; // Assuming height is 240px from CSS
+    
+    ctx.scale(dpr, dpr);
+    // --------------------
+
+    let w = rect.width;
+    let h = 240; 
+    
+    ctx.clearRect(0, 0, w, h); 
+    if(dataProfit.length < 2) { 
+        ctx.fillStyle="#94a3b8"; 
+        ctx.font="14px Arial"; 
+        ctx.textAlign="center"; 
+        ctx.fillText("No Data", w/2, h/2); 
+        return; 
+    } 
+    
+    let ys = dataProfit.map(p=>p.y); 
+    let max = Math.max(0, ...ys);
+    let min = Math.min(0, ...ys); 
+    let range = max - min; 
+    if(range === 0) range = 100; 
+    
+    max += range * 0.1; 
+    min -= range * 0.1; 
+    
+    let mLeft=40, mBottom=30, mTop=20, mRight=10; 
+    let graphW = w - mLeft - mRight; 
+    let graphH = h - mBottom - mTop; 
+    
+    let mapX = i => mLeft + (i / (dataProfit.length-1)) * graphW; 
+    let mapY = v => mTop + graphH - ((v - min) / (max - min)) * graphH; 
+    
+    ctx.fillStyle = "#64748b"; 
+    ctx.font = "10px sans-serif"; 
+    ctx.textAlign = "right"; 
+    ctx.strokeStyle = "rgba(125,125,125,0.1)"; 
+    ctx.lineWidth = 1; 
+    
+    let ySteps = 5; 
+    for(let i=0; i<=ySteps; i++) { 
+        let val = min + (range * (i/ySteps)); 
+        let yPos = mapY(val); 
+        ctx.beginPath(); 
+        ctx.moveTo(mLeft, yPos); 
+        ctx.lineTo(w-mRight, yPos); 
+        ctx.stroke(); 
+        ctx.fillText(Math.round(val), mLeft-5, yPos+3); 
+    }
+    
+    let zeroY = mapY(0); 
+    if(zeroY >= mTop && zeroY <= h-mBottom) { 
+        ctx.beginPath(); 
+        ctx.strokeStyle = document.body.getAttribute('data-theme') === 'light' ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.2)'; 
+        ctx.lineWidth = 1; 
+        ctx.moveTo(mLeft, zeroY); 
+        ctx.lineTo(w-mRight, zeroY); 
+        ctx.stroke(); 
+    }
+    
+    let profitColor = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(); 
+    ctx.beginPath(); 
+    ctx.strokeStyle = profitColor; 
+    ctx.lineWidth = 3; 
+    ctx.setLineDash([]); 
+    ctx.moveTo(mapX(0), mapY(dataProfit[0].y)); 
+    for(let i=1; i<dataProfit.length; i++) ctx.lineTo(mapX(i), mapY(dataProfit[i].y)); 
+    ctx.stroke();
+    
+    ctx.textAlign = "center"; 
+    let step = Math.ceil(dataProfit.length / 6); 
+    for(let i=0; i<dataProfit.length; i++) { 
+        let x = mapX(i), y = mapY(dataProfit[i].y); 
+        ctx.beginPath(); 
+        ctx.fillStyle = profitColor; 
+        ctx.arc(x, y, 4, 0, Math.PI*2); 
+        ctx.fill(); 
+        if(i % step === 0 || i === dataProfit.length-1) { 
+            if(dataProfit[i].label) { 
+                ctx.fillStyle = "#94a3b8"; 
+                ctx.fillText(dataProfit[i].label, x, h-10); 
+            } 
+        } 
+    } 
 }
 
 function nextDrill() { const positions = ['EP','MP','CO','BTN','SB','BB']; const pos = positions[Math.floor(Math.random()*positions.length)]; const stack = Math.random() < 0.3 ? 12 : (Math.random() < 0.6 ? 40 : 100); const r1Idx = Math.floor(Math.random()*13); const r2Idx = Math.floor(Math.random()*13); const s1 = {id:'s', symbol:'♠', class:'suit-s'}; const s2 = (r1Idx===r2Idx || Math.random()<0.23) ? s1 : {id:'h', symbol:'♥', class:'suit-h'}; const r1 = ranks[Math.min(r1Idx, r2Idx)]; const r2 = ranks[Math.max(r1Idx, r2Idx)]; const type = (r1===r2) ? 'pair' : (s1.id===s2.id ? 'suited' : 'offsuit'); trState.current = { r1:14-Math.min(r1Idx,r2Idx), r2:14-Math.max(r1Idx,r2Idx), type, pos, stack }; document.getElementById('trScenario').innerText = `${pos} | ${stack}BB`; renderTrainerCard('trCard1', r1, s1); renderTrainerCard('trCard2', r2, (r1===r2 && s1.id===s2.id) ? {id:'d',symbol:'♦',class:'suit-d'} : s2); document.getElementById('trFeedback').style.display = 'none'; document.getElementById('trNextBtn').style.display = 'none'; }
